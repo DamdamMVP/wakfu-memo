@@ -1,0 +1,16 @@
+# Captures brutes du client Wakfu. tools/capture-multi-account.sh écrit dans
+# /tmp par défaut, mais WAKFU_CAPTURE_OUT peut le rediriger ici : rien de brut
+# ne doit partir par accident. Le chat log n'est pas purgé entre sessions et
+# charrie les canaux publics — donc les pseudos et les messages d'autres
+# joueurs. Les échantillons de docs/research/samples/ sont, eux, suivis : ils
+# sont passés par `scrub_chat`, qui filtre les canaux en liste blanche.
+raw-*.log
+anon-*.log
+wakfu.log
+wakfu_chat.log
+/captures/
+
+# Node / Electron
+node_modules/
+dist/
+out/
