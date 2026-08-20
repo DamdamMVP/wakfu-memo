@@ -1,0 +1,173 @@
+# Échantillon « duel » — 20 août 2026, combat 1568042324
+#
+# Deux clients depuis la même installation launcher Ankama. PJ1 (Ecaflip,
+# breed 6) contre PJ2 (Osamodas, breed 2), plus un Chacha noir invoqué en
+# cours de combat. Noms de personnages anonymisés, ID d'entité tronqués.
+#
+# Repassé dans la liste blanche de canaux de `scrub_chat` (tools/capture-multi-account.sh) :
+# 8 lignes de chat public — Commerce, Recrutement, Communauté, Proximité,
+# Politique — laissées passer par l'ancienne liste noire ont été retirées.
+#
+# Ce que cet échantillon établit (résolution de #14) :
+#  - `<Nom> est KO !` est la forme de sortie des PERSONNAGES, avec un skew de
+#    1253 ms entre les deux copies, qui encadrent `Combat terminé` — donc sur
+#    le canal fragile, d'où la règle « transition idempotente, première vue » ;
+#  - `est KO !` termine ici le combat : aucun combat de la capture ne CONTINUE
+#    après un KO, le saut d'un mort dans la rotation reste non observé (#10) ;
+#  - les TROIS canaux d'attribution concordent : alternance stricte, séries de
+#    secondes 50→67→93 (PJ1) et 64→100→124 (PJ2), et le passif de fin de tour
+#    qui suit immédiatement la frontière nomme le personnage concerné.
+21:22:42,728 - [Information (combat)] Vous avez défié amicalement PJ1
+21:22:42,806 - [Information (combat)] PJ2 vous a défié amicalement. Voulez-vous combattre avec lui ?
+21:22:48,331 - [Information (combat)] PJ1: Pioche (+10 Niv.)
+21:22:48,332 - [Information (combat)] PJ1: 0 PW (Pioche mélangée)
+21:22:48,349 - [Information (combat)] PJ1: Pioche (+10 Niv.)
+21:22:48,349 - [Information (combat)] PJ1: 0 PW (Pioche mélangée)
+21:22:52,875 - [Information (combat)] PJ1 lance le sort Capucine
+21:22:52,878 - [Information (combat)] PJ1 lance le sort Capucine
+21:22:53,778 - [Information (combat)] PJ2: -376 PV (Eau)
+21:22:53,789 - [Information (combat)] PJ2: -376 PV (Eau)
+21:22:54,576 - [Information (combat)] PJ1 lance le sort Capucine
+21:22:54,581 - [Information (combat)] PJ1 lance le sort Capucine
+21:22:55,480 - [Information (combat)] PJ2: -302 PV (Eau) (Parade !)
+21:22:55,494 - [Information (combat)] PJ2: -302 PV (Eau) (Parade !)
+21:22:57,767 - [Information (combat)] PJ1 lance le sort Le Dieu Ecaflip
+21:22:57,772 - [Information (combat)] PJ1: Le Dieu Ecaflip (Niv. 1)
+21:22:57,774 - [Information (combat)] PJ1: 3 PA (Le Dieu Ecaflip)
+21:22:57,775 - [Information (combat)] PJ1: 20 % Coup critique (Le Dieu Ecaflip)
+21:22:57,775 - [Information (combat)] PJ1: Veine (+7 Niv.)
+21:22:57,778 - [Information (combat)] PJ1 lance le sort Le Dieu Ecaflip
+21:22:57,781 - [Information (combat)] PJ1: Le Dieu Ecaflip (Niv. 1)
+21:22:57,782 - [Information (combat)] PJ1: 3 PA (Le Dieu Ecaflip)
+21:22:57,783 - [Information (combat)] PJ1: 20 % Coup critique (Le Dieu Ecaflip)
+21:22:57,784 - [Information (combat)] PJ1: Veine (+7 Niv.)
+21:22:57,896 - [Information (combat)] PJ1: Sept fétiche : 1 carte
+21:22:57,978 - [Information (combat)] PJ1: Sept fétiche : 1 carte
+21:23:01,481 - [Information (combat)] PJ1 lance le sort Craps
+21:23:01,506 - [Information (combat)] PJ1 lance le sort Craps
+21:23:02,486 - [Information (combat)] PJ2: -206 PV (Feu)
+21:23:02,487 - [Information (combat)] PJ1: Préparation (+39 Niv.)
+21:23:02,583 - [Information (combat)] PJ2: -206 PV (Feu)
+21:23:02,584 - [Information (combat)] PJ1: Préparation (+39 Niv.)
+21:23:03,186 - [Information (combat)] PJ1 lance le sort Craps (Critiques)
+21:23:03,209 - [Information (combat)] PJ1 lance le sort Craps (Critiques)
+21:23:04,285 - [Information (combat)] PJ2: -362 PV (Feu)
+21:23:04,288 - [Information (combat)] PJ1: Préparation (+15 Niv.)
+21:23:04,304 - [Information (combat)] PJ2: -362 PV (Feu)
+21:23:04,306 - [Information (combat)] PJ1: Préparation (+15 Niv.)
+21:23:05,686 - [Information (combat)] 50 secondes reportées pour le tour suivant.
+21:23:05,715 - [Information (combat)] 50 secondes reportées pour le tour suivant.
+21:23:05,775 - [Information (combat)] PJ1: 1 PW (Guerrier joueur)
+21:23:05,776 - [Information (combat)] PJ1: Veine (+27 Niv.)
+21:23:05,783 - [Information (combat)] PJ1: 1 PW (Guerrier joueur)
+21:23:05,784 - [Information (combat)] PJ1: Veine (+27 Niv.)
+21:23:06,599 - [Information (combat)] 64 secondes reportées pour le tour suivant.
+21:23:06,673 - [Information (combat)] 64 secondes reportées pour le tour suivant.
+21:23:06,718 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+21:23:06,770 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+21:23:11,888 - [Information (combat)] PJ1 lance le sort La Lune Poilue
+21:23:11,890 - [Information (combat)] PJ1: La Lune Poilue (Niv. 1)
+21:23:11,895 - [Information (combat)] PJ1: 20 % Dommages infligés (La Lune Poilue) (2 tours)
+21:23:11,895 - [Information (combat)] PJ1: 35 % Coup critique (La Lune Poilue) (2 tours)
+21:23:11,896 - [Information (combat)] PJ1: -15 % Dommages infligés (La Lune Poilue)
+21:23:11,897 - [Information (combat)] PJ1: Veine (+34 Niv.)
+21:23:11,922 - [Information (combat)] PJ1 lance le sort La Lune Poilue
+21:23:11,924 - [Information (combat)] PJ1: La Lune Poilue (Niv. 1)
+21:23:11,925 - [Information (combat)] PJ1: 20 % Dommages infligés (La Lune Poilue) (2 tours)
+21:23:11,926 - [Information (combat)] PJ1: 35 % Coup critique (La Lune Poilue) (2 tours)
+21:23:11,926 - [Information (combat)] PJ1: -15 % Dommages infligés (La Lune Poilue)
+21:23:11,927 - [Information (combat)] PJ1: Veine (+34 Niv.)
+21:23:12,089 - [Information (combat)] PJ1: Sept fétiche : 2 cartes
+21:23:12,103 - [Information (combat)] PJ1: Sept fétiche : 2 cartes
+21:23:13,694 - [Information (combat)] PJ1 lance le sort Relance
+21:23:13,728 - [Information (combat)] PJ1 lance le sort Relance
+21:23:14,399 - [Information (combat)] PJ1: 30 % Coup critique
+21:23:14,434 - [Information (combat)] PJ1: Bonne étoile (+20 Niv.)
+21:23:14,517 - [Information (combat)] PJ1: 30 % Coup critique
+21:23:14,518 - [Information (combat)] PJ1: Bonne étoile (+20 Niv.)
+21:23:18,282 - [Information (combat)] PJ1 lance le sort Le Chacha Noir
+21:23:18,299 - [Information (combat)] PJ1 lance le sort Le Chacha Noir
+21:23:18,792 - [Information (combat)] PJ1: Invoque un(e) Chacha noir 
+21:23:18,805 - [Information (combat)] PJ1: Veine (+41 Niv.)
+21:23:18,806 - [Information (combat)] Chacha noir: échange de position (Tarot félin)
+21:23:18,806 - [Information (combat)] PJ1: Stabilisé
+21:23:18,807 - [Information (combat)] PJ1: Sept fétiche : 3 cartes
+21:23:18,895 - [Information (combat)] PJ1: Invoque un(e) Chacha noir 
+21:23:18,905 - [Information (combat)] PJ1: Veine (+41 Niv.)
+21:23:18,907 - [Information (combat)] Chacha noir: échange de position (Tarot félin)
+21:23:18,907 - [Information (combat)] PJ1: Stabilisé
+21:23:18,908 - [Information (combat)] PJ1: Sept fétiche : 3 cartes
+21:23:20,895 - [Information (combat)] PJ1 lance le sort Topkaj
+21:23:20,903 - [Information (combat)] PJ1 lance le sort Topkaj
+21:23:21,537 - [Information (combat)] PJ1: Topkaj (Niv. 1)
+21:23:21,538 - [Information (combat)] PJ1: 35 % Coup critique (Topkaj)
+21:23:21,539 - [Information (combat)] PJ1: Bonne étoile (+55 Niv.)
+21:23:21,540 - [Information (combat)] PJ1: 1 PM (Topkaj)
+21:23:21,596 - [Information (combat)] PJ1: Topkaj (Niv. 1)
+21:23:21,596 - [Information (combat)] PJ1: 35 % Coup critique (Topkaj)
+21:23:21,598 - [Information (combat)] PJ1: Bonne étoile (+55 Niv.)
+21:23:21,599 - [Information (combat)] PJ1: 1 PM (Topkaj)
+21:23:23,097 - [Information (combat)] PJ1 lance le sort Trèfle
+21:23:23,130 - [Information (combat)] PJ1 lance le sort Trèfle
+21:23:23,799 - [Information (combat)] PJ1: Trèfle (Niv. 1)
+21:23:23,800 - [Information (combat)] PJ1: 2 PM
+21:23:23,801 - [Information (combat)] PJ1: 20 % Coup critique
+21:23:23,802 - [Information (combat)] PJ1: Bonne étoile (+75 Niv.)
+21:23:23,933 - [Information (combat)] PJ1: Trèfle (Niv. 1)
+21:23:23,934 - [Information (combat)] PJ1: 2 PM
+21:23:23,934 - [Information (combat)] PJ1: 20 % Coup critique
+21:23:23,935 - [Information (combat)] PJ1: Bonne étoile (+75 Niv.)
+21:23:25,200 - [Information (combat)] PJ1 lance le sort Coup du sort (Critiques)
+21:23:25,201 - [Information (combat)] PJ1 lance le sort Coup du sort (Critiques)
+21:23:26,106 - [Information (combat)] PJ2: -357 PV (Lumière) (Feu) (Malchance)
+21:23:26,119 - [Information (combat)] PJ2: -357 PV (Lumière) (Feu) (Malchance)
+21:23:26,695 - [Information (combat)] 67 secondes reportées pour le tour suivant.
+21:23:26,702 - [Information (combat)] 66 secondes reportées pour le tour suivant.
+21:23:26,805 - [Information (combat)] PJ1: 1 PW (Guerrier joueur)
+21:23:26,806 - [Information (combat)] PJ1: Veine (+61 Niv.)
+21:23:26,813 - [Information (combat)] PJ1: Bonne étoile (+75 Niv.)
+21:23:26,813 - [Information (combat)] PJ1: 1 PW (Guerrier joueur)
+21:23:26,814 - [Information (combat)] PJ1: Veine (+61 Niv.)
+21:23:26,818 - [Information (combat)] PJ1: Bonne étoile (+75 Niv.)
+21:23:30,208 - [Information (combat)] Chacha noir lance le sort Chafouin
+21:23:30,234 - [Information (combat)] Chacha noir lance le sort Chafouin
+21:23:30,693 - [Information (combat)] PJ2: -120 Résistance Élémentaire (Chafouin)
+21:23:30,708 - [Information (combat)] PJ2: -120 Résistance Élémentaire (Chafouin)
+21:23:32,551 - [Information (combat)] 100 secondes reportées pour le tour suivant.
+21:23:32,596 - [Information (combat)] 100 secondes reportées pour le tour suivant.
+21:23:32,693 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+21:23:32,703 - [Information (combat)] PJ1: Bonne étoile (+55 Niv.)
+21:23:32,729 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+21:23:32,742 - [Information (combat)] PJ1: Bonne étoile (+55 Niv.)
+21:23:39,825 - [Information (combat)] PJ1 lance le sort Capucine (Critiques)
+21:23:39,859 - [Information (combat)] PJ1 lance le sort Capucine (Critiques)
+21:23:40,747 - [Information (combat)] PJ2: -1 036 PV  (Eau)
+21:23:40,860 - [Information (combat)] PJ2: -1 036 PV  (Eau)
+21:23:41,315 - [Information (combat)] PJ1 lance le sort Capucine (Critiques)
+21:23:41,360 - [Information (combat)] PJ1 lance le sort Capucine (Critiques)
+21:23:42,223 - [Information (combat)] PJ2: -1 036 PV  (Eau)
+21:23:42,263 - [Information (combat)] PJ2: -1 036 PV  (Eau)
+21:23:44,159 - [Information (combat)] 93 secondes reportées pour le tour suivant.
+21:23:44,160 - [Information (combat)] 93 secondes reportées pour le tour suivant.
+21:23:44,219 - [Information (combat)] PJ1: 1 PW (Guerrier joueur)
+21:23:44,220 - [Information (combat)] PJ1: Veine (+81 Niv.)
+21:23:44,222 - [Information (combat)] PJ1: Bonne étoile (+35 Niv.)
+21:23:44,263 - [Information (combat)] PJ1: 1 PW (Guerrier joueur)
+21:23:44,265 - [Information (combat)] PJ1: Veine (+81 Niv.)
+21:23:44,266 - [Information (combat)] PJ1: Bonne étoile (+35 Niv.)
+21:23:48,664 - [Information (combat)] 124 secondes reportées pour le tour suivant.
+21:23:48,707 - [Information (combat)] 126 secondes reportées pour le tour suivant.
+21:23:48,785 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+21:23:48,811 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+21:23:50,553 - [Information (combat)] PJ1 lance le sort Engouement
+21:23:50,568 - [Information (combat)] PJ1 lance le sort Engouement
+21:23:52,030 - [Information (combat)] PJ1: 2 PA
+21:23:52,069 - [Information (combat)] PJ1: 2 PA
+21:23:52,269 - [Information (combat)] PJ1 lance le sort Capucine
+21:23:53,271 - [Information (combat)] PJ2: -425 PV  (Eau)
+21:23:53,623 - [Information (combat)] PJ1 lance le sort Capucine
+21:23:53,867 - [Information (combat)] PJ2 est KO !
+21:23:54,175 - [Information (combat)] Combat terminé, cliquez ici pour rouvrir l'écran de fin de combat. 
+21:23:54,541 - [Information (combat)] PJ2: -425 PV  (Eau)
+21:23:55,120 - [Information (combat)] PJ2 est KO !
+21:23:55,431 - [Information (combat)] Combat terminé, cliquez ici pour rouvrir l'écran de fin de combat. 

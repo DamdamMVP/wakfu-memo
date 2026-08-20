@@ -35,6 +35,12 @@ Une unité créée en combat par un Personnage. Hors du Roster, et sans consigne
 en V1 — mais elle s'insère dans l'ordre des tours.
 _Avoid_: familier, serviteur
 
+**Classe** :
+L'une des dix-huit classes de Wakfu. Le jeu la donne en `breed` numérique, que
+l'app traduit en clé stable (`ecaflip`) à la frontière du log ; c'est la clé qui
+s'écrit sur disque, jamais le `breed`. Une Strat est écrite contre des Classes.
+_Avoid_: breed, race, métier
+
 **ID d'entité** :
 L'identifiant que `[_FL_]` donne à chaque combattant. Constant d'un combat à
 l'autre pour un Personnage, ce qui permet de le suivre à travers un renommage.
@@ -72,8 +78,10 @@ _Avoid_: instruction, description, action
 **Rang** :
 La position d'un Emplacement dans l'ordre des tours, de 1 à 6. Déclaré par le
 joueur — les salles de donjon sont fixes, donc l'ordre est une connaissance de
-domaine, pas une déduction. N'ordonne que les Emplacements entre eux : les
-monstres n'y figurent pas.
+domaine, pas une déduction. C'est la place de l'Emplacement dans la
+composition, pas une valeur à part : réordonner la composition change les
+Rangs. N'ordonne que les Emplacements entre eux : les monstres n'y figurent
+pas.
 _Avoid_: ordre, initiative, index, position
 
 ### La liaison — qui occupe quoi
@@ -96,10 +104,11 @@ Personnage sans ID d'entité, ou en faire un Personnage ignoré. Ne pas répondr
 ne vaut pas refus.
 _Avoid_: modale, popup, invite
 
-**Exception de liaison** :
-La résolution mémorisée d'un Conflit, pour ne pas reposer la question. Seules
-les exceptions sont persistées.
-_Avoid_: composition, préférence
+**Préférence de liaison** :
+La résolution mémorisée d'un Conflit, pour ne pas reposer la question : dans
+telle Strat, tel Personnage occupe tel Emplacement. Ne retient jamais la
+composition du combat, donc elle répond encore quand l'équipe change.
+_Avoid_: exception, composition, assignation
 
 ### Les logs — d'où vient l'état
 

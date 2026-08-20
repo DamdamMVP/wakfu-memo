@@ -1,0 +1,216 @@
+# Échantillon « réanimation » — 20 août 2026, combats 1616030353 et 1584017389
+#
+# Deux clients depuis la même installation launcher Ankama. PJ3 et PJ4.
+# Noms de personnages anonymisés, ID d'entité tronqués.
+#
+# Repassé dans la liste blanche de canaux de `scrub_chat` (tools/capture-multi-account.sh) :
+# 15 lignes de chat public — Commerce, Recrutement, Communauté, Proximité,
+# Politique — laissées passer par l'ancienne liste noire ont été retirées.
+#
+# Ce que cet échantillon établit (capturé en résolvant #14, matière pour #10) :
+#  - la RÉANIMATION est tracée DEUX FOIS : `PJ3: est réanimé` (avec deux-points)
+#    puis `PJ3 est ressuscité !` (sans), 565 ms d'écart, chacune dupliquée ;
+#  - `est hors-combat !` est la forme des MONSTRES *et* des INVOCATIONS
+#    (`Phorreur Adulte est hors-combat !`), `est KO !` celle des personnages :
+#    la séparation suit exactement `isControlledByAI` ;
+#  - un personnage peut TOMBER AVANT D'AVOIR JOUÉ (1584017389 : les monstres
+#    jouent en premier, PJ3 tombe sans un seul tour) ;
+#  - un combat entier peut ne contenir AUCUNE frontière (1584017389, dans aucun
+#    canal) parce qu'il ne contient aucun tour TERMINÉ — le combat finit dans
+#    le tour du seul personnage debout. Contrôle sur 1616030353 : 3 frontières
+#    pour exactement 3 tours terminés. La règle de #13 tient ;
+#  - il existe des passifs de DÉBUT de tour (`PJ4: 1 PA (Force vitale)`),
+#    distinguables des passifs de fin par le côté de la frontière où ils
+#    tombent — troisième canal d'attribution, mais dépendant de la classe.
+21:44:01,063 - [Information (jeu)] Vous ne suivez plus PJ4.
+21:44:21,531 - [Information (combat)] PJ3: Invoque un(e) Phorreur Immature 
+21:44:21,547 - [Information (combat)] PJ3: Invoque un(e) Phorreur Immature 
+21:44:21,569 - [Information (combat)] PJ4: 1 PA (Force vitale)
+21:44:21,570 - [Information (combat)] PJ4: 30 % Soins réalisés (Ponction)
+21:44:21,584 - [Information (combat)] PJ4: 1 PA (Force vitale)
+21:44:21,585 - [Information (combat)] PJ4: 30 % Soins réalisés (Ponction)
+21:44:42,156 - [Information (combat)] PJ4 lance le sort Contre-nature
+21:44:42,166 - [Information (combat)] PJ4 lance le sort Contre-nature
+21:44:43,368 - [Information (combat)] PJ4: Contre-nature (Niv. 1)
+21:44:43,463 - [Information (combat)] PJ4: Contre-nature (Niv. 1)
+21:44:46,361 - [Information (combat)] PJ4 lance le sort Vivification
+21:44:46,395 - [Information (combat)] PJ4 lance le sort Vivification
+21:44:46,924 - [Information (combat)] PJ3: +0 PV (Eau)
+21:44:46,966 - [Information (combat)] PJ3: +0 PV (Eau)
+21:44:47,464 - [Information (combat)] PJ4: -1 PV (Neutre) (Ponction)
+21:44:47,465 - [Information (combat)] PJ3: 46 Esquive
+21:44:47,495 - [Information (combat)] PJ4: -1 PV (Neutre) (Ponction)
+21:44:47,497 - [Information (combat)] PJ3: 46 Esquive
+21:44:51,866 - [Information (combat)] PJ4: 2 PW (Grâce naturelle)
+21:44:51,867 - [Information (combat)] 38 secondes reportées pour le tour suivant.
+21:44:51,900 - [Information (combat)] PJ4: 2 PW (Grâce naturelle)
+21:44:51,901 - [Information (combat)] 38 secondes reportées pour le tour suivant.
+21:44:52,901 - [Information (combat)] Chacha lance le sort Griffouille
+21:44:52,969 - [Information (combat)] Chacha lance le sort Griffouille
+21:44:53,371 - [Information (combat)] Phorreur Immature: -18 PV (Terre)
+21:44:53,371 - [Information (combat)] Chacha lance le sort Attendrissement
+21:44:53,469 - [Information (combat)] Phorreur Immature: -18 PV (Terre)
+21:44:53,470 - [Information (combat)] Chacha lance le sort Attendrissement
+21:44:54,449 - [Information (combat)] Phorreur Immature: -40 Résistance Élémentaire
+21:44:54,567 - [Information (combat)] Phorreur Immature: -40 Résistance Élémentaire
+21:44:57,463 - [Information (combat)] Phorreur Immature: 1 PA
+21:44:57,464 - [Information (combat)] Phorreur Immature: 1 PM
+21:44:57,473 - [Information (combat)] PJ3: excave un Gisement de saphir
+21:44:57,504 - [Information (combat)] Phorreur Immature: 1 PA
+21:44:57,505 - [Information (combat)] Phorreur Immature: 1 PM
+21:44:57,512 - [Information (combat)] PJ3: excave un Gisement de saphir
+21:44:57,515 - [Information (combat)] PJ3: excave un Gisement de rubis
+21:44:57,516 - [Information (combat)] PJ3: excave un Gisement de rubis
+21:44:57,516 - [Information (combat)] PJ3: excave un Gisement de diamant
+21:44:57,516 - [Information (combat)] PJ3: excave un Gisement d'or
+21:44:57,517 - [Information (combat)] PJ3: excave un Gisement de diamant
+21:44:57,517 - [Information (combat)] PJ3: excave un Gisement d'or
+21:45:01,163 - [Information (combat)] PJ3 lance le sort Braise
+21:45:01,191 - [Information (combat)] PJ3 lance le sort Braise
+21:45:02,411 - [Information (combat)] Chacha: -39 PV (Feu)
+21:45:02,463 - [Information (combat)] Chacha: -39 PV (Feu)
+21:45:03,313 - [Information (combat)] Chacha est hors-combat !
+21:45:03,365 - [Information (combat)] Chacha est hors-combat !
+21:45:06,767 - [Information (combat)] PJ3 lance le sort Braise
+21:45:06,796 - [Information (combat)] PJ3 lance le sort Braise
+21:45:08,010 - [Information (combat)] Chacha Blanc: -25 PV (Feu)
+21:45:08,074 - [Information (combat)] Chacha Blanc: -25 PV (Feu)
+21:45:10,671 - [Information (combat)] 51 secondes reportées pour le tour suivant.
+21:45:10,709 - [Information (combat)] 51 secondes reportées pour le tour suivant.
+21:45:10,775 - [Information (combat)] PJ3: 0 PW (Chasseur de trésor)
+21:45:10,776 - [Information (combat)] PJ3: Pose le Glyphe Bourse (Chasseur de trésor)
+21:45:10,776 - [Information (combat)] PJ3: Pose le Glyphe Bourse (Chasseur de trésor)
+21:45:10,777 - [Information (combat)] PJ3: Pose le Glyphe Bourse (Chasseur de trésor)
+21:45:10,777 - [Information (combat)] PJ3: Pose le Glyphe Bourse (Chasseur de trésor)
+21:45:10,828 - [Information (combat)] PJ3: 0 PW (Chasseur de trésor)
+21:45:10,828 - [Information (combat)] PJ3: Pose le Glyphe Bourse (Chasseur de trésor)
+21:45:10,829 - [Information (combat)] PJ3: Pose le Glyphe Bourse (Chasseur de trésor)
+21:45:10,829 - [Information (combat)] PJ3: Pose le Glyphe Bourse (Chasseur de trésor)
+21:45:10,829 - [Information (combat)] PJ3: Pose le Glyphe Bourse (Chasseur de trésor)
+21:45:11,584 - [Information (combat)] PJ4: 1 PA (Force vitale)
+21:45:11,608 - [Information (combat)] PJ4: 1 PA (Force vitale)
+21:45:14,385 - [Information (combat)] PJ4: 0 PW (Grâce naturelle)
+21:45:14,387 - [Information (combat)] 74 secondes reportées pour le tour suivant.
+21:45:14,411 - [Information (combat)] PJ4: 0 PW (Grâce naturelle)
+21:45:14,412 - [Information (combat)] 75 secondes reportées pour le tour suivant.
+21:45:15,419 - [Information (combat)] Phorreur Immature: 1 PA
+21:45:15,420 - [Information (combat)] Phorreur Immature: 1 PM
+21:45:15,476 - [Information (combat)] Phorreur Immature: 1 PA
+21:45:15,477 - [Information (combat)] Phorreur Immature: 1 PM
+21:45:15,484 - [Information (combat)] PJ3: Pose le Glyphe Big Bourse
+21:45:15,485 - [Information (combat)] PJ3: Pose le Glyphe Big Bourse
+21:45:15,485 - [Information (combat)] PJ3: Pose le Glyphe Big Bourse
+21:45:15,486 - [Information (combat)] PJ3: Pose le Glyphe Big Bourse
+21:45:15,497 - [Information (combat)] PJ3: Pose le Glyphe Big Bourse
+21:45:15,498 - [Information (combat)] PJ3: Pose le Glyphe Big Bourse
+21:45:15,498 - [Information (combat)] PJ3: Pose le Glyphe Big Bourse
+21:45:15,499 - [Information (combat)] PJ3: Pose le Glyphe Big Bourse
+21:45:17,080 - [Information (combat)] PJ3 lance le sort Braise
+21:45:17,083 - [Information (jeu)] Vous avez 1 nouvel objet en attente : Humus.
+21:45:17,091 - [Information (jeu)] Vous avez ramassé 1x Dent de Chacha .
+21:45:17,092 - [Information (jeu)] Vous avez ramassé 1x Sangle de Boisaille .
+21:45:17,107 - [Information (combat)] PJ3 lance le sort Braise
+21:45:17,110 - [Information (jeu)] Vous avez ramassé 2x Humus .
+21:45:18,333 - [Information (combat)] Chacha Blanc: -26 PV (Feu)
+21:45:18,379 - [Information (combat)] Chacha Blanc: -26 PV (Feu)
+21:45:18,677 - [Information (jeu)] Le challenge "Incurable" est réussi.
+21:45:18,679 - [Information (combat)] PJ3 : +2 644 points d'XP.  Prochain niveau dans : 2 415 807.
+21:45:18,701 - [Information (jeu)] Le challenge "Incurable" est réussi.
+21:45:18,703 - [Information (combat)] PJ4 : +4 108 points d'XP.  Prochain niveau dans : 12 446 166 314.
+21:45:18,706 - [Information (combat)] Combat terminé, cliquez ici pour rouvrir l'écran de fin de combat. 
+21:45:18,727 - [Information (combat)] Combat terminé, cliquez ici pour rouvrir l'écran de fin de combat. 
+21:45:20,281 - [Information (jeu)] Vous avez détruit 1 objet et récupéré 0 ressource
+21:45:23,580 - [Information (jeu)] Vous suivez désormais PJ4.
+21:45:48,603 - [Information (jeu)] Vous ne suivez plus PJ4.
+21:46:28,928 - [Information (combat)] PJ3: Invoque un(e) Phorreur Adulte 
+21:46:28,993 - [Information (combat)] PJ3: Invoque un(e) Phorreur Adulte 
+21:46:29,927 - [Information (combat)] Kamarachnide lance le sort Drache dorée (Critiques)
+21:46:30,025 - [Information (combat)] Kamarachnide lance le sort Drache dorée (Critiques)
+21:46:31,129 - [Information (combat)] PJ3: -1 419 PV (Terre)
+21:46:31,130 - [Information (combat)] Kamarachnide lance le sort Drache dorée
+21:46:31,174 - [Information (combat)] PJ3: -1 419 PV (Terre)
+21:46:31,174 - [Information (combat)] Kamarachnide lance le sort Drache dorée
+21:46:32,325 - [Information (combat)] PJ3: -1 134 PV (Terre)
+21:46:32,325 - [Information (combat)] Phorreur Adulte: est hors combat
+21:46:32,331 - [Information (combat)] PJ3: -1 134 PV (Terre)
+21:46:32,333 - [Information (combat)] Phorreur Adulte: est hors combat
+21:46:33,228 - [Information (combat)] PJ3 est KO !
+21:46:33,320 - [Information (combat)] PJ3 est KO !
+21:46:33,424 - [Information (combat)] PJ4: 1 PA (Force vitale)
+21:46:33,425 - [Information (combat)] PJ4: 30 % Soins réalisés (Ponction)
+21:46:33,431 - [Information (combat)] PJ4: 1 PA (Force vitale)
+21:46:33,432 - [Information (combat)] PJ4: 30 % Soins réalisés (Ponction)
+21:46:33,636 - [Information (combat)] Phorreur Adulte est hors-combat !
+21:46:33,727 - [Information (combat)] Phorreur Adulte est hors-combat !
+21:46:43,467 - [Information (combat)] PJ4 lance le sort Rénisurrection
+21:46:43,483 - [Information (combat)] PJ4 lance le sort Rénisurrection
+21:46:44,780 - [Information (combat)] PJ3: est réanimé
+21:46:44,781 - [Information (combat)] PJ3: est réanimé
+21:46:45,345 - [Information (combat)] PJ3 est ressuscité !
+21:46:45,356 - [Information (combat)] PJ4: Propagateur (+46 Niv.)
+21:46:45,357 - [Information (combat)] PJ4: -1 PV (Neutre) (Ponction)
+21:46:45,358 - [Information (combat)] PJ3: +117 PV (Neutre) (Intégrité)
+21:46:45,359 - [Information (combat)] PJ4: Propagateur (+92 Niv.)
+21:46:45,360 - [Information (combat)] PJ4: -11 PV (Neutre) (Ponction)
+21:46:45,361 - [Information (combat)] PJ3: 82 Armure (Distribution)
+21:46:45,363 - [Information (combat)] PJ4: Propagateur (+138 Niv.)
+21:46:45,364 - [Information (combat)] PJ4: -25 PV (Neutre) (Ponction)
+21:46:45,365 - [Information (combat)] PJ3: 178 Armure (Distribution)
+21:46:45,367 - [Information (combat)] PJ3: Convalescent (Niv. 1)
+21:46:45,385 - [Information (combat)] PJ3 est ressuscité !
+21:46:45,392 - [Information (combat)] PJ4: Propagateur (+46 Niv.)
+21:46:45,394 - [Information (combat)] PJ4: -1 PV (Neutre) (Ponction)
+21:46:45,395 - [Information (combat)] PJ3: +117 PV (Neutre) (Intégrité)
+21:46:45,396 - [Information (combat)] PJ4: Propagateur (+92 Niv.)
+21:46:45,398 - [Information (combat)] PJ4: -11 PV (Neutre) (Ponction)
+21:46:45,399 - [Information (combat)] PJ3: 82 Armure (Distribution)
+21:46:45,400 - [Information (combat)] PJ4: Propagateur (+138 Niv.)
+21:46:45,402 - [Information (combat)] PJ4: -25 PV (Neutre) (Ponction)
+21:46:45,403 - [Information (combat)] PJ3: 178 Armure (Distribution)
+21:46:45,404 - [Information (combat)] PJ3: Convalescent (Niv. 1)
+21:46:55,973 - [Information (combat)] PJ4 lance le sort Corro-soin
+21:46:55,997 - [Information (combat)] PJ4 lance le sort Corro-soin
+21:46:57,385 - [Information (combat)] Kamarachnide: -1 993 PV (Feu)
+21:46:57,394 - [Information (combat)] Kamarachnide: -1 993 PV (Feu)
+21:46:57,780 - [Information (combat)] Kamarachnide: -1 752 PV (Lumière) (Feu) (Propagateur)
+21:46:57,821 - [Information (combat)] Kamarachnide: Marque amil (+1 Niv.)
+21:46:57,893 - [Information (combat)] Kamarachnide: -1 752 PV (Lumière) (Feu) (Propagateur)
+21:46:57,894 - [Information (combat)] Kamarachnide: Marque amil (+1 Niv.)
+21:47:01,496 - [Information (combat)] PJ4 lance le sort Vivification
+21:47:01,497 - [Information (combat)] PJ4 lance le sort Vivification
+21:47:02,499 - [Information (combat)] Kamarachnide: -1 242 PV (Eau)
+21:47:02,563 - [Information (combat)] Kamarachnide: -1 242 PV (Eau)
+21:47:02,564 - [Information (combat)] PJ3: +124 PV (Neutre) (Marque amil)
+21:47:02,566 - [Information (combat)] PJ4: Propagateur (+11 Niv.)
+21:47:02,567 - [Information (combat)] PJ4: -12 PV (Neutre) (Ponction)
+21:47:02,567 - [Information (combat)] PJ3: 88 Armure (Distribution)
+21:47:02,601 - [Information (combat)] PJ3: +124 PV (Neutre) (Marque amil)
+21:47:02,602 - [Information (combat)] PJ4: Propagateur (+11 Niv.)
+21:47:02,603 - [Information (combat)] PJ4: -12 PV (Neutre) (Ponction)
+21:47:02,604 - [Information (combat)] PJ3: 88 Armure (Distribution)
+21:47:03,698 - [Information (combat)] PJ4 lance le sort Vivification
+21:47:03,701 - [Information (combat)] PJ4 lance le sort Vivification
+21:47:03,702 - [Information (jeu)] PJ3 a gagné un niveau (total : 113)
+21:47:03,704 - [Information (jeu)] Vous avez ramassé 5x Plâjeton .
+21:47:03,705 - [Information (jeu)] Vous avez 1 nouvel objet en attente : Dorure de Cuivre.
+21:47:04,607 - [Information (combat)] Kamarachnide: -1 241 PV (Eau)
+21:47:04,608 - [Information (combat)] Kamarachnide: -1 241 PV (Eau)
+21:47:04,698 - [Information (jeu)] Le challenge "Barbare" a échoué.
+21:47:04,781 - [Information (jeu)] Le challenge "Barbare" a échoué.
+21:47:05,003 - [Information (combat)] Kamarachnide: -134 PV (Lumière) (Feu) (Propagateur)
+21:47:05,005 - [Information (combat)] PJ3: +124 PV (Neutre) (Marque amil)
+21:47:05,006 - [Information (combat)] PJ4: Propagateur (+11 Niv.)
+21:47:05,007 - [Information (combat)] PJ4: -12 PV (Neutre) (Ponction)
+21:47:05,007 - [Information (combat)] PJ3: 88 Armure (Distribution)
+21:47:05,008 - [Information (jeu)] Vous avez gagné 23 kamas.
+21:47:05,014 - [Information (combat)] PJ4 : +2 345 620 points d'XP.  Prochain niveau dans : 12 443 820 694.
+21:47:05,017 - [Information (combat)] Combat terminé, cliquez ici pour rouvrir l'écran de fin de combat. 
+21:47:05,092 - [Information (combat)] Kamarachnide: -134 PV (Lumière) (Feu) (Propagateur)
+21:47:05,094 - [Information (combat)] PJ3: +124 PV (Neutre) (Marque amil)
+21:47:05,095 - [Information (combat)] PJ4: Propagateur (+11 Niv.)
+21:47:05,096 - [Information (combat)] PJ4: -12 PV (Neutre) (Ponction)
+21:47:05,096 - [Information (combat)] PJ3: 88 Armure (Distribution)
+21:47:05,099 - [Information (combat)] PJ3 : +2 747 822 points d'XP.  +1 niveau. Prochain niveau dans : 29 979 688.
+21:47:05,101 - [Information (combat)] Combat terminé, cliquez ici pour rouvrir l'écran de fin de combat. 
+21:47:09,260 - [Information (jeu)] Vous avez 1 nouvel objet en attente : Poudre.
+21:47:09,291 - [Information (jeu)] Vous avez détruit 1 objet et récupéré 1 ressource

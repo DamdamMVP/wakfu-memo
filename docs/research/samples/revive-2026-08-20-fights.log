@@ -1,0 +1,23 @@
+# Bornes de combat correspondantes, wakfu.log. Ids d'entité tronqués.
+ INFO 21:44:00,971 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1616030353 Chacha Blanc breed : 2617 [ENTITE898] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (57, 11, 0)}
+ INFO 21:44:00,971 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1616030353 Chacha breed : 2616 [ENTITE899] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (55, 8, 0)}
+ INFO 21:44:00,974 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1616030353 PJ4 breed : 7 [ENTITE067] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (52, 8, 0)}
+ INFO 21:44:03,312 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1616030353 PJ3 breed : 3 [ENTITE227] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (51, 7, 0)}
+ INFO 21:44:03,317 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1616030353 Chacha Blanc breed : 2617 [ENTITE898] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (57, 11, 0)}
+ INFO 21:44:03,317 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1616030353 Chacha breed : 2616 [ENTITE899] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (55, 8, 0)}
+ INFO 21:44:03,318 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1616030353 PJ4 breed : 7 [ENTITE067] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (52, 8, 0)}
+ INFO 21:44:03,320 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1616030353 PJ3 breed : 3 [ENTITE227] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (51, 7, 0)}
+ INFO 21:44:21,532 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1616030353 Phorreur Immature breed : 1381 [ENTITE241] isControlledByAI=true obstacleId : 4 join the fight at {Point3 : (53, 8, 0)}
+ INFO 21:44:21,548 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1616030353 Phorreur Immature breed : 1381 [ENTITE241] isControlledByAI=true obstacleId : 4 join the fight at {Point3 : (53, 8, 0)}
+ INFO 21:45:18,680 [AWT-EventQueue-0] (aWF:91) - [FIGHT] End fight with id 1616030353
+ INFO 21:45:18,712 [AWT-EventQueue-0] (aWF:91) - [FIGHT] End fight with id 1616030353
+ INFO 21:46:21,719 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584017389 Kamarachnide breed : 3093 [ENTITE146] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (41, -66, 8)}
+ INFO 21:46:21,725 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584017389 PJ3 breed : 3 [ENTITE227] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (40, -72, 8)}
+ INFO 21:46:22,870 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584017389 Kamarachnide breed : 3093 [ENTITE146] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (41, -66, 8)}
+ INFO 21:46:22,870 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584017389 PJ3 breed : 3 [ENTITE227] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (40, -72, 8)}
+ INFO 21:46:22,872 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584017389 PJ4 breed : 7 [ENTITE067] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (35, -73, 8)}
+ INFO 21:46:22,943 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584017389 PJ4 breed : 7 [ENTITE067] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (35, -73, 8)}
+ INFO 21:46:28,929 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584017389 Phorreur Adulte breed : 1382 [ENTITE523] isControlledByAI=true obstacleId : 3 join the fight at {Point3 : (41, -67, 8)}
+ INFO 21:46:28,993 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584017389 Phorreur Adulte breed : 1382 [ENTITE523] isControlledByAI=true obstacleId : 3 join the fight at {Point3 : (41, -67, 8)}
+ INFO 21:47:05,023 [AWT-EventQueue-0] (aWF:91) - [FIGHT] End fight with id 1584017389
+ INFO 21:47:05,106 [AWT-EventQueue-0] (aWF:91) - [FIGHT] End fight with id 1584017389

@@ -451,6 +451,46 @@ une session. Les quatre ID sont distincts et tiennent dans une bande étroite
 à l'opposé des ID de monstres, négatifs et énormes. **Non testé** : la
 persistance après réinstallation du client.
 
+### La table des `breed` vient du jeu, et n'est pas l'ordre des classes
+
+`i18n_fr.jar` porte la correspondance sous les clés `breed.<id>`, ce qui rend
+inutile toute supposition :
+
+| `breed` | Classe | | `breed` | Classe |
+|---|---|---|---|---|
+| 1 | Féca | | 11 | Sacrieur |
+| 2 | Osamodas | | 12 | Pandawa |
+| 3 | Enutrof | | 13 | Roublard |
+| 4 | Sram | | 14 | Zobal |
+| 5 | Xélor | | 15 | **Ouginak** |
+| 6 | Ecaflip | | 16 | **Steamer** |
+| 7 | Eniripsa | | 17 | *Désincarné* |
+| 8 | Iop | | 18 | **Eliotrope** |
+| 9 | Crâ | | 19 | **Huppermage** |
+| 10 | Sadida | | | |
+
+Deux pièges. D'abord `breed.17 = Désincarné`, qui n'est pas une classe jouable :
+les 18 classes sont donc `1..16`, `18` et `19` — la numérotation a **un trou**,
+et il n'existe pas de `breed` 20. Ensuite l'ordre **n'est pas** celui de l'écran
+de sélection de classe, où Ouginak arrive en dernier : dans le jeu Ouginak est
+15 et Huppermage 19. En dériver l'un de l'autre par arithmétique donne quatre
+portraits faux ; la table est explicite ou elle est fausse.
+
+La table se recopie à la main, elle ne se génère pas : dix-huit lignes, et la
+génération obligerait à interpréter la syntaxe de genre du jeu
+(`breed.11=Sacrieu{[1*]?se:r}`) pour rien. C'est l'inverse du choix fait pour
+les motifs de combat, qui sont des centaines sur quatre langues.
+
+Les valeurs observées corroborent la table : les personnages joués sont à
+`2`, `3`, `6`, `7` et `19` — `Damdamosa` est bien un Osamodas, `Damdam` un
+Ecaflip — là où les monstres et les invocations sont à quatre chiffres
+(`1381`, `1620`, `2335`, `4755`…). Un `breed` supérieur à 19 sur une ligne
+`isControlledByAI=false` n'a jamais été observé.
+
+Enfin, **la classe ne change pas quand un personnage tombe** : aucun
+`breed : 17` n'apparaît dans les captures, y compris celle qui contient une
+résurrection.
+
 ## Algorithme de suivi du tour
 
 **Les monstres n'émettent aucune ligne `reportée`.** Confirmé formellement — la
