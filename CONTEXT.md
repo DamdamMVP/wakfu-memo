@@ -131,6 +131,13 @@ La suite des Emplacements actifs, par Rang croissant, que le suivi parcourt. Ne
 s'arrête jamais sur un Emplacement inactif, ni sur un monstre.
 _Avoid_: cycle, tour de table, ordre
 
+**Mise en avant** :
+Le fond teinté de la ligne de l'Emplacement sur lequel la Rotation est arrivée.
+Ne promet pas l'instant : après une Frontière de tour le curseur avance tout de
+suite, même si des monstres jouent avant. Une seule ligne à la fois — le
+suivant n'est pas annoncé.
+_Avoid_: surbrillance, highlight, actif, joue
+
 **Emplacement inactif** :
 Un Emplacement que la Rotation franchit sans l'attendre, pour l'une de deux
 causes indistinguables : **absent** (aucun Personnage dans ce combat) ou
