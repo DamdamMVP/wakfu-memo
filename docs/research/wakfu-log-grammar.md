@@ -473,8 +473,10 @@ Deux pièges. D'abord `breed.17 = Désincarné`, qui n'est pas une classe jouabl
 les 18 classes sont donc `1..16`, `18` et `19` — la numérotation a **un trou**,
 et il n'existe pas de `breed` 20. Ensuite l'ordre **n'est pas** celui de l'écran
 de sélection de classe, où Ouginak arrive en dernier : dans le jeu Ouginak est
-15 et Huppermage 19. En dériver l'un de l'autre par arithmétique donne quatre
-portraits faux ; la table est explicite ou elle est fausse.
+15 et Huppermage 19. Aucun ordre ne se dérive d'un autre par arithmétique — la
+table est explicite ou elle est fausse. Corollaire pour les fichiers du repo :
+les portraits de `icons/` sont nommés par **clé de classe**, jamais par index,
+parce qu'un index se suppose et qu'une clé se vérifie.
 
 La table se recopie à la main, elle ne se génère pas : dix-huit lignes, et la
 génération obligerait à interpréter la syntaxe de genre du jeu
