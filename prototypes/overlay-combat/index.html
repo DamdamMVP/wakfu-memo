@@ -14,6 +14,7 @@
     - PLUS DE PSEUDO. L'ADR 0003 tient jusqu'au bout : un Emplacement, c'est
       l'icone de classe plus le lisere de Couleur, et rien d'autre. Toute la
       largeur rendue va a la Consigne.
+    - PLUS DE CHEVRON « SUIVANT ». Une seule ligne est mise en avant.
     - PLUS D'ETAT DEGRADE. Le compteur douteux ne doit jamais arriver, donc il
       ne s'affiche pas.
     - PLUS D'ETAT « AUCUNE STRAT ». Si l'overlay s'affiche, c'est qu'une strat
@@ -109,8 +110,6 @@
   .row { display:flex; align-items:center; gap:10px; padding:6px 12px 6px 9px;
     position:relative; }
   .row + .row { border-top:1px solid #202531; }
-  /* gouttiere fixe : le chevron du SUIVANT s'y loge sans decaler les icones */
-  .row .mk { flex:none; width:.85em; text-align:center; color:transparent; }
   .row .cons { flex:1; min-width:0; }
   .row .cons:empty:before { content:'—'; color:var(--faint); }
   /* MISE EN AVANT : le fond de ligne, reserve pour ca par la resolution de #5.
@@ -123,9 +122,9 @@
   .row.now .cons { font-weight:600; }
   .row.now:before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px;
     background:var(--c); }
-  /* le SUIVANT : annoncable puisque le Rang est declare (#14). Discret : un
-     chevron, pas un second fond, sinon deux lignes se disputent l'oeil. */
-  .row.next .mk { color:var(--c); }
+  /* Le SUIVANT n'est PAS annonce. #14 notait qu'on pouvait le faire, le Rang
+     etant declare ; a l'ecran le chevron n'apportait rien et faisait un second
+     point d'accroche a cote de la ligne mise en avant. */
   /* Emplacement inactif : GRISE, pas masque (#8). Les deux causes — absent et
      tombe — sont indistinguables a l'affichage (#14). */
   .row.off { opacity:.34; }
@@ -302,14 +301,13 @@ function back(){
 // Si le curseur est sur un Emplacement devenu inactif, il glisse au suivant actif.
 function fixCursor(){ if (anyActive() && !isActive(S.slots[S.cursor])) S.cursor = nextIdx(S.cursor).i; }
 const curTurn = () => S.turns[S.turn-1] || null;   // null = au-dela de la strat
-const nextActive = () => anyActive() ? nextIdx(S.cursor).i : -1;
 
 /* ============================================================== rendu ==== */
 const clsHTML = (s,extra='') =>
   `<span class="cls ${extra}" style="--c:${s.color}"><span class="edge"></span><img src="${ico(s.cls)}" alt="${CLASSES[s.cls]}"></span>`;
 
 function overlayHTML(){
-  const t = curTurn(), nx = nextActive();
+  const t = curTurn();
   const chip = S.showPicker
     ? `<span class="chip" data-pick>${S.strat} ▾</span>
        ${S.pickerOpen ? `<div class="picker">${S.strats.map(n=>
@@ -321,9 +319,8 @@ function overlayHTML(){
     </header>`;
   const rows = S.slots.map((s,i)=>{
     const off = !isActive(s);
-    const cl = ['row', off?'off':'', (!off&&i===S.cursor)?'now':'',
-                (!off&&i===nx&&nx!==S.cursor)?'next':''].join(' ');
-    return `<div class="${cl}" style="--c:${s.color}"><div class="mk">▸</div>
+    const cl = ['row', off?'off':'', (!off&&i===S.cursor)?'now':''].join(' ');
+    return `<div class="${cl}" style="--c:${s.color}">
         ${clsHTML(s)}<div class="cons">${(t && t.cells[i]) || ''}</div></div>`;
   }).join('');
   const end = t ? '' : `<div class="past-end">La strat <b>${S.strat}</b> s'arrête au
