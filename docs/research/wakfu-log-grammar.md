@@ -231,12 +231,28 @@ s'apprend avec l'ordre, au premier round.
 | `<nom>: <État> (+<N> Niv.) (<source>)` | application d'état |
 | `[<propriétaire>] <invocation>: <effet>` | invocation rattachée à son maître |
 | `<nom>: <N> PV (<Élément>)` | dégâts et soins, y compris sur les monstres |
-| `<nom> est KO !` | mise à mort |
+| `<nom> est KO !` | mise à mort d'un **personnage** |
+| `<nom> est hors-combat !` | sortie de combat d'un **monstre** |
 | `<nom>: Pose le Glyphe <nom>` | pose de glyphe |
 | `<nom> : +<N> points d'XP.  Prochain niveau dans : <N>.` | fin de combat, côté chat |
 
 Les monstres sont nommés eux aussi (`Sac à patates: 12 34 PV (Feu)`), donc le
 log n'est pas filtré sur le seul joueur local.
+
+Deux formes distinctes pour la mort, à ne pas confondre : les personnages
+sortent sur `est KO !`, les monstres sur `est hors-combat !` (`Moogrron est
+hors-combat !`, `Moomouche est hors-combat !` sur `1568041141`).
+
+**Piège de canal.** `wakfu_chat.log` porte aussi des lignes qui **nomment les
+personnages sans être des événements de combat** :
+
+```
+[Messages d'erreur] En attente de : PJ2, PJ1
+```
+
+Elle apparaît en pleine action, hors du canal `Information (combat)`. C'est la
+justification concrète de la liste blanche de canaux : un parseur qui filtre en
+liste noire la laisse passer et croit voir deux acteurs.
 
 ### Le motif d'un tour
 
@@ -261,6 +277,62 @@ la frontière qui clôt leur propre tour.
 18:46:38,120 - PJ2 lance le sort Déplumage      <- tour de PJ2
 ```
 
+#### La première frontière du combat est un tour, pas la fin du placement
+
+Tranché par le combat `1568041141`, avec un sort d'ancrage lancé dès le premier
+tour de chaque personnage. **Aucune ligne `reportée` n'apparaît avant le premier
+sort** :
+
+```
+20:17:49,770 - [_FL_] ... PJ2 join the fight      <- entrée en combat
+20:17:51,000 - PJ1: Pioche (+10 Niv.)             <- rafale de début de combat
+20:17:55,990 - PJ1 lance le sort Capucine         <- PJ1 agit : son tour a commencé
+20:17:58,596 - 58 secondes reportées              <- PREMIÈRE frontière, après le sort
+```
+
+On ne peut pas lancer de sort pendant le placement : la première frontière suit
+l'action, donc elle clôt un vrai tour. **La fin de la phase de placement n'émet
+aucune ligne** — l'ouverture du combat se repère sur `[_FL_]`, pas sur une
+frontière.
+
+Confirmé par le comptage sur le même combat : **4 frontières pour PJ1 et 4 pour
+PJ2**, soit exactement le nombre de tours terminés. Aucune frontière en trop.
+Le 5e tour de PJ1 n'en a pas — le combat s'est terminé dedans, donc **le dernier
+tour d'un combat n'a pas de frontière de fermeture**.
+
+#### Le report de secondes est par personnage
+
+Les huit frontières du combat forment **deux séries entrelacées**, chacune
+croissant d'environ +30 s par tour (l'allocation d'un tour), moins le temps
+réellement dépensé :
+
+| | tour 1 | tour 2 | tour 3 | tour 4 |
+|---|---|---|---|---|
+| PJ1 | 58 | 89 | 120 | 142 |
+| PJ2 | 61 | 94 | 114 | 148 |
+
+Lu comme un compteur global, l'enchaînement (58, 61, 89, 94, 120, 114, 142, 148)
+donne des sauts incohérents. Lu comme deux banques personnelles, tout s'aligne.
+
+Ça donne un **second canal d'attribution**, indépendant des passifs — dont la
+réserve ci-dessus dit qu'ils ne sont pas garantis. Il est faible : non injectif
+(tout le monde lit `0` en brûlant son timer), et remis à plat dès qu'un
+personnage dépense du temps. Mais un **retour en arrière de la valeur** signale
+de façon nette que la frontière appartient à un autre personnage.
+
+#### Les tours de monstres n'ont pas besoin d'être observés
+
+L'ordre d'initiative relevé sur `1568041141` entrelace monstres et personnages —
+`PJ1, Moomouche, PJ2, Moomouche, Moogrron, Moogrron` — donc jusqu'à **trois tours
+de monstres consécutifs** entre deux frontières. Et deux monstres homonymes
+adjacents dans l'ordre sont **indiscernables** dans `wakfu_chat.log`, qui ne
+porte pas les ids d'entité.
+
+Ça n'a pas d'importance : l'overlay ne pilote que les personnages contrôlés, et
+**chacun d'eux ferme son tour par une frontière**. Le suivi n'a donc jamais à
+compter les tours de monstres. Les trous silencieux sont inoffensifs, et le
+**numéro de tour d'un personnage vaut le nombre de ses propres frontières + 1**.
+
 Conséquence forte : **la frontière reste attribuable même quand le personnage
 ne fait rien**. Sur l'échantillon duo, 10 tours sur 12 se sont joués sans
 aucune action et sont restés nommés par ce seul passif. Réserve : ces passifs
@@ -275,10 +347,22 @@ installation, un combat à 5 combattants.
 Les deux clients écrivent dans **les mêmes fichiers** et y dupliquent
 **chaque** événement — les frontières de tour comme les lignes nommées. Le
 combat observé produit 10 lignes `[_FL_]` pour 5 combattants, et 8 lignes
-`reportée` pour 4 frontières. L'écart entre les deux copies va de **4 à 106 ms**
-sur l'ensemble des échantillons, quand le vrai tour le plus court mesuré est à
-1169 ms. La fenêtre de déduplication de 500 ms qu'utilise WakSOS est donc
-correcte, avec de la marge.
+`reportée` pour 4 frontières.
+
+> ⚠️ **Aucune fenêtre temporelle fixe ne déduplique correctement.** Les
+> premiers échantillons donnaient un écart de **4 à 106 ms** entre les deux
+> copies, d'où la conclusion — désormais **fausse** — que la fenêtre de 500 ms
+> de WakSOS avait de la marge. Le combat `1568041141` la casse : sur 56 paires
+> strictes, 53 tiennent sous 500 ms mais **3 sont à 1436-1477 ms**. Le retard
+> d'un client s'accumule sur une rafale d'animations puis se résorbe — mesuré
+> à ~1,45 s pendant six lignes consécutives, puis 49 ms sur le sort suivant du
+> même tour. Comme le tour réel le plus court mesuré est à **1169 ms**, l'écart
+> entre copies **recouvre désormais la durée d'un vrai tour** : la proximité
+> temporelle ne suffit plus à distinguer un doublon d'une répétition réelle.
+>
+> La forme du fichier suggère la sortie : c'est l'**entrelacement de deux
+> copies d'une même séquence**. Le problème est un alignement de séquences, pas
+> un fenêtrage. Reste à trancher — voir le ticket dédié.
 
 **La déduplication ne peut pas se faire sur le texte de la ligne**, pour deux
 raisons distinctes :

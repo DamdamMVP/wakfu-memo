@@ -1,0 +1,15 @@
+# Bornes de combat correspondantes, wakfu.log. Ids d'entité brouillés.
+ INFO 20:17:46,984 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041141 Moogrron breed : 4756 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (119, 13, 0)}
+ INFO 20:17:46,985 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041141 Moomouche breed : 4755 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (117, 13, 0)}
+ INFO 20:17:46,985 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041141 Moomouche breed : 4755 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (122, 13, 0)}
+ INFO 20:17:46,985 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041141 Moogrron breed : 4756 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (124, 10, 0)}
+ INFO 20:17:46,994 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041141 PJ1 breed : 6 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (117, 5, 0)}
+ INFO 20:17:49,768 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041141 Moogrron breed : 4756 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (119, 13, 0)}
+ INFO 20:17:49,769 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041141 Moomouche breed : 4755 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (117, 13, 0)}
+ INFO 20:17:49,769 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041141 Moomouche breed : 4755 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (122, 13, 0)}
+ INFO 20:17:49,769 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041141 Moogrron breed : 4756 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (124, 10, 0)}
+ INFO 20:17:49,770 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041141 PJ1 breed : 6 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (123, 8, 0)}
+ INFO 20:17:49,771 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041141 PJ2 breed : 2 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (117, 5, 0)}
+ INFO 20:17:49,829 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041141 PJ2 breed : 2 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (117, 5, 0)}
+ INFO 20:19:52,263 [AWT-EventQueue-0] (aWF:91) - [FIGHT] End fight with id 1568041141
+ INFO 20:19:52,411 [AWT-EventQueue-0] (aWF:91) - [FIGHT] End fight with id 1568041141

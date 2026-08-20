@@ -1,0 +1,417 @@
+# Échantillon « paquet de 4 monstres » — 20 août 2026, combat 1568041141
+#
+# Protocole du ticket #13 : deux clients depuis la même installation launcher
+# Ankama, position validée en ~4 s, PUIS un sort par personnage à CHAQUE tour
+# dès le premier — l'ancre qui permet d'apparier tours réels et frontières.
+# PJ1 = Ecaflip (breed 6), sort d'ancrage Capucine.
+# PJ2 = Osamodas (breed 2), sort d'ancrage Déplumage.
+# 4 monstres pour 2 personnages : 2 Moogrron, 2 Moomouche.
+#
+# Ce que cet échantillon établit :
+#  - aucune ligne « reportée » avant le premier sort => la fin du placement est
+#    SILENCIEUSE, la première frontière est un vrai tour ;
+#  - 4 frontières pour PJ1 et 4 pour PJ2, exactement le nombre de tours
+#    terminés (le 5e tour de PJ1 n'en a pas : le combat finit dedans) ;
+#  - le report de secondes est PAR PERSONNAGE (deux séries entrelacées) ;
+#  - l'écart entre les deux copies d'une même ligne monte à 1477 ms, donc
+#    au-delà du tour réel le plus court jamais mesuré (1169 ms).
+#
+20:17:46,837 - [Information (jeu)] Vous ne suivez plus PJ1.
+20:17:50,994 - [Information (combat)] PJ1: Cible du Troupeau (Niv. 1)
+20:17:50,994 - [Information (combat)] PJ1: Cible du Troupeau (Niv. 1)
+20:17:51,000 - [Information (combat)] PJ1: Pioche (+10 Niv.)
+20:17:51,001 - [Information (combat)] PJ1: 0 PW (Pioche mélangée)
+20:17:51,005 - [Information (combat)] PJ1: Pioche (+10 Niv.)
+20:17:51,006 - [Information (combat)] PJ1: 0 PW (Pioche mélangée)
+20:17:55,990 - [Information (combat)] PJ1 lance le sort Capucine
+20:17:55,997 - [Information (combat)] PJ1 lance le sort Capucine
+20:17:56,891 - [Information (combat)] Moogrron: -354 PV (Eau)
+20:17:56,894 - [Information (combat)] Moogrron: -354 PV (Eau)
+20:17:58,596 - [Information (combat)] 58 secondes reportées pour le tour suivant.
+20:17:58,628 - [Information (combat)] 59 secondes reportées pour le tour suivant.
+20:17:58,688 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+20:17:58,689 - [Information (combat)] PJ1: Veine (+20 Niv.)
+20:17:58,692 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+20:17:58,693 - [Information (combat)] PJ1: Veine (+20 Niv.)
+20:18:00,594 - [Information (combat)] Moomouche lance le sort Piqûre
+20:18:00,598 - [Information (combat)] Moomouche lance le sort Piqûre
+20:18:01,613 - [Information (combat)] PJ2: -62 PV (Air)
+20:18:01,614 - [Information (combat)] PJ2: -15 Résistance Air
+20:18:01,699 - [Information (combat)] PJ2: -62 PV (Air)
+20:18:01,700 - [Information (combat)] PJ2: -15 Résistance Air
+20:18:04,542 - [Information (combat)] PJ2 lance le sort Déplumage
+20:18:04,580 - [Information (combat)] PJ2 lance le sort Déplumage
+20:18:05,984 - [Information (combat)] 61 secondes reportées pour le tour suivant.
+20:18:06,011 - [Information (combat)] 61 secondes reportées pour le tour suivant.
+20:18:06,081 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+20:18:06,130 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+20:18:06,835 - [Information (combat)] Moomouche lance le sort Piqûre
+20:18:06,886 - [Information (combat)] Moomouche lance le sort Piqûre
+20:18:07,919 - [Information (combat)] PJ1: -54 PV (Air)
+20:18:07,920 - [Information (combat)] PJ1: -15 Résistance Air
+20:18:07,984 - [Information (combat)] PJ1: -54 PV (Air)
+20:18:07,984 - [Information (combat)] PJ1: -15 Résistance Air
+20:18:08,326 - [Information (combat)] Moomouche lance le sort Phéromouche
+20:18:08,388 - [Information (combat)] Moomouche lance le sort Phéromouche
+20:18:10,238 - [Information (combat)] PJ1: -43 PV (Air)
+20:18:10,241 - [Information (combat)] PJ1: Phéromones (Niv. 1)
+20:18:10,289 - [Information (combat)] PJ1: -43 PV (Air)
+20:18:10,291 - [Information (combat)] PJ1: Phéromones (Niv. 1)
+20:18:11,634 - [Information (combat)] Moogrron lance le sort Bombouzement
+20:18:11,685 - [Information (combat)] Moogrron lance le sort Bombouzement
+20:18:13,220 - [Information (combat)] PJ1: -88 PV  (Terre)
+20:18:13,225 - [Information (combat)] Moogrron: Pose le Glyphe Boubouze
+20:18:13,227 - [Information (combat)] Moogrron: Résistance Champêtre (+1 Niv.)
+20:18:13,227 - [Information (combat)] Moogrron: 20 Résistance Élémentaire
+20:18:13,228 - [Information (combat)] Moogrron: Résistance Champêtre (+1 Niv.)
+20:18:13,228 - [Information (combat)] Moogrron: 20 Résistance Élémentaire
+20:18:13,229 - [Information (combat)] Moogrron: Pose le Glyphe Malédiction de la Boubouze
+20:18:13,229 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Phéromones'
+20:18:13,230 - [Information (combat)] PJ1: Nauséabond (+20 Niv.)
+20:18:13,232 - [Information (combat)] PJ1: -20 Résistance Terre
+20:18:13,233 - [Information (combat)] Moogrron: Pose le Glyphe Boubouze
+20:18:13,233 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:13,234 - [Information (combat)] Moogrron: Résistance Champêtre (+2 Niv.)
+20:18:13,234 - [Information (combat)] Moogrron: 40 Résistance Élémentaire
+20:18:13,235 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:13,236 - [Information (combat)] Moogrron: Résistance Champêtre (+2 Niv.)
+20:18:13,236 - [Information (combat)] Moogrron: 40 Résistance Élémentaire
+20:18:13,290 - [Information (combat)] PJ1: -88 PV  (Terre)
+20:18:13,292 - [Information (combat)] Moogrron: Pose le Glyphe Boubouze
+20:18:13,293 - [Information (combat)] Moogrron: Résistance Champêtre (+1 Niv.)
+20:18:13,293 - [Information (combat)] Moogrron: 20 Résistance Élémentaire
+20:18:13,294 - [Information (combat)] Moogrron: Résistance Champêtre (+1 Niv.)
+20:18:13,294 - [Information (combat)] Moogrron: 20 Résistance Élémentaire
+20:18:13,295 - [Information (combat)] Moogrron: Pose le Glyphe Malédiction de la Boubouze
+20:18:13,295 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Phéromones'
+20:18:13,296 - [Information (combat)] PJ1: Nauséabond (+20 Niv.)
+20:18:13,297 - [Information (combat)] PJ1: -20 Résistance Terre
+20:18:13,297 - [Information (combat)] Moogrron: Pose le Glyphe Boubouze
+20:18:13,297 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:13,298 - [Information (combat)] Moogrron: Résistance Champêtre (+2 Niv.)
+20:18:13,298 - [Information (combat)] Moogrron: 40 Résistance Élémentaire
+20:18:13,299 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:13,299 - [Information (combat)] Moogrron: Résistance Champêtre (+2 Niv.)
+20:18:13,300 - [Information (combat)] Moogrron: 40 Résistance Élémentaire
+20:18:13,389 - [Information (combat)] Moogrron lance le sort Tête de Moogrr
+20:18:13,427 - [Information (combat)] Moogrron lance le sort Tête de Moogrr
+20:18:14,491 - [Information (combat)] PJ1: -97 PV (Terre)
+20:18:14,518 - [Information (combat)] PJ1: -97 PV (Terre)
+20:18:14,892 - [Information (combat)] PJ1: est poussé de 1 case
+20:18:14,927 - [Information (combat)] PJ1: est poussé de 1 case
+20:18:15,845 - [Information (combat)] Moogrron lance le sort Tête de Moogrr
+20:18:15,892 - [Information (combat)] Moogrron lance le sort Tête de Moogrr
+20:18:16,943 - [Information (combat)] PJ1: -106 PV (Terre)
+20:18:16,989 - [Information (combat)] PJ1: -106 PV (Terre)
+20:18:17,350 - [Information (combat)] PJ1: est poussé de 1 case
+20:18:17,392 - [Information (combat)] PJ1: est poussé de 1 case
+20:18:17,909 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Nauséabond'
+20:18:17,947 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Nauséabond'
+20:18:22,617 - [Information (combat)] PJ1 lance le sort Capucine
+20:18:22,619 - [Information (combat)] PJ1 lance le sort Capucine
+20:18:24,900 - [Information (combat)] 89 secondes reportées pour le tour suivant.
+20:18:24,914 - [Information (combat)] 88 secondes reportées pour le tour suivant.
+20:18:25,017 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+20:18:25,018 - [Information (combat)] PJ1: Veine (+40 Niv.)
+20:18:25,018 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+20:18:25,019 - [Information (combat)] PJ1: Veine (+40 Niv.)
+20:18:25,035 - [Information (combat)] Moomouche lance le sort Phéromouche
+20:18:25,035 - [Information (combat)] Moomouche lance le sort Phéromouche
+20:18:26,847 - [Information (combat)] PJ2: -56 PV  (Air)
+20:18:26,848 - [Information (combat)] PJ2: Phéromones (Niv. 1)
+20:18:26,849 - [Information (combat)] Moomouche lance le sort Piqûre
+20:18:26,914 - [Information (combat)] PJ2: -56 PV  (Air)
+20:18:26,916 - [Information (combat)] PJ2: Phéromones (Niv. 1)
+20:18:26,916 - [Information (combat)] Moomouche lance le sort Piqûre
+20:18:27,913 - [Information (combat)] PJ2: -71 PV  (Air)
+20:18:27,914 - [Information (combat)] PJ2: -15 Résistance Air
+20:18:28,019 - [Information (combat)] PJ2: -71 PV  (Air)
+20:18:28,019 - [Information (combat)] PJ2: -15 Résistance Air
+20:18:31,704 - [Information (combat)] PJ2 lance le sort Déplumage
+20:18:31,748 - [Information (combat)] PJ2 lance le sort Déplumage
+20:18:33,110 - [Information (combat)] 94 secondes reportées pour le tour suivant.
+20:18:33,239 - [Information (combat)] 94 secondes reportées pour le tour suivant.
+20:18:33,302 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+20:18:33,359 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+20:18:34,247 - [Information (combat)] Moomouche lance le sort Piqûre
+20:18:34,323 - [Information (combat)] Moomouche lance le sort Piqûre
+20:18:35,315 - [Information (combat)] PJ1: -50 PV (Air)
+20:18:35,316 - [Information (combat)] PJ1: -15 Résistance Air
+20:18:35,317 - [Information (combat)] Moomouche lance le sort Phéromouche
+20:18:35,422 - [Information (combat)] PJ1: -50 PV (Air)
+20:18:35,422 - [Information (combat)] PJ1: -15 Résistance Air
+20:18:35,423 - [Information (combat)] Moomouche lance le sort Phéromouche
+20:18:37,225 - [Information (combat)] PJ1: -40 PV (Air)
+20:18:37,226 - [Information (combat)] PJ1: Phéromones (Niv. 1)
+20:18:37,227 - [Information (combat)] PJ1: -40 PV (Air)
+20:18:37,228 - [Information (combat)] PJ1: Phéromones (Niv. 1)
+20:18:37,330 - [Information (combat)] Moogrron lance le sort Bombouzement
+20:18:37,353 - [Information (combat)] Moogrron lance le sort Bombouzement
+20:18:38,927 - [Information (combat)] PJ1: -79 PV (Terre)
+20:18:38,928 - [Information (combat)] Moogrron: Pose le Glyphe Boubouze
+20:18:38,929 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:38,929 - [Information (combat)] Moogrron: Résistance Champêtre (+3 Niv.)
+20:18:38,930 - [Information (combat)] Moogrron: 60 Résistance Élémentaire
+20:18:38,930 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:38,930 - [Information (combat)] Moogrron: Résistance Champêtre (+3 Niv.)
+20:18:38,931 - [Information (combat)] Moogrron: 60 Résistance Élémentaire
+20:18:38,931 - [Information (combat)] Moogrron: Pose le Glyphe Malédiction de la Boubouze
+20:18:38,931 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Phéromones'
+20:18:38,932 - [Information (combat)] PJ1: Nauséabond (+20 Niv.)
+20:18:38,932 - [Information (combat)] PJ1: -20 Résistance Terre
+20:18:38,951 - [Information (combat)] PJ1: -79 PV (Terre)
+20:18:38,953 - [Information (combat)] Moogrron: Pose le Glyphe Boubouze
+20:18:38,953 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:38,954 - [Information (combat)] Moogrron: Résistance Champêtre (+3 Niv.)
+20:18:38,954 - [Information (combat)] Moogrron: 60 Résistance Élémentaire
+20:18:38,955 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:38,955 - [Information (combat)] Moogrron: Résistance Champêtre (+3 Niv.)
+20:18:38,955 - [Information (combat)] Moogrron: 60 Résistance Élémentaire
+20:18:38,956 - [Information (combat)] Moogrron: Pose le Glyphe Malédiction de la Boubouze
+20:18:38,956 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Phéromones'
+20:18:38,957 - [Information (combat)] PJ1: Nauséabond (+20 Niv.)
+20:18:38,957 - [Information (combat)] PJ1: -20 Résistance Terre
+20:18:39,323 - [Information (combat)] Moogrron lance le sort Tête de Moogrr
+20:18:39,359 - [Information (combat)] Moogrron lance le sort Tête de Moogrr
+20:18:40,331 - [Information (combat)] PJ1: -106 PV (Terre)
+20:18:40,426 - [Information (combat)] PJ1: -106 PV (Terre)
+20:18:40,726 - [Information (combat)] PJ1: est poussé de 1 case
+20:18:40,728 - [Information (combat)] PJ1: Nauséabond (+40 Niv.)
+20:18:40,728 - [Information (combat)] PJ1: -40 Résistance Terre
+20:18:40,759 - [Information (combat)] PJ1: -100 PM max
+20:18:40,760 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:40,761 - [Information (combat)] Moogrron: Résistance Champêtre (+2 Niv.)
+20:18:40,761 - [Information (combat)] Moogrron: 40 Résistance Élémentaire
+20:18:40,761 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:40,762 - [Information (combat)] Moogrron: Résistance Champêtre (+2 Niv.)
+20:18:40,762 - [Information (combat)] Moogrron: 40 Résistance Élémentaire
+20:18:40,821 - [Information (combat)] PJ1: est poussé de 1 case
+20:18:40,822 - [Information (combat)] PJ1: Nauséabond (+40 Niv.)
+20:18:40,823 - [Information (combat)] PJ1: -40 Résistance Terre
+20:18:40,824 - [Information (combat)] PJ1: -100 PM max
+20:18:40,825 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:40,826 - [Information (combat)] Moogrron: Résistance Champêtre (+2 Niv.)
+20:18:40,826 - [Information (combat)] Moogrron: 40 Résistance Élémentaire
+20:18:40,826 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:40,827 - [Information (combat)] Moogrron: Résistance Champêtre (+2 Niv.)
+20:18:40,827 - [Information (combat)] Moogrron: 40 Résistance Élémentaire
+20:18:42,326 - [Information (combat)] Moogrron lance le sort Bombouzement
+20:18:42,329 - [Information (combat)] Moogrron lance le sort Bombouzement
+20:18:43,845 - [Information (combat)] PJ2: -42 PV (Terre)
+20:18:43,846 - [Information (combat)] Moogrron: Pose le Glyphe Boubouze
+20:18:43,846 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:43,847 - [Information (combat)] Moogrron: Résistance Champêtre (+3 Niv.)
+20:18:43,847 - [Information (combat)] Moogrron: 60 Résistance Élémentaire
+20:18:43,848 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:43,848 - [Information (combat)] Moogrron: Résistance Champêtre (+3 Niv.)
+20:18:43,849 - [Information (combat)] Moogrron: 60 Résistance Élémentaire
+20:18:43,849 - [Information (combat)] Moogrron: Pose le Glyphe Malédiction de la Boubouze
+20:18:43,849 - [Information (combat)] PJ2: n'est plus sous l'emprise de 'Phéromones'
+20:18:43,849 - [Information (combat)] PJ2: -42 PV (Terre)
+20:18:43,850 - [Information (combat)] PJ2: Nauséabond (+20 Niv.)
+20:18:43,850 - [Information (combat)] PJ2: -20 Résistance Terre
+20:18:43,850 - [Information (combat)] Moogrron: Pose le Glyphe Boubouze
+20:18:43,851 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:43,851 - [Information (combat)] Moogrron: Résistance Champêtre (+3 Niv.)
+20:18:43,852 - [Information (combat)] Moogrron: 60 Résistance Élémentaire
+20:18:43,852 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:18:43,853 - [Information (combat)] Moogrron: Résistance Champêtre (+3 Niv.)
+20:18:43,853 - [Information (combat)] Moogrron: 60 Résistance Élémentaire
+20:18:43,853 - [Information (combat)] Moogrron: Pose le Glyphe Malédiction de la Boubouze
+20:18:43,853 - [Information (combat)] PJ2: n'est plus sous l'emprise de 'Phéromones'
+20:18:43,854 - [Information (combat)] PJ2: Nauséabond (+20 Niv.)
+20:18:43,854 - [Information (combat)] PJ2: -20 Résistance Terre
+20:18:44,344 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Cible du Troupeau'
+20:18:44,346 - [Information (combat)] PJ1: Cible du Troupeau (Niv. 1)
+20:18:44,363 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Nauséabond'
+20:18:44,364 - [Information (combat)] PJ1: -20 Résistance Terre
+20:18:44,366 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Cible du Troupeau'
+20:18:44,367 - [Information (combat)] PJ1: Cible du Troupeau (Niv. 1)
+20:18:44,385 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Nauséabond'
+20:18:44,386 - [Information (combat)] PJ1: -20 Résistance Terre
+20:18:48,948 - [Information (combat)] PJ1 lance le sort Capucine (Critiques)
+20:18:48,968 - [Information (combat)] PJ1 lance le sort Capucine (Critiques)
+20:18:49,937 - [Information (combat)] PJ1: +283 PV (Eau)
+20:18:49,949 - [Information (combat)] PJ1: +283 PV (Eau)
+20:18:50,046 - [Information (combat)] 120 secondes reportées pour le tour suivant.
+20:18:50,054 - [Information (combat)] 119 secondes reportées pour le tour suivant.
+20:18:50,150 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+20:18:50,151 - [Information (combat)] PJ1: Veine (+60 Niv.)
+20:18:50,172 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+20:18:50,173 - [Information (combat)] PJ1: Veine (+60 Niv.)
+20:18:52,024 - [Information (combat)] Moomouche lance le sort Boubouzophage
+20:18:52,067 - [Information (combat)] Moomouche lance le sort Boubouzophage
+20:18:53,384 - [Information (combat)] Moomouche: Repus (Niv. 1)
+20:18:53,384 - [Information (combat)] Moomouche: Repus (Niv. 1)
+20:18:53,385 - [Information (combat)] Moomouche: 92 Maîtrise Air
+20:18:53,385 - [Information (combat)] Moomouche: 92 Maîtrise Air
+20:18:53,385 - [Information (combat)] Moomouche lance le sort Phéromouche
+20:18:53,385 - [Information (combat)] Moomouche lance le sort Phéromouche
+20:18:55,283 - [Information (combat)] PJ2: -52 PV (Air) (Parade !)
+20:18:55,284 - [Information (combat)] PJ2: Phéromones (Niv. 1)
+20:18:55,286 - [Information (combat)] PJ2: -52 PV (Air) (Parade !)
+20:18:55,288 - [Information (combat)] PJ2: Phéromones (Niv. 1)
+20:18:55,337 - [Information (combat)] PJ2: n'est plus sous l'emprise de 'Nauséabond'
+20:18:55,367 - [Information (combat)] PJ2: n'est plus sous l'emprise de 'Nauséabond'
+20:18:57,007 - [Information (combat)] PJ2 lance le sort Déplumage
+20:18:57,025 - [Information (combat)] PJ2 lance le sort Déplumage
+20:18:58,007 - [Information (combat)] Moogrron: tourne son regard
+20:18:58,009 - [Information (combat)] Moogrron: -63 PV  (Air)
+20:18:58,143 - [Information (combat)] Moogrron: tourne son regard
+20:18:58,144 - [Information (combat)] Moogrron: -63 PV  (Air)
+20:19:01,185 - [Information (combat)] PJ2 lance le sort Déplumage
+20:19:01,226 - [Information (combat)] PJ2 lance le sort Déplumage
+20:19:02,183 - [Information (combat)] Moogrron: -51 PV  (Air) (Parade !)
+20:19:02,235 - [Information (combat)] Moogrron: -51 PV  (Air) (Parade !)
+20:19:03,911 - [Information (combat)] Moogrron est hors-combat !
+20:19:03,934 - [Information (combat)] Moogrron est hors-combat !
+20:19:06,575 - [Information (combat)] 114 secondes reportées pour le tour suivant.
+20:19:06,637 - [Information (combat)] 114 secondes reportées pour le tour suivant.
+20:19:06,694 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+20:19:06,733 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+20:19:08,261 - [Information (combat)] Moomouche lance le sort Piqûre
+20:19:08,284 - [Information (combat)] Moomouche lance le sort Piqûre
+20:19:09,361 - [Information (combat)] PJ1: -61 PV  (Air)
+20:19:09,362 - [Information (combat)] PJ1: -15 Résistance Air
+20:19:09,362 - [Information (combat)] Moomouche lance le sort Phéromouche (Critiques)
+20:19:09,366 - [Information (combat)] PJ1: -61 PV  (Air)
+20:19:09,366 - [Information (combat)] PJ1: -15 Résistance Air
+20:19:09,367 - [Information (combat)] Moomouche lance le sort Phéromouche (Critiques)
+20:19:11,174 - [Information (combat)] PJ1: -59 PV  (Air)
+20:19:11,174 - [Information (combat)] PJ1: Phéromones (Niv. 1)
+20:19:11,269 - [Information (combat)] PJ1: -59 PV  (Air)
+20:19:11,270 - [Information (combat)] PJ1: Phéromones (Niv. 1)
+20:19:11,356 - [Information (combat)] Moogrron lance le sort Bombouzement
+20:19:11,368 - [Information (combat)] Moogrron lance le sort Bombouzement
+20:19:12,925 - [Information (combat)] PJ1: -83 PV (Terre)
+20:19:12,926 - [Information (combat)] Moogrron: Pose le Glyphe Boubouze
+20:19:12,926 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:19:12,927 - [Information (combat)] Moogrron: Résistance Champêtre (+4 Niv.)
+20:19:12,927 - [Information (combat)] Moogrron: 80 Résistance Élémentaire
+20:19:12,928 - [Information (combat)] Moogrron: Pose le Glyphe Malédiction de la Boubouze
+20:19:12,928 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Phéromones'
+20:19:12,929 - [Information (combat)] PJ1: Nauséabond (+40 Niv.)
+20:19:12,929 - [Information (combat)] PJ1: -40 Résistance Terre
+20:19:12,929 - [Information (combat)] Moogrron lance le sort Tête de Moogrr
+20:19:12,969 - [Information (combat)] PJ1: -83 PV (Terre)
+20:19:12,970 - [Information (combat)] Moogrron: Pose le Glyphe Boubouze
+20:19:12,971 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:19:12,971 - [Information (combat)] Moogrron: Résistance Champêtre (+4 Niv.)
+20:19:12,972 - [Information (combat)] Moogrron: 80 Résistance Élémentaire
+20:19:12,972 - [Information (combat)] Moogrron: Pose le Glyphe Malédiction de la Boubouze
+20:19:12,972 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Phéromones'
+20:19:12,973 - [Information (combat)] PJ1: Nauséabond (+40 Niv.)
+20:19:12,973 - [Information (combat)] PJ1: -40 Résistance Terre
+20:19:12,974 - [Information (combat)] Moogrron lance le sort Tête de Moogrr
+20:19:14,030 - [Information (combat)] PJ1: -112 PV (Terre)
+20:19:14,067 - [Information (combat)] PJ1: -112 PV (Terre)
+20:19:14,430 - [Information (combat)] PJ1: est poussé de 1 case
+20:19:14,431 - [Information (combat)] PJ1: Nauséabond (+70 Niv.)
+20:19:14,432 - [Information (combat)] PJ1: -70 Résistance Terre
+20:19:14,432 - [Information (combat)] PJ1: Nauséabond (+90 Niv.)
+20:19:14,433 - [Information (combat)] PJ1: -90 Résistance Terre
+20:19:14,433 - [Information (combat)] PJ1: -100 PM max
+20:19:14,434 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:19:14,434 - [Information (combat)] Moogrron: Résistance Champêtre (+3 Niv.)
+20:19:14,435 - [Information (combat)] Moogrron: 60 Résistance Élémentaire
+20:19:14,469 - [Information (combat)] PJ1: est poussé de 1 case
+20:19:14,470 - [Information (combat)] PJ1: Nauséabond (+70 Niv.)
+20:19:14,470 - [Information (combat)] PJ1: -70 Résistance Terre
+20:19:14,471 - [Information (combat)] PJ1: Nauséabond (+90 Niv.)
+20:19:14,472 - [Information (combat)] PJ1: -90 Résistance Terre
+20:19:14,473 - [Information (combat)] PJ1: -100 PM max
+20:19:14,474 - [Information (combat)] Moogrron: n'est plus sous l'emprise de 'Résistance Champêtre'
+20:19:14,474 - [Information (combat)] Moogrron: Résistance Champêtre (+3 Niv.)
+20:19:14,474 - [Information (combat)] Moogrron: 60 Résistance Élémentaire
+20:19:15,485 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Nauséabond'
+20:19:15,486 - [Information (combat)] PJ1: -70 Résistance Terre
+20:19:15,487 - [Information (combat)] PJ1: Nauséabond (+100 Niv.)
+20:19:15,487 - [Information (combat)] PJ1: -100 Résistance Terre
+20:19:15,541 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Nauséabond'
+20:19:15,542 - [Information (combat)] PJ1: -70 Résistance Terre
+20:19:15,542 - [Information (combat)] PJ1: Nauséabond (+100 Niv.)
+20:19:15,543 - [Information (combat)] PJ1: -100 Résistance Terre
+20:19:16,629 - [Information (combat)] PJ1 lance le sort Engouement
+20:19:16,671 - [Information (combat)] PJ1 lance le sort Engouement
+20:19:18,148 - [Information (combat)] Moomouche: 2 PA
+20:19:18,149 - [Information (combat)] Moogrron: 2 PA
+20:19:18,149 - [Information (combat)] PJ1: 2 PA
+20:19:18,171 - [Information (combat)] Moomouche: 2 PA
+20:19:18,172 - [Information (combat)] Moogrron: 2 PA
+20:19:18,172 - [Information (combat)] PJ1: 2 PA
+20:19:18,268 - [Information (combat)] PJ1 lance le sort Capucine (Critiques)
+20:19:19,172 - [Information (combat)] Moogrron: -359 PV (Eau)
+20:19:19,470 - [Information (combat)] Moomouche: -510 PV (Eau) (Premier rebond)
+20:19:19,744 - [Information (combat)] PJ1 lance le sort Capucine (Critiques)
+20:19:20,649 - [Information (combat)] Moogrron: -359 PV (Eau)
+20:19:20,934 - [Information (combat)] Moomouche: -510 PV (Eau) (Premier rebond)
+20:19:21,277 - [Information (combat)] Moomouche est hors-combat !
+20:19:22,427 - [Information (combat)] PJ1 lance le sort Capucine
+20:19:22,476 - [Information (combat)] PJ1 lance le sort Capucine
+20:19:22,713 - [Information (combat)] Moomouche est hors-combat !
+20:19:23,372 - [Information (combat)] Moogrron: -280 PV (Eau)
+20:19:23,426 - [Information (combat)] Moogrron: -280 PV (Eau)
+20:19:24,678 - [Information (combat)] Moogrron est hors-combat !
+20:19:24,738 - [Information (combat)] Moogrron est hors-combat !
+20:19:29,737 - [Information (combat)] 142 secondes reportées pour le tour suivant.
+20:19:29,784 - [Information (combat)] 142 secondes reportées pour le tour suivant.
+20:19:31,305 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+20:19:31,307 - [Information (combat)] PJ1: Veine (+80 Niv.)
+20:19:31,324 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+20:19:31,324 - [Information (combat)] PJ1: Veine (+80 Niv.)
+20:19:31,901 - [Information (combat)] Moomouche: 60 Esquive
+20:19:31,926 - [Information (combat)] Moomouche: 60 Esquive
+20:19:33,404 - [Information (combat)] Moomouche lance le sort Boubouzophage
+20:19:33,525 - [Information (combat)] Moomouche lance le sort Boubouzophage
+20:19:34,607 - [Information (combat)] Moomouche: Repus (Niv. 1)
+20:19:34,608 - [Information (combat)] Moomouche: 92 Maîtrise Air
+20:19:34,823 - [Information (combat)] Moomouche: Repus (Niv. 1)
+20:19:34,824 - [Information (combat)] Moomouche: 92 Maîtrise Air
+20:19:35,816 - [Information (combat)] Moomouche lance le sort Phéromouche
+20:19:36,025 - [Information (combat)] Moomouche lance le sort Phéromouche
+20:19:37,638 - [Information (combat)] PJ2: -72 PV  (Air)
+20:19:37,928 - [Information (combat)] PJ2: -72 PV  (Air)
+20:19:38,326 - [Information (combat)] Moomouche lance le sort Phéromouche
+20:19:38,629 - [Information (combat)] Moomouche lance le sort Phéromouche
+20:19:40,218 - [Information (combat)] PJ1: -54 PV (Air)
+20:19:40,220 - [Information (combat)] PJ1: Phéromones (Niv. 1)
+20:19:40,530 - [Information (combat)] PJ1: -54 PV (Air)
+20:19:40,531 - [Information (combat)] PJ1: Phéromones (Niv. 1)
+20:19:43,733 - [Information (combat)] PJ2 lance le sort Libération
+20:19:43,735 - [Information (combat)] PJ2 lance le sort Libération
+20:19:45,330 - [Information (combat)] PJ2 lance le sort Déplumage
+20:19:46,024 - [Information (combat)] PJ2 lance le sort Déplumage
+20:19:46,435 - [Information (combat)] Moomouche: -60 PV  (Air)
+20:19:46,935 - [Information (combat)] PJ2 lance le sort Déplumage
+20:19:47,110 - [Information (combat)] Moomouche: -60 PV  (Air)
+20:19:47,511 - [Information (combat)] PJ2 lance le sort Déplumage
+20:19:47,935 - [Information (combat)] Moomouche: -60 PV  (Air)
+20:19:48,547 - [Information (combat)] Moomouche: -60 PV  (Air)
+20:19:48,838 - [Information (combat)] 148 secondes reportées pour le tour suivant.
+20:19:49,011 - [Information (combat)] 149 secondes reportées pour le tour suivant.
+20:19:49,130 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+20:19:49,131 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Cible du Troupeau'
+20:19:49,136 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+20:19:49,137 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Cible du Troupeau'
+20:19:49,142 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Nauséabond'
+20:19:49,142 - [Information (combat)] PJ1: -80 Résistance Terre
+20:19:49,146 - [Information (combat)] PJ1: n'est plus sous l'emprise de 'Nauséabond'
+20:19:49,147 - [Information (combat)] PJ1: -80 Résistance Terre
+20:19:51,048 - [Information (combat)] PJ1 lance le sort Capucine (Critiques)
+20:19:51,052 - [Information (jeu)] Vous avez ramassé 1x Fragment de Havre-Gemme Marchande .
+20:19:51,089 - [Information (jeu)] Vous avez ramassé 3x Grelot .
+20:19:51,101 - [Information (combat)] PJ1 lance le sort Capucine (Critiques)
+20:19:51,104 - [Information (jeu)] Vous avez ramassé 5x Plâjeton .
+20:19:51,106 - [Information (jeu)] Vous avez ramassé 3x Grelot .
+20:19:51,106 - [Information (jeu)] Vous avez ramassé 1x Moutron .
+20:19:51,107 - [Information (jeu)] Vous avez ramassé 1x Annomoogrr .
+20:19:51,108 - [Information (jeu)] Vous avez ramassé 1x Pis de Moogrr .
+20:19:51,108 - [Information (jeu)] Vous avez ramassé 1x Grelot .
+20:19:51,951 - [Information (combat)] Moomouche: -406 PV (Eau)
+20:19:52,102 - [Information (combat)] Moomouche: -406 PV (Eau)
+20:19:52,251 - [Information (jeu)] Le challenge "Sursis" est réussi.
+20:19:52,253 - [Information (combat)] PJ2 : +47 004 points d'XP.  Prochain niveau dans : 181 609 377.
+20:19:52,257 - [Information (combat)] Combat terminé, cliquez ici pour rouvrir l'écran de fin de combat. 
+20:19:52,400 - [Information (jeu)] Le challenge "Sursis" est réussi.
+20:19:52,402 - [Information (combat)] PJ1 : +298 664 points d'XP.  Prochain niveau dans : 138 907 082.
+20:19:52,405 - [Information (combat)] Combat terminé, cliquez ici pour rouvrir l'écran de fin de combat. 
