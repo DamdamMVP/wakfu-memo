@@ -1,7 +1,8 @@
 # Une strat est écrite contre des classes, pas contre des personnages
 
-Une Strat déclare jusqu'à 6 **Emplacements** — une classe plus un libellé de
-rôle libre — et ses Consignes appartiennent à l'Emplacement. Les Personnages du
+Une Strat déclare jusqu'à 6 **Emplacements** — une classe plus une Couleur
+obligatoire et unique, voir l'ADR 0003 — et ses Consignes appartiennent à
+l'Emplacement. Les Personnages du
 Roster y sont liés à chaque combat, jamais stockés dedans.
 
 Le réflexe naturel est l'inverse : on écrit une strat pour son équipe, donc on

@@ -48,9 +48,16 @@ de Tours. Écrite contre des classes, elle ne référence aucun Personnage.
 _Avoid_: stratégie, plan, doc
 
 **Emplacement** :
-Une place dans une Strat : une classe, plus un libellé de rôle libre et
-facultatif qui distingue deux places de même classe (« l'Eca qui tank »).
-_Avoid_: slot, rôle, poste
+Une place dans une Strat : une classe, plus une Couleur. Aucun libellé : l'éditeur
+n'affiche que l'icône de classe, et c'est la Couleur qui distingue deux places de
+même classe.
+_Avoid_: slot, rôle, poste, libellé
+
+**Couleur** :
+La teinte d'un Emplacement, choisie parmi six. Obligatoire, et unique dans une
+Strat : elle sert d'identité visuelle, en liseré collé au bord gauche de l'icône
+de classe. À ne pas confondre avec la coloration libre du texte d'une Consigne.
+_Avoid_: teinte, code couleur
 
 **Tour** :
 Un cran de la Strat : un numéro, une description globale facultative, une note
