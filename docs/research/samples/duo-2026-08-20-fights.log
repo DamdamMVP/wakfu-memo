@@ -1,0 +1,17 @@
+# Bornes de combat correspondantes, wakfu.log. Ids d'entité brouillés.
+ INFO 18:38:34,410 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1552030105 Sac à patates breed : 2335 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (0, -14, 0)}
+ INFO 18:38:34,415 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1552030105 PJ2 breed : 2 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (1, -17, 0)}
+ INFO 18:38:36,160 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1552030105 Sac à patates breed : 2335 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (0, -14, 0)}
+ INFO 18:38:36,161 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1552030105 PJ2 breed : 2 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (1, -14, 0)}
+ INFO 18:38:36,163 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1552030105 PJ1 breed : 6 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (-2, -14, 0)}
+ INFO 18:38:36,219 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1552030105 PJ1 breed : 6 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (-2, -14, 0)}
+ INFO 18:47:34,194 [AWT-EventQueue-0] (aWF:91) - [FIGHT] End fight with id 1552030105
+ INFO 18:47:37,750 [AWT-EventQueue-0] (aWF:91) - [FIGHT] End fight with id 1552030105
+ INFO 18:48:37,508 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1552030238 Mama Wapin breed : 5456 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (26, -7, 1)}
+ INFO 18:48:37,513 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1552030238 PJ2 breed : 2 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (21, -10, 1)}
+ INFO 18:48:39,109 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1552030238 Mama Wapin breed : 5456 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (26, -7, 1)}
+ INFO 18:48:39,110 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1552030238 PJ2 breed : 2 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (21, -10, 1)}
+ INFO 18:48:39,112 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1552030238 PJ1 breed : 6 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (21, -13, 1)}
+ INFO 18:48:39,230 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1552030238 PJ1 breed : 6 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (21, -13, 1)}
+ INFO 18:49:03,449 [AWT-EventQueue-0] (aWF:91) - [FIGHT] End fight with id 1552030238
+ INFO 18:49:03,503 [AWT-EventQueue-0] (aWF:91) - [FIGHT] End fight with id 1552030238

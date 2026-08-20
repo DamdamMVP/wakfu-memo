@@ -1,0 +1,369 @@
+# Grammaire des logs de combat Wakfu
+
+Établi empiriquement le 20 août 2026, sur Wakfu lancé via Steam sous Fedora 44
+(client Java/OpenGL, personnage `Damdamisback`, `breed : 19`, combats contre un
+Sac à patates). Toutes les affirmations ci-dessous sont vérifiées sur les logs
+réels, sauf mention contraire explicite.
+
+## Emplacement des fichiers
+
+Le dossier de logs vaut toujours :
+
+```
+$WAKFU_PREF_FILE_DIRECTORY/logs/
+```
+
+`WAKFU_PREF_FILE_DIRECTORY` est exportée par le script de lancement, et **sa
+valeur dépend du mode d'installation**. C'est toute la source de la confusion
+qui règne sur le sujet :
+
+| Mode | `WAKFU_PREF_FILE_DIRECTORY` | Dossier de logs |
+|---|---|---|
+| **Steam** | `./preferences`, relatif au dossier d'installation | `<installation>/preferences/logs/` |
+| **Launcher Ankama (Zaap)** | absolu, hors de l'installation | `<données zaap>/gamesLogs/wakfu/logs/` |
+
+Les deux emplacements sont vérifiés sur la machine de l'auteur, où les deux
+installations coexistent :
+
+- Steam : `/mnt/games/SteamLibrary/steamapps/common/Wakfu/preferences/logs/`
+- Launcher : `/home/damdam/.config/zaap/gamesLogs/wakfu/logs/`,
+  pour une installation qui est, elle, dans `/home/damdam/.config/Ankama/Wakfu`
+
+Sous launcher, l'environnement du client porte aussi
+`WAKFU_CONFIG_FILE_PATH=<données zaap>/gamesLogs/wakfu/config` et
+`WAKFU_CACHE_FILE_DIRECTORY=<données zaap>/gamesLogs/wakfu/cache`.
+
+Les outils tiers qui documentent `%AppData%\zaap\gamesLogs\wakfu\logs\`
+**ont donc raison** — ils décrivent le mode launcher, le plus courant sous
+Windows. Ce sont bien les fichiers de log4j, pas une capture de stdout : la
+grammaire de combat y est intégralement présente.
+
+Le reste du mécanisme est commun aux deux modes :
+
+- `log4j.properties`, dans le dossier d'installation, déclare des chemins
+  relatifs à cette racine : `logs/wakfu.log`, `logs/wakfu_chat.log`, rotation
+  `MaxFileSize=1MB`, `MaxBackupIndex=2`.
+- Le client confirme la racine retenue au démarrage, dans `wakfu.log` :
+  `(com.ankamagames.wakfu.client.WakfuClient:226) - log path=<racine>`.
+
+Conséquence, vérifiée par le test multi-compte : deux clients lancés depuis la
+même installation écrivent dans **les mêmes fichiers**, et y dupliquent chaque
+événement.
+
+Fichiers utiles : `wakfu.log` (rotation `.1`, `.2`) et `wakfu_chat.log`.
+Les autres (`wakfu_lua`, `wakfu_theme`, `wakfu_camera`, `wakfu_animation`,
+`wakfu_particles_scripts`, `wakfu_fileLoading`) sont vides ou hors sujet.
+
+### Trouver le dossier de logs
+
+**Ne jamais coder le chemin en dur**, et ne pas supposer une seule
+installation : les deux modes peuvent coexister sur la même machine, et c'est
+le cas chez l'auteur. Il faut donc chercher les deux, et savoir départager.
+
+- **Launcher Ankama** — chercher `gamesLogs/wakfu/logs/` sous les données de
+  Zaap (`%AppData%\zaap\` sous Windows, `~/.config/zaap/` sous Linux).
+- **Steam** — déterministe. L'`appId` est `215080` (lu dans `zaapi.yml`).
+  Parcourir `libraryfolders.vdf` pour trouver la bibliothèque qui déclare cet
+  `appId`, puis lire `installdir` dans
+  `<bibliothèque>/steamapps/appmanifest_215080.acf`, et concaténer
+  `preferences/logs`. Vérifié de bout en bout.
+- **Départage** — prendre le `wakfu_chat.log` dont la date de modification est
+  la plus récente : c'est l'installation réellement jouée. Et le
+  reconsidérer à chaud, parce que le joueur peut changer de mode entre deux
+  sessions.
+- **Repli** — laisser l'utilisateur désigner le dossier. Le launcher expose
+  « ouvrir le dossier de logs » dans Paramètres → Assistance.
+
+Un client en cours d'exécution est la source la plus fiable, mais elle n'est
+pas portable : sous Linux, `readlink /proc/<pid>/cwd` donne l'installation et
+`/proc/<pid>/environ` donne `WAKFU_PREF_FILE_DIRECTORY` directement. Sous
+Windows, lire l'environnement d'un autre processus demande des appels bien plus
+intrusifs — et sortirait de la posture « lecture de fichiers seule » que le
+projet revendique. À écarter.
+
+## `wakfu.log` — les bornes du combat
+
+Format : ` INFO HH:MM:SS,mmm [AWT-EventQueue-0] (<classe obfusquée>:<ligne>) - <message>`
+
+### Début de combat — un événement par participant
+
+```
+ INFO 13:16:32,288 [AWT-EventQueue-0] (fbz:1399) - [_FL_] fightId=1552042365 Sac à patates breed : 2335 [-1706442044709728] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (0, -14, 0)}
+ INFO 13:16:32,297 [AWT-EventQueue-0] (fbz:1399) - [_FL_] fightId=1552042365 Damdamisback breed : 19 [4768528] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (-2, -12, 0)}
+```
+
+Donne, pour chaque combattant : `fightId`, nom, `breed` (classe), un ID
+d'entité unique entre crochets, `isControlledByAI` (sépare les persos joués
+des monstres) et la position de départ.
+
+C'est le **seul** endroit où l'on obtient le roster complet du combat.
+
+### Fin de combat
+
+```
+ INFO 22:54:36,128 [AWT-EventQueue-0] (aWk:91) - [FIGHT] End fight with id 1552032575
+```
+
+Corrélé au `fightId` du début. Marqueur explicite et fiable.
+
+### Ce que `wakfu.log` ne contient PAS
+
+Aucun événement de tour. Les deux seuls tags structurés du fichier sont
+`[_FL_]` (30 occurrences, uniquement les entrées en combat) et `[FIGHT]`
+(uniquement « End fight »). **La piste « le canal `[_FL_]` contient
+peut-être des événements de tour nommés » est un cul-de-sac.**
+
+## `wakfu_chat.log` — le détail des tours
+
+Format : `HH:MM:SS,mmm - [<Canal>] <message>` — attention, **pas de date**,
+seulement une heure, et pas de crochet autour du timestamp.
+
+Canaux observés, avec leur décompte sur l'échantillon : `[Information
+(combat)]` (2331), `[Information (jeu)]` (422), `[Proximité]` (58),
+`[<pseudo>]`, `[Privé]` (1), `[Messages d'erreur]` (1), `[Game Log]` (1).
+
+Ces libellés sont **localisés** — voir « Les motifs se dérivent de l'i18n »
+ci-dessous, qui explique aussi la présence d'un libellé anglais
+(`[Game Log]`) dans un log de client français.
+
+### Les motifs se dérivent de l'i18n
+
+Les lignes du chat log sont rendues depuis les bundles i18n du client, qui sont
+lisibles dans l'installation : `contents/i18n/i18n_<lang>.jar` est un simple zip
+contenant `texts_<lang>.properties`, un fichier de propriétés de ~11 Mo.
+Quatre langues seulement : `fr`, `en`, `es`, `pt`.
+
+Les motifs du parser **ne s'écrivent donc pas à la main** : ils se génèrent
+depuis ces clés. `tools/extract-i18n-patterns.sh <install>` fait l'extraction.
+
+| Clé | Ce qu'elle donne |
+|---|---|
+| `fight.remaining.time.reported` | la frontière de tour |
+| `fight.spellCast` | l'acteur du tour |
+| `fight.ko`, `fight.die` | mise à mort, sortie de combat |
+| `chat.pipeName.*` | les libellés de canaux |
+
+Extrait, qui montre pourquoi une regex écrite à la main est fragile :
+
+```
+fr: fight.remaining.time.reported=[#1] seconde{[>1]?s:} reportée{[>1]?s:} pour le tour suivant.
+en: fight.remaining.time.reported=[#1] second{[=1]?:s} carried over{[=1]?:} to the next turn.
+fr: fight.spellCast=[#1] lance le sort [#2]
+es: fight.spellCast=[#1] lanza el hechizo [#2].
+fr: fight.ko=[#1] est KO !
+es: fight.ko=¡[#1] está K.O.!
+```
+
+Trois pièges visibles ici :
+
+- La pluralisation utilise un gabarit maison, `{[cond]?si-vrai:si-faux}`, et la
+  condition elle-même change de langue en langue (`[>1]` en fr et pt, `[=1]`
+  inversé en en et es).
+- Le point final est présent dans certaines langues et absent dans d'autres.
+- En espagnol, `¡` **précède** `[#1]` : supposer que le nom du personnage ouvre
+  la ligne est faux.
+
+Certaines clés portent aussi du balisage (`infoPop.xpGain` contient `<b>`,
+`<text color="…">`) que le client retire avant d'écrire dans le chat log : la
+génération des motifs doit dépouiller les balises et résoudre le gabarit de
+pluralisation.
+
+### Ne pas détecter la langue : chercher les quatre à la fois
+
+La langue est un **argument de lancement** (`WAKFU_LANGUAGE`, premier argument
+de `zaap-start.sh`, alimenté par `zaap.LANGUAGE`). Elle n'est persistée nulle
+part dans `preferences/` — aucune clé de langue ni de locale dans
+`userPreferences.properties` ni dans `clientConfig/`. Elle n'existe que dans
+l'environnement du processus client (`WAKFU_LANGUAGE=fr` s'y lit bien, via
+`/proc/<pid>/environ` sous Linux), ce qui n'est ni portable ni compatible avec
+la posture « lecture de fichiers seule » du projet. Il n'existe donc pas de
+moyen acceptable de la connaître.
+
+Pire : le chat log **n'est pas purgé entre deux sessions**, et la langue peut
+changer d'une session à l'autre. C'est exactement ce qu'on observe sur
+l'échantillon — la toute première ligne du fichier est en anglais,
+
+```
+13:07:18,044 - [Game Log] It looks like I just reincarnated...
+```
+
+alors que les 422 lignes suivantes du même canal sont en français. La clé
+concernée (`quest.rii.00.00`) est pourtant bien traduite en français : ce n'est
+donc pas un repli sur l'anglais, mais bien un **premier lancement en anglais**
+(défaut Steam, quelques minutes après l'installation) suivi d'un passage en
+français.
+
+Conséquence de conception : détecter la langue puis n'appliquer que la table
+correspondante manquerait silencieusement les lignes des sessions antérieures.
+Il n'y a que quatre langues — appliquer **l'union des quatre jeux de motifs**,
+sans détection de langue. Les libellés ne se recouvrent pas d'une langue à
+l'autre, donc l'union ne crée pas d'ambiguïté.
+
+### Frontière de tour — non nommée, mais inconditionnelle
+
+```
+0 seconde reportée pour le tour suivant.
+54 secondes reportées pour le tour suivant.
+```
+
+**Point critique, contraire à ce que supposaient les outils existants :** le
+message est émis **même quand il ne reste aucun temps à reporter**. Sur
+l'échantillon, `0 seconde reportée` apparaît **42 fois** sur ~92 frontières.
+C'est donc un **tick de tour fiable**, pas un signal conditionnel.
+
+Accorder le singulier et le pluriel : `seconde reportée` / `secondes reportées`.
+
+**Mais ce n'est pas un tick de tour *global*.** Confirmé en multi-compte contre
+un vrai monstre (Mama Wapin) : elle joue son tour, lance un sort, pousse une
+cible — et **aucune ligne `reportée` n'apparaît**, ni pendant, ni à la fin de
+son tour. Seuls les personnages contrôlés en émettent.
+
+Les tours de monstres sont donc des **trous silencieux** : compter les
+`reportée` ne suffit pas à savoir où on en est dans le round. Leur position
+s'apprend avec l'ordre, au premier round.
+
+### Lignes nommées
+
+| Forme | Ce qu'elle donne |
+|---|---|
+| `<nom> lance le sort <sort>` (suffixe ` (Critiques)` possible) | l'acteur du tour |
+| `<nom>: <valeur> <effet> (<source>)` | passifs de début et de fin de tour |
+| `<nom>: <État> (+<N> Niv.) (<source>)` | application d'état |
+| `[<propriétaire>] <invocation>: <effet>` | invocation rattachée à son maître |
+| `<nom>: <N> PV (<Élément>)` | dégâts et soins, y compris sur les monstres |
+| `<nom> est KO !` | mise à mort |
+| `<nom>: Pose le Glyphe <nom>` | pose de glyphe |
+| `<nom> : +<N> points d'XP.  Prochain niveau dans : <N>.` | fin de combat, côté chat |
+
+Les monstres sont nommés eux aussi (`Sac à patates: 12 34 PV (Feu)`), donc le
+log n'est pas filtré sur le seul joueur local.
+
+### Le motif d'un tour
+
+```
+13:28:11,144 - [Information (combat)] Damdamisback: 0 BQ (Génération naturelle)      <- fin de tour
+13:28:11,145 - [Information (combat)] 0 seconde reportée pour le tour suivant.       <- frontière
+13:28:13,187 - [Information (combat)] Damdamisback: 20 % Dommages infligés (Pétillance)  <- début du tour suivant
+13:28:13,187 - [Information (combat)] Damdamisback: 20 % Coup critique
+13:28:13,188 - [Information (combat)] Damdamisback: 1 PM (Agilité vitale)
+```
+
+Sur un échantillon solo, les deux côtés de la frontière portent le même nom :
+impossible de trancher à qui appartient quoi. **Le multi-compte l'a tranché —
+le passif qui suit la frontière nomme le personnage dont le tour vient de se
+terminer, pas celui qui commence.** Les sorts servent d'ancre : ils précèdent
+la frontière qui clôt leur propre tour.
+
+```
+18:46:33,484 - PJ1 lance le sort Capucine       <- PJ1 agit
+18:46:34,429 - 0 seconde reportée               <- fin du tour de PJ1
+18:46:34,590 - PJ1: 0 PW (Guerrier joueur)      <- son passif de fin de tour
+18:46:38,120 - PJ2 lance le sort Déplumage      <- tour de PJ2
+```
+
+Conséquence forte : **la frontière reste attribuable même quand le personnage
+ne fait rien**. Sur l'échantillon duo, 10 tours sur 12 se sont joués sans
+aucune action et sont restés nommés par ce seul passif. Réserve : ces passifs
+dépendent du build et de l'équipement, on ne peut pas garantir que tout
+personnage en émette.
+
+## Multi-compte : un seul fichier, tout en double
+
+Vérifié par le test multi-compte (#3), deux clients lancés depuis la même
+installation, un combat à 5 combattants.
+
+Les deux clients écrivent dans **les mêmes fichiers** et y dupliquent
+**chaque** événement — les frontières de tour comme les lignes nommées. Le
+combat observé produit 10 lignes `[_FL_]` pour 5 combattants, et 8 lignes
+`reportée` pour 4 frontières. L'écart entre les deux copies va de **4 à 106 ms**
+sur l'ensemble des échantillons, quand le vrai tour le plus court mesuré est à
+1169 ms. La fenêtre de déduplication de 500 ms qu'utilise WakSOS est donc
+correcte, avec de la marge.
+
+**La déduplication ne peut pas se faire sur le texte de la ligne**, pour deux
+raisons distinctes :
+
+- Les deux copies d'une même frontière **ne portent pas la même valeur** :
+  chaque client rapporte son propre compteur de temps. Observé : `55 secondes`
+  puis `54 secondes` 18 ms plus tard ; `81` puis `80` à 16 ms ; `65` puis `63`
+  à 63 ms.
+- À l'inverse, une même ligne nommée peut légitimement se répéter dans un
+  combat (`PJ2 lance le sort Capucine` apparaît 4 fois = 2 occurrences réelles
+  × 2 clients).
+
+Seule la proximité temporelle permet de trancher.
+
+### Le nom n'est pas un identifiant
+
+Le combat observé comptait **deux monstres portant le même nom**,
+`Epouvantrotot`, distingués uniquement par leur ID d'entité
+(`-1724034229493566` et `-1724034229493567`).
+
+`wakfu.log` porte cet ID dans les lignes `[_FL_]`, donc le roster est sans
+ambiguïté. Mais **`wakfu_chat.log` ne porte que le nom** : deux monstres
+homonymes y sont indistinguables. Limite dure, à assumer.
+
+Elle est heureusement bénigne pour le produit : on n'a besoin de suivre
+précisément que les personnages joués, dont les noms sont uniques dans une
+équipe. Les tours des monstres ne servent qu'à savoir que ce n'est pas encore
+le tour du joueur.
+
+## Algorithme de suivi du tour
+
+**Les monstres n'émettent aucune ligne `reportée`.** Confirmé formellement — la
+fenêtre suivante contient deux tours de monstres complets, entre deux
+frontières, sans produire de frontière :
+
+```
+19:11:29,487 - 59 secondes reportées pour le tour suivant.     <- fin du tour de PJ1
+19:11:30,337 - Epouvantrotot lance le sort Frappe Souterraine  <- tour d'un monstre
+19:11:31,985 - Epouvantrotard lance le sort Frappe Souterraine <- tour d'un autre
+19:11:33,176 - Epouvantrotard lance le sort Toupipierre
+19:11:41,060 - PJ2 lance le sort Trèfle                        <- tour d'un PJ
+19:11:45,565 - PJ2 lance le sort Feulement (Critiques)
+19:11:47,463 - 81 secondes reportées pour le tour suivant.     <- fin du tour de PJ2
+```
+
+**Conséquence : compter les frontières ne compte pas les tours.** Une frontière
+marque la fin du tour d'un **personnage joué**, rien de plus. Le suivi ne peut
+donc pas être un simple compteur — c'est ce que supposait la version
+précédente de ce document, et c'est faux.
+
+L'algorithme retenu :
+
+1. `[_FL_]` au début du combat → roster complet, avec l'ID d'entité et
+   `isControlledByAI=false` pour isoler l'équipe du joueur.
+2. Dédupliquer le flux sur une fenêtre de 500 ms (voir plus haut) : sans ça,
+   tout est compté deux fois en multi-compte.
+3. Segmenter sur les **lignes nommées**, pas sur les frontières. Chaque
+   changement de nom dans la suite des lignes nommées est un changement de tour.
+4. Les frontières `reportée` restent un signal fiable et inconditionnel de
+   **fin de tour d'un personnage joué** — utile pour confirmer la segmentation
+   et pour détecter le tour d'un PJ qui n'a rien fait de loggable.
+5. L'ordre des tours est **figé au démarrage du combat** (règle de jeu Wakfu,
+   source : wiki). À la fin du round 1 l'ordre est donc connu, et le suivi
+   devient prédictif à partir du round 2.
+6. Pour du farm de donjon à équipe constante, mettre l'ordre en cache par
+   (donjon, équipe) rend le suivi prédictif dès le round 1 des runs suivantes.
+
+### Points de rupture connus
+
+- Un combattant qui ne fait **rien de loggable** pendant son tour (déplacement
+  seul, tour passé) est invisible. Pour un personnage joué, la frontière
+  `reportée` le rattrape. Pour un **monstre**, rien ne le rattrape : son tour
+  ne laisse aucune trace. L'ordre appris peut donc comporter des trous côté
+  monstres. Sur l'échantillon, 3 monstres étaient au roster et seuls 2 ont agi.
+- Deux monstres homonymes sont indistinguables dans le chat log (voir plus
+  haut).
+- Les invocations et les résurrections sont insérées dans l'ordre des tours
+  juste après l'unité courante (règle de jeu) : elles décalent la rotation.
+- L'initiative n'apparaît nulle part dans les logs : impossible de déduire
+  l'ordre sans observer un round complet.
+
+## Conformité
+
+Lecture d'un fichier de log local, en lecture seule. Aucune lecture mémoire,
+aucune injection, aucun hook, aucun input synthétique, aucun trafic réseau
+intercepté. Les articles 5.2.1 (reverse engineering), 5.2.5 (automatisation)
+et 5.2.6 (interception de protocole) des CGU Wakfu ne sont pas concernés.
+C'est la position que revendique explicitement Wakfu-Companion.

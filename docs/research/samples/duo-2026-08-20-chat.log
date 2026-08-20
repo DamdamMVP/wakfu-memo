@@ -1,0 +1,126 @@
+# Échantillon multi-compte — 20 août 2026
+#
+# Deux clients Wakfu lancés depuis la même installation launcher Ankama,
+# écrivant dans le même ~/.config/zaap/gamesLogs/wakfu/logs/wakfu_chat.log.
+# PJ1 = breed 6, PJ2 = breed 2. Noms de personnages anonymisés.
+# Combat 1552030105 = Sac à patates (mannequin, ne joue jamais).
+# Combat 1552030238 = Mama Wapin (vrai monstre, joue un tour).
+#
+18:38:41,614 - [Information (combat)] PJ1: Pioche (+10 Niv.)
+18:38:41,617 - [Information (combat)] PJ1: 0 PW (Pioche mélangée)
+18:38:41,618 - [Information (combat)] PJ1: Pioche (+10 Niv.)
+18:38:41,621 - [Information (combat)] PJ1: 0 PW (Pioche mélangée)
+18:39:49,363 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:39:50,243 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:39:50,245 - [Information (combat)] PJ1: Veine (+20 Niv.)
+18:39:50,374 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:39:50,376 - [Information (combat)] PJ1: Veine (+20 Niv.)
+18:40:56,883 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:40:56,923 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:40:57,895 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+18:40:57,933 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+18:41:34,185 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:41:34,201 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:41:35,194 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:41:35,195 - [Information (combat)] PJ1: Veine (+40 Niv.)
+18:41:35,212 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:41:35,214 - [Information (combat)] PJ1: Veine (+40 Niv.)
+18:42:12,488 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:42:12,520 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:42:13,097 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+18:42:13,097 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+18:42:49,901 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:42:50,007 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:42:50,914 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:42:50,915 - [Information (combat)] PJ1: Veine (+60 Niv.)
+18:42:51,017 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:42:51,019 - [Information (combat)] PJ1: Veine (+60 Niv.)
+18:43:27,228 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:43:27,326 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:43:28,238 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+18:43:28,337 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+18:44:04,531 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:44:04,605 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:44:05,541 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:44:05,543 - [Information (combat)] PJ1: Veine (+80 Niv.)
+18:44:05,614 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:44:05,615 - [Information (combat)] PJ1: Veine (+80 Niv.)
+18:44:41,901 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:44:41,910 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:44:42,911 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+18:44:42,918 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+18:45:19,187 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:45:19,191 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:45:20,197 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:45:20,198 - [Information (combat)] PJ1: Veine (+100 Niv.)
+18:45:20,201 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:45:20,203 - [Information (combat)] PJ1: Veine (+100 Niv.)
+18:45:56,471 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:45:56,480 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:45:57,481 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+18:45:57,489 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+18:46:33,484 - [Information (combat)] PJ1 lance le sort Capucine (Critiques)
+18:46:33,523 - [Information (combat)] PJ1 lance le sort Capucine (Critiques)
+18:46:34,427 - [Information (combat)] Sac à patates: -594 PV (Eau)
+18:46:34,429 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:46:34,490 - [Information (combat)] Sac à patates: -594 PV (Eau)
+18:46:34,492 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:46:34,590 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:46:34,600 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:46:38,120 - [Information (combat)] PJ2 lance le sort Déplumage
+18:46:38,188 - [Information (combat)] PJ2 lance le sort Déplumage
+18:46:39,125 - [Information (combat)] Sac à patates: tourne son regard
+18:46:39,127 - [Information (combat)] Sac à patates: -77 PV  (Air)
+18:46:39,293 - [Information (combat)] Sac à patates: tourne son regard
+18:46:39,294 - [Information (combat)] Sac à patates: -77 PV  (Air)
+18:46:43,196 - [Information (combat)] 27 secondes reportées pour le tour suivant.
+18:46:43,221 - [Information (combat)] 27 secondes reportées pour le tour suivant.
+18:46:43,293 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+18:46:43,336 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+18:47:21,115 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:47:21,210 - [Information (combat)] 0 seconde reportée pour le tour suivant.
+18:47:22,131 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:47:22,224 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:47:33,846 - [Information (combat)] PJ2 est KO !
+18:47:33,847 - [Information (combat)] PJ2 est KO !
+18:47:36,345 - [Information (combat)] PJ1 est KO !
+18:47:42,882 - [Information (jeu)] Wingardium Nozadah (COMPTE) vient de quitter notre monde.
+18:47:45,911 - [Information (jeu)] Nozadah (COMPTE) a rejoint notre monde.
+18:48:46,198 - [Information (combat)] PJ1: Pioche (+10 Niv.)
+18:48:46,199 - [Information (combat)] PJ1: 0 PW (Pioche mélangée)
+18:48:46,221 - [Information (combat)] PJ1: Pioche (+10 Niv.)
+18:48:46,222 - [Information (combat)] PJ1: 0 PW (Pioche mélangée)
+18:48:48,855 - [Information (combat)] 65 secondes reportées pour le tour suivant.
+18:48:48,918 - [Information (combat)] 63 secondes reportées pour le tour suivant.
+18:48:48,972 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:48:48,973 - [Information (combat)] PJ1: Veine (+20 Niv.)
+18:48:49,022 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:48:49,023 - [Information (combat)] PJ1: Veine (+20 Niv.)
+18:48:54,328 - [Information (combat)] 61 secondes reportées pour le tour suivant.
+18:48:54,358 - [Information (combat)] 61 secondes reportées pour le tour suivant.
+18:48:54,424 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+18:48:54,477 - [Information (combat)] PJ2: 0 PW (Invocateur animal)
+18:48:55,527 - [Information (combat)] 99 secondes reportées pour le tour suivant.
+18:48:55,536 - [Information (combat)] 99 secondes reportées pour le tour suivant.
+18:48:55,624 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:48:55,625 - [Information (combat)] PJ1: Veine (+40 Niv.)
+18:48:55,634 - [Information (combat)] Mama Wapin lance le sort Coup de la Mama
+18:48:55,651 - [Information (combat)] PJ1: 0 PW (Guerrier joueur)
+18:48:55,652 - [Information (combat)] PJ1: Veine (+40 Niv.)
+18:48:55,661 - [Information (combat)] Mama Wapin lance le sort Coup de la Mama
+18:48:56,877 - [Information (combat)] PJ2: -3 PV (Eau)
+18:48:56,961 - [Information (combat)] PJ2: -3 PV (Eau)
+18:48:57,326 - [Information (combat)] PJ2: est poussé de 1 case
+18:48:57,364 - [Information (combat)] PJ2: est poussé de 1 case
+18:49:01,671 - [Information (combat)] PJ2 lance le sort Déplumage
+18:49:01,729 - [Information (combat)] PJ2 lance le sort Déplumage
+18:49:01,733 - [Information (jeu)] Vous avez ramassé 1x Pompon de Wapin .
+18:49:01,733 - [Information (jeu)] Vous avez ramassé 1x Pompon de Wapin .
+18:49:02,664 - [Information (combat)] Mama Wapin: tourne son regard
+18:49:02,666 - [Information (combat)] Mama Wapin: -68 PV (Air)
+18:49:02,834 - [Information (combat)] Mama Wapin: tourne son regard
+18:49:02,835 - [Information (combat)] Mama Wapin: -68 PV (Air)
+18:49:03,432 - [Information (combat)] PJ2 : +425 points d'XP.  Prochain niveau dans : 181 678 775.
+18:49:03,439 - [Information (combat)] Combat terminé, cliquez ici pour rouvrir l'écran de fin de combat. 
+18:49:03,485 - [Information (combat)] PJ1 : +2 703 points d'XP.  Prochain niveau dans : 139 348 038.
+18:49:03,491 - [Information (combat)] Combat terminé, cliquez ici pour rouvrir l'écran de fin de combat. 
