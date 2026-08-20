@@ -6,20 +6,21 @@
 <!--
   PROTOTYPE JETABLE — ticket #6, « mettre en avant le personnage qui joue ».
 
-  Trois variantes RADICALEMENT differentes du meme tour affiche, commutables
-  par ?variant=A|B|C et par la barre du bas :
-    A « La fiche »    — la fiche de tour de #5, seule. L'objet est LE TOUR.
-    B « Le fil »      — les 7 tours empiles, deroules. L'objet est LA STRAT.
-    C « La rotation » — qui joue, en grand. L'objet est LA PERSONNE.
+  Variante retenue par Damien : A « la fiche » — l'objet affiche est LE TOUR,
+  la fiche de #5 telle quelle. B « le fil » et C « la rotation » sont ECARTEES,
+  pas retenues ; elles ne survivent que dans le premier commit de la branche.
 
-  Langage visuel repris tel quel de prototypes/editeur-strat (#5) : icone de
-  classe carree, lisere de Couleur 3px colle a son bord gauche, pastille T1/T2,
-  note en ambre italique, fond de ligne RESERVE a la mise en avant.
+  Revu depuis :
+    - PLUS DE PSEUDO. L'ADR 0003 tient jusqu'au bout : un Emplacement, c'est
+      l'icone de classe plus le lisere de Couleur, et rien d'autre. Toute la
+      largeur rendue va a la Consigne.
+    - PLUS D'ETAT DEGRADE. Le compteur douteux ne doit jamais arriver, donc il
+      ne s'affiche pas.
+    - PLUS D'ETAT « AUCUNE STRAT ». Si l'overlay s'affiche, c'est qu'une strat
+      est choisie ; sinon il n'affiche rien du tout.
+    - taille du texte, largeur et opacite sont CONFIRMEES comme reglages V1.
 
-  Le panneau de droite n'est PAS l'interface : c'est la telecommande du
-  prototype, pour pousser l'overlay dans les etats qu'on ne sait pas juger sur
-  le papier (tombe, absent, degrade, hors strat, aucune strat).
-
+  Le panneau de droite est la telecommande du prototype, pas l'interface.
   Rien n'est persiste. Glisser une capture d'ecran de Wakfu sur la scene pour
   juger la lisibilite sur un vrai fond.
 -->
@@ -28,7 +29,7 @@
     --bg:#0f1115; --panel:#171a21; --panel-2:#1d212a; --raise:#232833;
     --line:#2b3140; --line-2:#363d4d;
     --txt:#e8eaef; --dim:#8b93a3; --faint:#5c6474;
-    --accent:#5b8cff; --ok:#3fc07a; --note:#e0b070; --warn:#f5a524;
+    --accent:#5b8cff; --note:#e0b070;
   }
   * { box-sizing:border-box; }
   html,body { height:100%; }
@@ -54,11 +55,10 @@
     background:
       radial-gradient(1200px 700px at 30% 20%, #1b2436 0%, #0b0e14 60%),
       repeating-linear-gradient(60deg,#00000000 0 38px,#ffffff06 38px 39px),
-      repeating-linear-gradient(-60deg,#00000000 0 38px,#ffffff06 38px 39px);
-    background-size:cover, auto, auto; background-position:center; }
+      repeating-linear-gradient(-60deg,#00000000 0 38px,#ffffff06 38px 39px); }
   .stage.hasimg { background-image:var(--shot); background-repeat:no-repeat;
     background-size:cover; background-position:center; }
-  .dropnote { position:absolute; left:50%; bottom:66px; transform:translateX(-50%);
+  .dropnote { position:absolute; left:50%; bottom:26px; transform:translateX(-50%);
     color:#ffffff40; font-size:12px; pointer-events:none; }
 
   /* --------------------------------------------------------- l'overlay --- */
@@ -68,32 +68,28 @@
     border:1px solid var(--line); border-radius:14px;
     box-shadow:0 14px 40px #000000aa; overflow:hidden;
     backdrop-filter:blur(2px); }
-  .ov .drag { cursor:grab; }
   .ov .grip { position:absolute; right:0; top:0; bottom:0; width:9px; z-index:3;
     cursor:ew-resize; }
   .ov .grip:hover { background:linear-gradient(90deg,transparent,#5b8cff66); }
 
-  /* en-tete commun : pastille de tour + description globale + chip de strat */
-  header.oh { display:flex; align-items:center; gap:10px; padding:9px 12px;
-    background:linear-gradient(#1e2330,#1a1e28); border-bottom:1px solid var(--line); }
+  /* en-tete : pastille du tour + description globale + chip de strat.
+     La pastille n'a plus d'etat « douteux » : le compteur ne doit jamais
+     partir en vrille, donc l'overlay ne prevoit pas de le dire. */
+  header.oh { display:flex; align-items:flex-start; gap:10px; padding:9px 12px;
+    background:linear-gradient(#1e2330,#1a1e28); border-bottom:1px solid var(--line);
+    cursor:grab; }
   .tnum { flex:none; min-width:32px; height:28px; padding:0 7px; border-radius:9px;
     background:#0c0e12; border:1px solid var(--line-2); color:var(--accent);
     font:700 1em/26px ui-monospace,monospace; text-align:center; }
-  /* etat degrade : DISCRET. En farm repete le joueur connait sa strat, il a
-     juste besoin de savoir quand ne plus croire le compteur. */
-  .tnum.doubt { color:var(--warn); border-color:#5a4415; }
-  .tnum.doubt:after { content:'?'; opacity:.75; }
   /* la description globale du tour se LIT : elle passe a la ligne plutot que
      d'etre coupee, la hauteur de l'overlay est dictee par le contenu (#5). */
-  header.oh .glob { flex:1; min-width:0; font-weight:500; }
-  /* le chip de strat : la contradiction #7 (« atteignable en combat ») contre
-     #17 (« pas de selecteur dans l'overlay »). Se masque depuis la telecommande. */
+  header.oh .glob { flex:1; min-width:0; font-weight:500; padding-top:2px; }
+  /* le chip de strat : #7 le veut atteignable en combat, #17 n'en voulait pas.
+     Se masque depuis la telecommande, le temps de trancher. */
   .chip { flex:none; position:relative; font-size:.82em; color:var(--dim);
     padding:2px 7px; border-radius:7px; border:1px solid var(--line-2);
     background:#0c0e12; cursor:pointer; white-space:nowrap; }
   .chip:hover { color:var(--txt); border-color:var(--accent); }
-  .chip.urgent { color:#0c0e12; background:var(--warn); border-color:var(--warn);
-    font-weight:600; }
   .picker { position:absolute; right:0; top:calc(100% + 5px); z-index:9;
     min-width:170px; background:#0c0e12; border:1px solid var(--line-2);
     border-radius:10px; padding:4px; box-shadow:0 10px 30px #000c; }
@@ -101,129 +97,70 @@
   .picker div:hover { background:var(--raise); }
   .picker div.cur { color:var(--accent); }
 
-  /* l'unite visuelle de #5 : lisere 3px colle au bord gauche de l'icone carree */
+  /* l'unite visuelle de #5 : lisere 3px colle au bord gauche de l'icone carree.
+     Aucun texte a cote — ni role, ni classe, ni pseudo (ADR 0003). */
   .cls { display:flex; align-items:stretch; flex:none; }
   .cls .edge { width:3px; flex:none; background:var(--c,transparent); }
   .cls img { width:30px; height:30px; display:block;
     background:#0c0e12; box-shadow:0 0 0 1px #ffffff14 inset; }
-  .cls.big img { width:46px; height:46px; }
-  .cls.big .edge { width:4px; }
   .cls.tiny img { width:24px; height:24px; }
 
-  /* ---------------------------------------------------------- A : rows --- */
   .rows { padding:5px 0; }
   .row { display:flex; align-items:center; gap:10px; padding:6px 12px 6px 9px;
     position:relative; }
   .row + .row { border-top:1px solid #202531; }
-  .row .who { flex:none; width:5.6em; font-size:.82em; color:var(--dim);
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  /* gouttiere fixe : le chevron du SUIVANT s'y loge sans decaler les icones */
+  .row .mk { flex:none; width:.85em; text-align:center; color:transparent; }
   .row .cons { flex:1; min-width:0; }
   .row .cons:empty:before { content:'—'; color:var(--faint); }
   /* MISE EN AVANT : le fond de ligne, reserve pour ca par la resolution de #5.
      Teinte de la Couleur de l'Emplacement, pas d'une couleur d'UI : c'est la
-     Couleur qui est l'identite de l'Emplacement (ADR 0003). */
+     Couleur qui est l'identite de l'Emplacement (ADR 0003). Aucun libelle
+     « joue » : apres la frontiere de X le curseur passe a Y tout de suite, meme
+     si des monstres jouent avant (#14) — la prominence ne promet pas l'instant. */
   .row.now { background:linear-gradient(90deg,
       color-mix(in srgb, var(--c) 26%, transparent), transparent 82%); }
-  .row.now .who { color:var(--txt); font-weight:600; }
   .row.now .cons { font-weight:600; }
   .row.now:before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px;
     background:var(--c); }
   /* le SUIVANT : annoncable puisque le Rang est declare (#14). Discret : un
      chevron, pas un second fond, sinon deux lignes se disputent l'oeil. */
-  .row.next .who:before { content:'▸ '; color:var(--c); }
+  .row.next .mk { color:var(--c); }
   /* Emplacement inactif : GRISE, pas masque (#8). Les deux causes — absent et
      tombe — sont indistinguables a l'affichage (#14). */
   .row.off { opacity:.34; }
-  .row.off img { filter:grayscale(1); }
-  .row.off .edge { filter:grayscale(1); }
+  .row.off img, .row.off .edge { filter:grayscale(1); }
 
   .note { display:flex; gap:7px; align-items:baseline; padding:6px 14px 7px 12px;
     background:#15161cbb; border-top:1px dashed var(--line-2); font-size:.92em; }
   .note .arrow { color:var(--note); }
   .note .txt { flex:1; font-style:italic; color:var(--note); }
 
-  /* ------------------------------------------------------------ B : fil --- */
-  .fil { max-height:62vh; overflow:auto; }
-  .fil::-webkit-scrollbar { width:8px; }
-  .fil::-webkit-scrollbar-thumb { background:var(--line-2); border-radius:8px; }
-  .mini { display:flex; align-items:center; gap:9px; padding:5px 12px;
-    font-size:.88em; color:var(--faint); border-top:1px solid #1b1f29; }
-  .mini .t { flex:none; width:2.9em; white-space:nowrap;
-    font:700 .95em ui-monospace,monospace; color:var(--faint); }
-  .mini .g { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis;
-    white-space:nowrap; }
-  .mini.done .t:after { content:' ✓'; color:#2f6b4a; }
-  .mini.soon { color:var(--dim); }
-  .mini:hover { background:#1a1e27; color:var(--txt); cursor:pointer; }
-  .cur-block { border-top:1px solid var(--line); border-bottom:1px solid var(--line);
-    background:#1a1e2799; }
-
-  /* ------------------------------------------------------- C : rotation --- */
-  /* La bande de rotation EST la surface de reordonnancement au glisser-deposer
-     demandee par #14 — la meme colonne que dans l'editeur, couchee. */
-  .strip { display:flex; align-items:center; gap:6px; padding:9px 12px;
-    background:#0c0e12aa; border-bottom:1px solid var(--line); }
-  .strip .cls { border-radius:2px; cursor:grab; opacity:.42; transition:.12s; }
-  .strip .cls.passed { opacity:.22; }
-  .strip .cls.here { opacity:1; box-shadow:0 0 0 2px var(--c), 0 0 14px var(--c); }
-  .strip .cls.nx { opacity:.7; box-shadow:0 0 0 1px var(--c); }
-  .strip .cls.off img { filter:grayscale(1); }
-  .strip .cls.drag { opacity:.15; }
-  .strip .cls.over { box-shadow:0 0 0 2px var(--accent); }
-  .strip .sp { flex:1; }
-  .now-block { display:flex; gap:12px; align-items:flex-start; padding:13px 14px 12px; }
-  .now-block .txtcol { flex:1; min-width:0; }
-  .now-block .nm { font-size:.82em; color:var(--dim); letter-spacing:.4px; }
-  .now-block .nm b { color:var(--txt); font-size:1.16em; letter-spacing:0; }
-  .now-block .big { font-size:1.24em; line-height:1.38; font-weight:600; margin-top:3px; }
-  .now-block .big:empty:before { content:'rien à faire ce tour';
-    color:var(--faint); font-weight:400; font-style:italic; }
-  .ctx { display:flex; gap:9px; align-items:center; padding:7px 14px;
-    border-top:1px solid #202531; font-size:.9em; color:var(--dim); }
-  .ctx .g { flex:1; min-width:0; }
-  .nextline { display:flex; gap:9px; align-items:center; padding:7px 14px;
-    border-top:1px solid #202531; background:#00000030; font-size:.92em; }
-  .nextline .lbl { color:var(--faint); font-size:.86em; flex:none; }
-  .nextline .c { flex:1; min-width:0; color:var(--dim);
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-
-  /* ------------------------------------------- etats limites, communs ----- */
-  .bare { padding:14px; color:var(--faint); font-style:italic; }
-  .past-end { padding:11px 14px; color:var(--faint); font-size:.93em; }
-  .past-end b { color:var(--dim); font-style:normal; }
+  /* au-dela du dernier Tour de la strat : le combat continue, la strat non. */
+  .past-end { padding:9px 14px; color:var(--faint); font-size:.93em; }
+  .past-end b { color:var(--dim); }
 
   /* -------------------------------------------------------- telecommande -- */
   .panel { width:298px; flex:none; background:var(--panel);
-    border-left:1px solid var(--line); overflow:auto; padding:12px 13px 60px; }
+    border-left:1px solid var(--line); overflow:auto; padding:12px 13px 40px; }
   .panel h3 { margin:15px 0 7px; font-size:11px; letter-spacing:1px;
     text-transform:uppercase; color:var(--dim); }
   .panel h3:first-child { margin-top:2px; }
   .panel .hint { color:var(--faint); font-size:11.5px; line-height:1.45; margin:5px 0 0; }
   .rowbtn { display:flex; gap:6px; flex-wrap:wrap; }
   .slotctl { display:flex; align-items:center; gap:7px; padding:4px 0; }
-  .slotctl .nmw { flex:1; min-width:0; font-size:12px; color:var(--dim);
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .slotctl .nmw { flex:1; min-width:0; font-size:12px; color:var(--dim); }
   .slotctl button { padding:2px 7px; font-size:11px; }
   .sl { display:flex; align-items:center; gap:8px; margin:6px 0; font-size:12px;
     color:var(--dim); }
   .sl input[type=range] { flex:1; accent-color:var(--accent); }
-  .sl .v { width:3.2em; text-align:right; font:600 11px ui-monospace,monospace;
+  .sl .v { width:3.4em; text-align:right; font:600 11px ui-monospace,monospace;
     color:var(--txt); }
   .big-btn { width:100%; padding:9px; font-weight:600; }
-
-  /* ---------------------------------------------------------- switcher --- */
-  .switch { position:fixed; left:50%; bottom:16px; transform:translateX(-50%);
-    z-index:50; display:flex; align-items:center; gap:2px; padding:4px;
-    background:#f2f4f8; color:#0c0e12; border-radius:999px;
-    box-shadow:0 8px 26px #000a; }
-  .switch button { background:transparent; border:0; color:#0c0e12;
-    font-weight:700; padding:5px 11px; border-radius:999px; }
-  .switch button:hover { background:#0c0e1218; }
-  .switch .lab { padding:0 12px; font-weight:600; font-size:13px; white-space:nowrap; }
 </style>
 </head>
 <body>
-<div class="ribbon">PROTOTYPE JETABLE — #6 « l'overlay en combat » · le panneau de droite est la télécommande, pas l'interface · rien n'est sauvegardé</div>
+<div class="ribbon">PROTOTYPE JETABLE — #6 « l'overlay en combat » · variante A retenue · le panneau de droite est la télécommande, pas l'interface · rien n'est sauvegardé</div>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -235,7 +172,8 @@
     <h3>Le combat avance</h3>
     <button class="big-btn" id="tick">Frontière de tour →</button>
     <p class="hint">Une frontière = un Emplacement actif a fini son tour. La
-       Rotation saute les inactifs et ne s'arrête jamais sur un monstre (#14).</p>
+       Rotation saute les inactifs et ne s'arrête jamais sur un monstre (#14).
+       Raccourci : <b>Espace</b>.</p>
     <div class="rowbtn" style="margin-top:8px">
       <button class="ghost" id="back">← reculer</button>
       <button class="ghost" id="reset">remettre à T1</button>
@@ -247,28 +185,26 @@
        6 jouée à 4). « tombé » = <code>est KO !</code>, mort ou abandon. Les deux
        sont indistinguables à l'affichage.</p>
 
-    <h3>Cas limites</h3>
+    <h3>Reste à trancher</h3>
     <div class="rowbtn">
-      <button id="deg">Compteur douteux</button>
-      <button id="nostrat">Aucune strat</button>
       <button id="pick">Sélecteur de strat</button>
+      <button id="pastend">Au-delà du T7</button>
     </div>
-    <p class="hint">« Sélecteur » met en scène la contradiction : #7 le veut
-       atteignable en combat, #17 n'en veut pas dans l'overlay.</p>
+    <p class="hint">Le sélecteur met en scène #7 (« atteignable en combat »)
+       contre #17 (« pas de sélecteur dans l'overlay »). « Au-delà du T7 » : la
+       strat s'arrête, le combat continue.</p>
 
     <h3>Réglages V1</h3>
     <div class="sl"><span>texte</span><input type="range" id="fs" min="80" max="180" value="100"><span class="v" id="fsv">100%</span></div>
     <div class="sl"><span>largeur</span><input type="range" id="w" min="300" max="720" value="420"><span class="v" id="wv">420</span></div>
     <div class="sl"><span>opacité</span><input type="range" id="op" min="25" max="100" value="92"><span class="v" id="opv">92%</span></div>
-    <p class="hint">#5 a reporté ici la question : régler la largeur ne règle pas
-       la lisibilité, qui dépend de la taille du texte. Réglage distinct.</p>
+    <p class="hint">Les trois sont confirmés comme options utilisateur. La
+       largeur se règle aussi au bord droit de la fiche, comme dans l'éditeur.</p>
 
     <h3>État du suivi</h3>
     <pre id="dump" style="font-size:11px;color:#a9b2c2;white-space:pre-wrap;margin:0"></pre>
   </aside>
 </div>
-
-<div class="switch" id="switch"></div>
 
 <script>
 /* ============================================================= donnees === */
@@ -303,20 +239,15 @@ const SLOT_COLORS = ['#f2544b','#f5a524','#3ecf7a','#26c6da','#5b8cff','#c56bea'
 
 /* ============================================================== modele === */
 // L'ordre du tableau EST le Rang (comme la colonne de l'editeur, #5).
-const mk = (cls,color,pseudo) => ({cls,color,pseudo,state:'ok'});
+// Aucun pseudo : la Liaison existe, mais l'overlay ne la nomme pas.
+const mk = (cls,color) => ({cls,color,state:'ok'});
 const S = {
   strat:'Nozadah',
   strats:['Nozadah','Wa Wabbit','Kannivore','Milirapace'],
-  slots:[
-    mk(7,SLOT_COLORS[0],'Damdam'),   // Iop
-    mk(6,SLOT_COLORS[1],'Kroket'),   // Eniripsa
-    mk(1,SLOT_COLORS[2],'Nyxa'),     // Osamodas
-    mk(8,SLOT_COLORS[3],'Bulle'),    // Crâ
-    mk(0,SLOT_COLORS[4],'Tchoupi'),  // Féca
-    mk(4,SLOT_COLORS[5],'Vega'),     // Xélor
-  ],
+  slots:[ mk(7,SLOT_COLORS[0]), mk(6,SLOT_COLORS[1]), mk(1,SLOT_COLORS[2]),
+          mk(8,SLOT_COLORS[3]), mk(0,SLOT_COLORS[4]), mk(4,SLOT_COLORS[5]) ],
   turns:[], turn:1, cursor:0,
-  degraded:false, noStrat:false, showPicker:true, pickerOpen:false,
+  showPicker:true, pickerOpen:false,
   fs:1, w:420, op:92,
 };
 
@@ -351,7 +282,7 @@ loadStrat();
 const isActive = s => s.state === 'ok';
 const anyActive = () => S.slots.some(isActive);
 // La Rotation ne s'arrete que sur les Emplacements actifs (#14). Boucler dessus
-// increment le numero de tour : le tour vaut le nombre de frontieres propres + 1.
+// incremente le numero de tour : le tour vaut le nombre de frontieres propres + 1.
 function nextIdx(from){
   if (!anyActive()) return {i:from, wrapped:false};
   for (let k=1;k<=S.slots.length;k++){
@@ -360,11 +291,7 @@ function nextIdx(from){
   }
   return {i:from, wrapped:false};
 }
-function tick(){
-  const {i,wrapped} = nextIdx(S.cursor);
-  S.cursor = i; if (wrapped) S.turn++;
-  render();
-}
+function tick(){ const {i,wrapped}=nextIdx(S.cursor); S.cursor=i; if(wrapped) S.turn++; render(); }
 function back(){
   for (let k=1;k<=S.slots.length;k++){
     const i = (S.cursor - k + S.slots.length*2) % S.slots.length;
@@ -374,107 +301,37 @@ function back(){
 }
 // Si le curseur est sur un Emplacement devenu inactif, il glisse au suivant actif.
 function fixCursor(){ if (anyActive() && !isActive(S.slots[S.cursor])) S.cursor = nextIdx(S.cursor).i; }
-
 const curTurn = () => S.turns[S.turn-1] || null;   // null = au-dela de la strat
 const nextActive = () => anyActive() ? nextIdx(S.cursor).i : -1;
 
 /* ============================================================== rendu ==== */
-const el = (h) => { const d=document.createElement('div'); d.innerHTML=h.trim(); return d.firstElementChild; };
 const clsHTML = (s,extra='') =>
   `<span class="cls ${extra}" style="--c:${s.color}"><span class="edge"></span><img src="${ico(s.cls)}" alt="${CLASSES[s.cls]}"></span>`;
-const consOf = (t,i) => (t && t.cells[i]) || '';
 
-// En-tete commun aux variantes A et B.
-function headerHTML(t){
-  const chip = S.showPicker
-    ? `<span class="chip ${S.noStrat?'urgent':''}" data-pick>${S.noStrat?'choisir une strat':S.strat} ▾</span>
-       ${S.pickerOpen ? `<div class="picker">${S.strats.map(n=>
-         `<div data-strat="${n}" class="${!S.noStrat&&n===S.strat?'cur':''}">${n}</div>`).join('')}</div>`:''}`
-    : '';
-  return `<header class="oh drag">
-      <span class="tnum ${S.degraded?'doubt':''}">T${S.turn}</span>
-      <div class="glob">${S.noStrat ? '<i style="color:#5c6474">aucune strat sélectionnée</i>'
-                        : (t ? (t.global||'') : '')}</div>
-      ${chip}
-    </header>`;
-}
-// Au-dela du dernier Tour de la strat : le combat continue, la strat non.
-const pastEndHTML = () =>
-  `<div class="past-end">La strat <b>${S.strat}</b> s'arrête au <b>T${S.turns.length}</b>. Le combat continue sans consigne.</div>`;
-
-/* ---- A : la fiche. L'objet est LE TOUR. Continuite exacte avec l'editeur. */
-function variantA(){
+function overlayHTML(){
   const t = curTurn(), nx = nextActive();
-  if (S.noStrat) return headerHTML(null);
+  const chip = S.showPicker
+    ? `<span class="chip" data-pick>${S.strat} ▾</span>
+       ${S.pickerOpen ? `<div class="picker">${S.strats.map(n=>
+         `<div data-strat="${n}" class="${n===S.strat?'cur':''}">${n}</div>`).join('')}</div>`:''}`
+    : '';
+  const head = `<header class="oh">
+      <span class="tnum">T${S.turn}</span>
+      <div class="glob">${t ? (t.global||'') : ''}</div>${chip}
+    </header>`;
   const rows = S.slots.map((s,i)=>{
     const off = !isActive(s);
-    const cl = ['row', off?'off':'', (!off&&i===S.cursor)?'now':'', (!off&&i===nx&&nx!==S.cursor)?'next':''].join(' ');
-    return `<div class="${cl}" style="--c:${s.color}">
-        ${clsHTML(s)}<div class="who">${s.pseudo}</div>
-        <div class="cons">${consOf(t,i)}</div></div>`;
+    const cl = ['row', off?'off':'', (!off&&i===S.cursor)?'now':'',
+                (!off&&i===nx&&nx!==S.cursor)?'next':''].join(' ');
+    return `<div class="${cl}" style="--c:${s.color}"><div class="mk">▸</div>
+        ${clsHTML(s)}<div class="cons">${(t && t.cells[i]) || ''}</div></div>`;
   }).join('');
-  return headerHTML(t)
-    + (t ? `<div class="rows">${rows}</div>` + (t.note?`<div class="note"><span class="arrow">↳</span><div class="txt">${t.note}</div></div>`:'')
-         : pastEndHTML() + `<div class="rows">${rows}</div>`);
+  const end = t ? '' : `<div class="past-end">La strat <b>${S.strat}</b> s'arrête au
+      <b>T${S.turns.length}</b>. Le combat continue sans consigne.</div>`;
+  const note = (t && t.note)
+    ? `<div class="note"><span class="arrow">↳</span><div class="txt">${t.note}</div></div>` : '';
+  return head + end + `<div class="rows">${rows}</div>` + note;
 }
-
-/* ---- B : le fil. L'objet est LA STRAT — le document Word, deroule. */
-function variantB(){
-  const nx = nextActive();
-  if (S.noStrat) return headerHTML(null);
-  const parts = [];
-  S.turns.forEach((t,k)=>{
-    const n = k+1;
-    if (n < S.turn) parts.push(`<div class="mini done"><span class="t">T${n}</span><span class="g">${t.global||''}</span></div>`);
-    else if (n === S.turn){
-      const rows = S.slots.map((s,i)=>{
-        const off = !isActive(s);
-        const cl = ['row', off?'off':'', (!off&&i===S.cursor)?'now':'', (!off&&i===nx&&nx!==S.cursor)?'next':''].join(' ');
-        return `<div class="${cl}" style="--c:${s.color}">
-            ${clsHTML(s)}<div class="who">${s.pseudo}</div>
-            <div class="cons">${consOf(t,i)}</div></div>`;
-      }).join('');
-      parts.push(`<div class="cur-block" id="curblock"><div class="rows">${rows}</div>
-        ${t.note?`<div class="note"><span class="arrow">↳</span><div class="txt">${t.note}</div></div>`:''}</div>`);
-    }
-    else parts.push(`<div class="mini soon"><span class="t">T${n}</span><span class="g">${t.global||''}</span></div>`);
-  });
-  if (!curTurn()) parts.push(pastEndHTML());
-  return headerHTML(curTurn()) + `<div class="fil" id="fil">${parts.join('')}</div>`;
-}
-
-/* ---- C : la rotation. L'objet est LA PERSONNE qui joue. */
-function variantC(){
-  const t = curTurn(), nx = nextActive();
-  if (S.noStrat) return `<div class="strip drag"><span class="tnum ${S.degraded?'doubt':''}">T${S.turn}</span>
-      <span class="sp"></span><i style="color:#5c6474">aucune strat sélectionnée</i>
-      ${S.showPicker?`<span class="chip urgent" data-pick>choisir ▾</span>
-        ${S.pickerOpen?`<div class="picker">${S.strats.map(n=>`<div data-strat="${n}">${n}</div>`).join('')}</div>`:''}`:''}</div>`;
-  const strip = S.slots.map((s,i)=>{
-    const off = !isActive(s);
-    const st = off ? 'off' : (i===S.cursor ? 'here' : (i===nx ? 'nx' : (i<S.cursor?'passed':'')));
-    return `<span class="cls ${st}" style="--c:${s.color}" draggable="true" data-i="${i}"
-        title="${CLASSES[s.cls]} — ${s.pseudo}"><span class="edge"></span><img src="${ico(s.cls)}"></span>`;
-  }).join('');
-  const head = `<div class="strip drag">${strip}<span class="sp"></span>
-      <span class="tnum ${S.degraded?'doubt':''}">T${S.turn}</span>
-      ${S.showPicker?`<span class="chip ${S.noStrat?'urgent':''}" data-pick>${S.noStrat?'choisir':S.strat} ▾</span>
-        ${S.pickerOpen?`<div class="picker">${S.strats.map(n=>`<div data-strat="${n}" class="${!S.noStrat&&n===S.strat?'cur':''}">${n}</div>`).join('')}</div>`:''}`:''}
-    </div>`;
-  const s = S.slots[S.cursor];
-  const now = `<div class="now-block">${clsHTML(s,'big')}
-      <div class="txtcol"><div class="nm"><b>${s.pseudo}</b> · ${CLASSES[s.cls]}</div>
-      <div class="big">${consOf(t,S.cursor)}</div></div></div>`;
-  const ctx = t ? `<div class="ctx"><span class="g">${t.global||''}</span></div>` : pastEndHTML();
-  const nxt = (nx>=0 && nx!==S.cursor) ? `<div class="nextline"><span class="lbl">puis</span>
-      ${clsHTML(S.slots[nx],'tiny')}<span class="c"><b style="color:#e8eaef">${S.slots[nx].pseudo}</b> — ${consOf(t,nx)||'—'}</span></div>` : '';
-  const note = (t && t.note) ? `<div class="note"><span class="arrow">↳</span><div class="txt">${t.note}</div></div>` : '';
-  return head + now + ctx + nxt + note;
-}
-
-const VARIANTS = { A:['La fiche — le tour',variantA], B:['Le fil — la strat',variantB], C:['La rotation — la personne',variantC] };
-let VAR = (new URLSearchParams(location.search).get('variant') || 'A').toUpperCase();
-if (!VARIANTS[VAR]) VAR = 'A';
 
 function render(){
   fixCursor();
@@ -482,38 +339,35 @@ function render(){
   ov.style.setProperty('--w', S.w+'px');
   ov.style.setProperty('--fs', S.fs);
   ov.style.setProperty('--op', S.op);
-  ov.innerHTML = `<div class="grip" id="grip"></div>` + VARIANTS[VAR][1]();
-  if (VAR==='B'){ const c=document.getElementById('curblock');
-    if (c) c.scrollIntoView({block:'center'}); }
+  ov.innerHTML = `<div class="grip" id="grip"></div>` + overlayHTML();
   document.getElementById('dump').textContent =
-    `tour           T${S.turn}${S.degraded?'  (douteux)':''}\n`+
-    `curseur        ${S.slots[S.cursor].pseudo} (rang ${S.cursor+1})\n`+
+    `tour           T${S.turn}${curTurn()?'':'  (au-delà de la strat)'}\n`+
+    `curseur        rang ${S.cursor+1} · ${CLASSES[S.slots[S.cursor].cls]}\n`+
     `rotation       ${S.slots.filter(isActive).length} emplacement(s) actif(s)\n`+
-    `inactifs       ${S.slots.filter(s=>!isActive(s)).map(s=>s.pseudo+':'+s.state).join(', ')||'aucun'}`;
-  renderPanel(); renderSwitch();
+    `inactifs       ${S.slots.filter(s=>!isActive(s)).map((s,i)=>CLASSES[s.cls]+':'+s.state).join(', ')||'aucun'}`;
+  renderPanel();
 }
 
 /* ======================================================== telecommande === */
 function renderPanel(){
   const host = document.getElementById('slotctls');
   host.innerHTML = S.slots.map((s,i)=>`
-    <div class="slotctl">${clsHTML(s,'tiny')}<span class="nmw">${s.pseudo}</span>
-      <button data-st="${i}:ok"      class="${s.state==='ok'?'on':''}">ok</button>
-      <button data-st="${i}:absent"  class="${s.state==='absent'?'on':''}">absent</button>
-      <button data-st="${i}:tombe"   class="${s.state==='tombe'?'on':''}">tombé</button>
+    <div class="slotctl">${clsHTML(s,'tiny')}<span class="nmw">${CLASSES[s.cls]}</span>
+      <button data-st="${i}:ok"     class="${s.state==='ok'?'on':''}">ok</button>
+      <button data-st="${i}:absent" class="${s.state==='absent'?'on':''}">absent</button>
+      <button data-st="${i}:tombe"  class="${s.state==='tombe'?'on':''}">tombé</button>
     </div>`).join('');
   host.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{
     const [i,st] = b.dataset.st.split(':'); S.slots[i].state = st; render(); });
-  document.getElementById('deg').classList.toggle('on', S.degraded);
-  document.getElementById('nostrat').classList.toggle('on', S.noStrat);
   document.getElementById('pick').classList.toggle('on', S.showPicker);
+  document.getElementById('pastend').classList.toggle('on', !curTurn());
 }
 document.getElementById('tick').onclick  = tick;
 document.getElementById('back').onclick  = back;
 document.getElementById('reset').onclick = ()=>{ S.turn=1; S.cursor=0; render(); };
-document.getElementById('deg').onclick     = ()=>{ S.degraded=!S.degraded; render(); };
-document.getElementById('nostrat').onclick = ()=>{ S.noStrat=!S.noStrat; render(); };
-document.getElementById('pick').onclick    = ()=>{ S.showPicker=!S.showPicker; S.pickerOpen=false; render(); };
+document.getElementById('pick').onclick  = ()=>{ S.showPicker=!S.showPicker; S.pickerOpen=false; render(); };
+document.getElementById('pastend').onclick = ()=>{
+  S.turn = curTurn() ? S.turns.length+2 : 1; S.cursor=0; render(); };
 const sl=(id,vid,fmt,set)=>{ const r=document.getElementById(id);
   r.oninput=()=>{ set(+r.value); document.getElementById(vid).textContent=fmt(+r.value); render(); };
   document.getElementById(vid).textContent=fmt(+r.value); };
@@ -525,14 +379,14 @@ sl('op','opv',v=>v+'%',v=>S.op=v);
 const ov = document.getElementById('ov');
 ov.addEventListener('click', e=>{
   const st = e.target.closest('[data-strat]');
-  if (st){ S.strat=st.dataset.strat; S.noStrat=false; S.pickerOpen=false; render(); return; }
+  if (st){ S.strat=st.dataset.strat; S.pickerOpen=false; render(); return; }
   if (e.target.closest('[data-pick]')){ S.pickerOpen=!S.pickerOpen; render(); return; }
-  S.pickerOpen=false; render();
+  if (S.pickerOpen){ S.pickerOpen=false; render(); }
 });
-// deplacer l'overlay
+// deplacer l'overlay, en l'attrapant par son en-tete
 ov.addEventListener('pointerdown', e=>{
-  if (e.target.closest('.chip,.picker,#grip,[draggable]')) return;
-  if (!e.target.closest('.drag')) return;
+  if (e.target.closest('.chip,.picker,#grip')) return;
+  if (!e.target.closest('header.oh')) return;
   const r=ov.getBoundingClientRect(), st=document.getElementById('stage').getBoundingClientRect();
   const dx=e.clientX-r.left, dy=e.clientY-r.top;
   const mv=ev=>{ ov.style.left=(ev.clientX-st.left-dx)+'px'; ov.style.top=(ev.clientY-st.top-dy)+'px'; };
@@ -548,22 +402,10 @@ ov.addEventListener('pointerdown', e=>{
   const up=()=>{ removeEventListener('pointermove',mv); removeEventListener('pointerup',up); };
   addEventListener('pointermove',mv); addEventListener('pointerup',up);
 });
-// C : reordonner le Rang au glisser-deposer, depuis l'overlay (#14)
-let dragI=null;
-ov.addEventListener('dragstart', e=>{ const c=e.target.closest('[data-i]'); if(!c) return;
-  dragI=+c.dataset.i; c.classList.add('drag'); e.dataTransfer.effectAllowed='move'; });
-ov.addEventListener('dragover', e=>{ const c=e.target.closest('[data-i]'); if(!c||dragI===null) return;
-  e.preventDefault(); c.classList.add('over'); });
-ov.addEventListener('dragleave', e=>{ const c=e.target.closest('[data-i]'); if(c) c.classList.remove('over'); });
-ov.addEventListener('drop', e=>{ const c=e.target.closest('[data-i]'); if(!c||dragI===null) return;
-  e.preventDefault(); const to=+c.dataset.i, cur=S.slots[S.cursor];
-  const [m]=S.slots.splice(dragI,1); S.slots.splice(to,0,m);
-  S.cursor=S.slots.indexOf(cur); dragI=null; render(); });
-ov.addEventListener('dragend', ()=>{ dragI=null; render(); });
 
 /* ============================================== une capture en fond ====== */
 const stage=document.getElementById('stage');
-stage.addEventListener('dragover', e=>{ if (dragI===null) e.preventDefault(); });
+stage.addEventListener('dragover', e=>e.preventDefault());
 stage.addEventListener('drop', e=>{
   const f=e.dataTransfer.files && e.dataTransfer.files[0]; if(!f) return;
   e.preventDefault(); const u=URL.createObjectURL(f);
@@ -571,21 +413,8 @@ stage.addEventListener('drop', e=>{
   const dn=document.querySelector('.dropnote'); if(dn) dn.remove();
 });
 
-/* ============================================================ switcher === */
-function renderSwitch(){
-  const keys=Object.keys(VARIANTS), i=keys.indexOf(VAR);
-  document.getElementById('switch').innerHTML =
-    `<button data-go="${keys[(i-1+keys.length)%keys.length]}">←</button>
-     <span class="lab">${VAR} — ${VARIANTS[VAR][0]}</span>
-     <button data-go="${keys[(i+1)%keys.length]}">→</button>`;
-  document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
-}
-function go(k){ VAR=k; history.replaceState(null,'','?variant='+k); render(); }
 addEventListener('keydown', e=>{
   if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName) || e.target.isContentEditable) return;
-  const keys=Object.keys(VARIANTS), i=keys.indexOf(VAR);
-  if (e.key==='ArrowLeft')  go(keys[(i-1+keys.length)%keys.length]);
-  if (e.key==='ArrowRight') go(keys[(i+1)%keys.length]);
   if (e.key===' ') { e.preventDefault(); tick(); }
 });
 
