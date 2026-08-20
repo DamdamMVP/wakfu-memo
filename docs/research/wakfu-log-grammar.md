@@ -51,6 +51,11 @@ même installation écrivent dans **les mêmes fichiers**, et y dupliquent chaqu
 événement.
 
 Fichiers utiles : `wakfu.log` (rotation `.1`, `.2`) et `wakfu_chat.log`.
+
+⚠️ **La rotation annoncée ne s'observe pas.** Malgré `MaxFileSize=1MB`, un
+`wakfu.log` mesuré à **1 473 576 octets** (4 lancements de client, 10 combats,
+une soirée) n'avait produit **ni `.1` ni `.2`**. Ne pas compter sur un plafond
+de taille pour borner ce fichier, ni sur l'existence des fichiers tournés.
 Les autres (`wakfu_lua`, `wakfu_theme`, `wakfu_camera`, `wakfu_animation`,
 `wakfu_particles_scripts`, `wakfu_fileLoading`) sont vides ou hors sujet.
 
@@ -105,6 +110,10 @@ C'est le **seul** endroit où l'on obtient le roster complet du combat.
 ```
 
 Corrélé au `fightId` du début. Marqueur explicite et fiable.
+
+⚠️ **`fightId` n'est pas monotone** : sur le log réel, `1616030353` (21:44:00)
+précède `1584017389` (21:46:21). C'est un identifiant, pas un compteur — ne
+jamais ordonner des combats par `fightId`, seul l'ordre des lignes fait foi.
 
 ### Ce que `wakfu.log` ne contient PAS
 
@@ -229,7 +238,7 @@ s'apprend avec l'ordre, au premier round.
 | `<nom> lance le sort <sort>` (suffixe ` (Critiques)` possible) | l'acteur du tour |
 | `<nom>: <valeur> <effet> (<source>)` | passifs de début et de fin de tour |
 | `<nom>: <État> (+<N> Niv.) (<source>)` | application d'état |
-| `[<propriétaire>] <invocation>: <effet>` | invocation rattachée à son maître |
+| `<maître>: Invoque un(e) <invocation>` | apparition d'une invocation, nom parfois absent |
 | `<nom>: <N> PV (<Élément>)` | dégâts et soins, y compris sur les monstres |
 | `<nom> est KO !` | mise à mort d'un **personnage** |
 | `<nom> est hors-combat !` | sortie de combat d'un **monstre** |
@@ -253,6 +262,36 @@ personnages sans être des événements de combat** :
 Elle apparaît en pleine action, hors du canal `Information (combat)`. C'est la
 justification concrète de la liste blanche de canaux : un parseur qui filtre en
 liste noire la laisse passer et croit voir deux acteurs.
+
+### Les invocations sont muettes
+
+Vérifié sur un combat à deux invocations (#15, échantillon
+`invoc-2026-08-20-*.log`) : un Gobgob et un Mulmouth Enragé ont joué **deux
+tours entiers** entre deux frontières, sans en produire aucune. Une invocation
+est donc un trou silencieux, exactement comme un monstre.
+
+Elle émet en revanche sa propre ligne `[_FL_]` **au moment de l'invocation** —
+donc une unité qui rejoint en cours de combat est détectable en temps réel :
+
+```
+20:36:16,379 [_FL_] … PJ1             breed : 6    obstacleId : -1 isControlledByAI=false
+20:36:43,799 [_FL_] … Gobgob          breed : 1620 obstacleId : 1  isControlledByAI=true
+20:36:50,107 [_FL_] … Mulmouth Enragé breed : 2367 obstacleId : 2  isControlledByAI=true
+```
+
+Deux surprises. D'abord **`isControlledByAI=true`**, alors que le joueur joue
+ses invocations à la main : le client les traite comme non contrôlées, ce qui
+explique leur silence. Le filtre `isControlledByAI=false` suffit donc à isoler
+les personnages joués. Ensuite **`obstacleId` vaut `-1` pour toute unité du
+début de combat, et un entier positif pour une invocation** — second
+discriminant, indépendant du premier.
+
+Leur ID d'entité est négatif et de la forme de celui d'un monstre, donc
+vraisemblablement éphémère.
+
+Attention : le lien vers le maître n'est **pas** fiable côté chat log. La
+seconde invocation a été loggée `PJ2: Invoque une créature du Gobgob`, sans
+jamais nommer « Mulmouth Enragé ». Seul `[_FL_]` donne le nom réel.
 
 ### Le motif d'un tour
 
@@ -391,6 +430,26 @@ Elle est heureusement bénigne pour le produit : on n'a besoin de suivre
 précisément que les personnages joués, dont les noms sont uniques dans une
 équipe. Les tours des monstres ne servent qu'à savoir que ce n'est pas encore
 le tour du joueur.
+
+### L'ID d'entité d'un personnage joué est stable
+
+Mesuré sur le `wakfu.log` réel : **10 combats, 4 personnages joués, 4
+lancements de client**, aucune dérive.
+
+| Personnage | `breed` | ID d'entité | Combats |
+|---|---|---|---|
+| Damdam | 6 | `11379827` | 7 |
+| Damdamosa | 2 | `10756279` | 7 |
+| Damdamnesique | 3 | `10910227` | 2 |
+| Madamedame | 7 | `10662067` | 2 |
+
+Les lignes `log path=` bornent les lancements du client (lignes 31, 453, 3727,
+4248) : Damdam et Damdamosa jouent dans le 2ᵉ **et** dans le 4ᵉ, avec les mêmes
+ID — la stabilité traverse donc les redémarrages du client, et pas seulement
+une session. Les quatre ID sont distincts et tiennent dans une bande étroite
+(10 662 067 → 11 379 827), très probablement l'ID de personnage côté serveur —
+à l'opposé des ID de monstres, négatifs et énormes. **Non testé** : la
+persistance après réinstallation du client.
 
 ## Algorithme de suivi du tour
 

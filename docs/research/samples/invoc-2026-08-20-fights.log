@@ -1,0 +1,18 @@
+ INFO 20:36:16,377 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 Moogrron breed : 4756 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (122, 9, 0)}
+ INFO 20:36:16,377 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 Moomouche breed : 4755 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (116, 15, 0)}
+ INFO 20:36:16,378 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 Moomouche breed : 4755 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (129, 17, 0)}
+ INFO 20:36:16,378 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 Moogrron breed : 4756 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (122, 6, 0)}
+ INFO 20:36:16,379 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 PJ1 breed : 6 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (125, 9, 0)}
+ INFO 20:36:18,078 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 Moogrron breed : 4756 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (122, 9, 0)}
+ INFO 20:36:18,079 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 Moomouche breed : 4755 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (116, 15, 0)}
+ INFO 20:36:18,079 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 Moomouche breed : 4755 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (129, 17, 0)}
+ INFO 20:36:18,079 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 Moogrron breed : 4756 [ENTITE] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (122, 6, 0)}
+ INFO 20:36:18,079 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 PJ1 breed : 6 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (125, 9, 0)}
+ INFO 20:36:18,081 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 PJ2 breed : 2 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (124, 7, 0)}
+ INFO 20:36:18,204 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 PJ2 breed : 2 [ENTITE] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (124, 7, 0)}
+ INFO 20:36:43,799 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 Gobgob breed : 1620 [ENTITE] isControlledByAI=true obstacleId : 1 join the fight at {Point3 : (120, 8, 0)}
+ INFO 20:36:43,825 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 Gobgob breed : 1620 [ENTITE] isControlledByAI=true obstacleId : 1 join the fight at {Point3 : (120, 8, 0)}
+ INFO 20:36:50,107 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 Mulmouth Enragé breed : 2367 [ENTITE] isControlledByAI=true obstacleId : 2 join the fight at {Point3 : (118, 9, 0)}
+ INFO 20:36:50,150 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1568041546 Mulmouth Enragé breed : 2367 [ENTITE] isControlledByAI=true obstacleId : 2 join the fight at {Point3 : (118, 9, 0)}
+ INFO 20:37:42,811 [AWT-EventQueue-0] (aWF:91) - [FIGHT] End fight with id 1568041546
+ INFO 20:37:42,813 [AWT-EventQueue-0] (aWF:91) - [FIGHT] End fight with id 1568041546
