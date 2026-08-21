@@ -255,12 +255,17 @@
 
   /* compo 2 — colonne serree : le Rang passe en pastille sur l'icone, la colonne
      se reduit a son contenu. Les ~76 px rendus vont aux fiches. */
-  .compo.tight { width:74px; }
+  .compo.tight { width:64px; }
   .compo.tight > h2 { padding:13px 0 10px; justify-content:center; font-size:10px;
-    letter-spacing:.6px; text-align:center; }
-  .compo.tight .slots { padding:0 7px 10px; }
-  .slot.tight { position:relative; padding:4px; justify-content:center; }
-  .slot.tight .rank { position:absolute; left:4px; top:3px; width:auto; z-index:1;
+    letter-spacing:.6px; text-align:center; display:block; }
+  .compo.tight .slots { padding:0 8px 10px; }
+  /* Aucun cadre autour du portrait : l'icone de classe est carree et sans
+     arrondi (#5), donc l'entourer d'une pastille arrondie la contredisait. */
+  .slot.tight { position:relative; padding:0; margin-bottom:6px; justify-content:center;
+    background:transparent; border:0; border-radius:0; }
+  .slot.tight:hover { background:transparent; }
+  .slot.tight.over { box-shadow:0 0 0 2px var(--accent); }
+  .slot.tight .rank { position:absolute; right:2px; top:2px; left:auto; width:auto; z-index:1;
     font-size:9.5px; color:var(--txt); background:#0c0e12d9; border-radius:4px;
     padding:1px 3px; line-height:1.1; }
   .compo.tight .frozen { display:none; }
@@ -281,7 +286,7 @@
 
   .slot.drag, .hslot.drag { opacity:.3; }
   .slot.over, .hslot.over { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
-  .cls.lg img { width:40px; height:40px; }
+  .cls.lg img { width:44px; height:44px; }
   .cls { display:flex; align-items:stretch; flex:none; }
   .cls .edge { width:3px; flex:none; background:var(--c,transparent); }
   .cls img { width:32px; height:32px; display:block; background:#0c0e12;
@@ -290,17 +295,19 @@
   .cls.xs .edge { width:3px; }
   .cls.xs img { width:26px; height:26px; }
 
-  /* Les fiches sont une GRILLE qui deborde en ligne : leur largeur decide
-     combien en tiennent par rangee, et « toute la largeur » n'est que le cas
-     ou il n'en tient qu'une. Un seul reglage, deux comportements. */
+  /* Les fiches remplissent TOUJOURS la largeur disponible. Le seul reglage est
+     leur largeur MINIMALE : la grille en met le maximum par rangee, et elles
+     s'etirent pour ne laisser aucun trou. Une colonne n'est donc pas un mode,
+     c'est le cas ou le minimum depasse la moitie de la place. */
   .turns { flex:1; min-width:0; overflow:auto; padding:16px 18px 40px;
-    display:flex; flex-wrap:wrap; gap:12px; align-content:flex-start; }
+    display:grid; gap:12px; align-content:start; grid-auto-rows:max-content;
+    grid-template-columns:repeat(auto-fill,minmax(var(--fichemin,400px),1fr)); }
   .card { position:relative; background:var(--panel); border:1px solid var(--line);
-    border-radius:14px; overflow:hidden; width:var(--cardw,420px); flex:none; }
-  .turns.full .card { width:100%; }
+    border-radius:14px; overflow:hidden; min-width:0; }
+  .turns > .addturn, .turns > .why { grid-column:1 / -1; }
   /* La poignee est le BORD DROIT de la fiche sur toute sa hauteur, comme #5 l'a
      figé : cible large, pas un coin de 16 px. Double-clic = toute la largeur. */
-  .grip { position:absolute; right:0; top:0; bottom:0; width:10px; z-index:2;
+  .grip { position:absolute; right:0; top:0; bottom:0; width:9px; z-index:2;
     cursor:ew-resize; display:grid; place-items:center; }
   .grip:before { content:''; width:3px; height:100%; border-radius:3px;
     background:var(--accent); opacity:0; transition:opacity .12s; }
@@ -316,17 +323,19 @@
   .tnum { flex:none; min-width:34px; height:30px; padding:0 7px; border-radius:9px;
     background:#0c0e12; border:1px solid var(--line-2); color:var(--accent);
     font:700 14px/28px ui-monospace,monospace; text-align:center; }
-  .card > header .glob { flex:1; font-weight:500; }
+  .card > header .glob { flex:1; min-width:0; font-weight:500; overflow-wrap:anywhere; }
   .rows { padding:6px 0; }
   .row { display:flex; align-items:center; gap:11px; padding:7px 14px 7px 11px; }
   .row + .row { border-top:1px solid #202531; }
-  .row .cons { flex:1; min-height:24px; padding:2px 0; }
+  .row .cons { flex:1; min-width:0; min-height:24px; padding:2px 0;
+    overflow-wrap:anywhere; }
   .row .cons.vide { color:var(--faint); font-style:italic; }
   .note { display:flex; gap:8px; align-items:baseline; padding:7px 18px 7px 14px;
     background:#15161c; border-top:1px dashed var(--line-2); }
   .note .arrow { color:var(--note); font-size:12px; }
-  .note .txt { flex:1; font-style:italic; color:var(--note); min-height:20px; }
-  .addturn { width:100%; max-width:620px; padding:11px; border-style:dashed;
+  .note .txt { flex:1; min-width:0; font-style:italic; color:var(--note);
+    min-height:20px; overflow-wrap:anywhere; }
+  .addturn { width:100%; padding:11px; border-style:dashed;
     color:var(--dim); text-align:center; }
   .ed.ro .card { opacity:.97; }
   .ro-flag { display:inline-flex; align-items:center; gap:6px; font-size:11.5px;
@@ -373,9 +382,9 @@
   .blk .rdbar { display:flex; align-items:center; gap:10px; padding:8px 14px;
     border-bottom:1px solid var(--line); font-size:12px; color:var(--faint); }
   .blk .rdbar .grow { flex:1; }
-  .blk .fiches { padding:13px 14px 16px; display:flex; flex-wrap:wrap; gap:11px;
-    align-items:flex-start; }
-  .blk .fiches .card { width:330px; }
+  .blk .fiches { padding:13px 14px 16px; display:grid; gap:11px; align-content:start;
+    grid-auto-rows:max-content;
+    grid-template-columns:repeat(auto-fill,minmax(var(--fichemin,400px),1fr)); }
   .blk .fiches .card .cons { font-size:13px; }
   .blk .ednested { display:flex; min-height:340px; }
 
@@ -538,7 +547,8 @@ const JEU_COMPLET = () => [
 const S = {
   coque:'B', variante:'1',   // B + 1 retenues par Damien ; le reste reste visitable
   compo:'1',                 // 1 colonne (#5) · 2 colonne serree · 3 en ligne
-  largeurFiche:380,          // px, ou 'full' — GLOBAL, jamais par tour (#5)
+  ficheMini:400,             // px : largeur MINIMALE d'une fiche. Le nombre de
+                             // colonnes en decoule, il ne se regle pas.
   winW:null, winH:null,      // taille de la Fenetre principale, en px
   appOpen:true, wakfuLance:true, affichageDemande:true,
   ecran:'strats',                 // strats | roster | reglages | onboarding | accueil
@@ -621,12 +631,12 @@ function compoHTML(st, editable) {
   };
   const items = st.emplacements.map(slot).join('');
   if (S.compo === '3') return `<div class="hcompo">
-    <h2>Composition <span>${st.emplacements.length}/6</span></h2>
+    <h2>Compo <span>${st.emplacements.length}/6</span></h2>
     <div class="hslots">${items}</div>
     <p class="frozen">${RANGHINT}</p></div>`;
   return `<aside class="compo ${S.compo==='2'?'tight':''}" title="${
       S.compo==='2' ? "L'ordre est le Rang : glisser pour le corriger." : ''}">
-    <h2>Composition <span>${st.emplacements.length}/6</span></h2>
+    <h2>${S.compo==='2' ? 'Compo' : 'Composition'} <span>${st.emplacements.length}/6</span></h2>
     <div class="slots">${items}</div>
     <p class="frozen">${RANGHINT}</p></aside>`;
 }
@@ -634,7 +644,7 @@ function compoHTML(st, editable) {
 // L'editeur : la composition, et les fiches de Tour en grille.
 function editeurHTML(st, editable) {
   const compo = compoHTML(st, editable);
-  const turns = `<section class="turns ${S.largeurFiche==='full'?'full':''}">
+  const turns = `<section class="turns">
       ${st.tours.length
         ? st.tours.map((_,i) => ficheHTML(st,i,editable)).join('')
         : `<p class="why" style="padding:8px 2px 14px;width:100%">Aucun Tour. L'Overlay
@@ -1018,7 +1028,7 @@ function render() {
     const w = stage.querySelector('.win');
     if (S.winW) w.style.setProperty('--winw', S.winW + 'px');
     if (S.winH) w.style.setProperty('--winh', S.winH + 'px');
-    w.style.setProperty('--cardw', (S.largeurFiche === 'full' ? 420 : S.largeurFiche) + 'px');
+    w.style.setProperty('--fichemin', S.ficheMini + 'px');
   }
   renderDock();
   dump();
@@ -1049,7 +1059,7 @@ function renderDock() {
         `<button data-act="compo:${k}" class="${S.compo===k?'on':''}">${l}</button>`).join('')}</div>
     <div class="sep"></div>
     <div class="grp"><label>fiches</label>
-      <button data-act="fiche:full" class="${S.largeurFiche==='full'?'on':''}">toute la largeur</button>
+      <button data-act="fiche:-60">−</button><button data-act="fiche:60">＋</button>
       <span class="st" id="mesures"></span></div>
     <div class="sep"></div>
     <div class="grp"><label>scénario</label>
@@ -1070,8 +1080,8 @@ function majDock() {
   const m = document.getElementById('mesures');
   if (!m) return;
   const w = document.querySelector('.win');
-  m.textContent = (S.largeurFiche === 'full' ? 'fiche : toute la largeur'
-                    : 'fiche : ' + S.largeurFiche + ' px')
+  const n = nbColonnes(w);
+  m.textContent = 'mini ' + S.ficheMini + ' px · ' + n + ' colonne' + (n > 1 ? 's' : '')
     + (w ? ' · fenêtre : ' + Math.round(w.getBoundingClientRect().width)
            + ' × ' + Math.round(w.getBoundingClientRect().height) : '');
 }
@@ -1087,7 +1097,11 @@ ${JSON.stringify({ schema:1, strats:S.strats.map(s => ({
 
 // reglages.json — les deux clés que CET écran touche. Noms de clés NON tranchés :
 // #11 a gelé les trois fichiers, pas le détail de reglages.json.
-${JSON.stringify({ stratChoisie:S.choisieId, affichageDemande:S.affichageDemande }, null, 1)}`;
+${JSON.stringify({ stratChoisie:S.choisieId, affichageDemande:S.affichageDemande,
+  ficheMiniFenetre:S.ficheMini }, null, 1)}
+// ⚠️ #11 avait gelé UN « largeurFiche » global, justifié par « en overlay une
+// seule fiche est visible à la fois ». Ici le réglage n'est plus une largeur
+// mais un MINIMUM, et il ne dit rien de l'Overlay : ce sont deux réglages.`;
 }
 
 /* ============================================================== gestes ==== */
@@ -1201,7 +1215,7 @@ document.addEventListener('click', ev => {
   else if (act === 'back') { S.ouverteId = null; }
   else if (act === 'switch') S.affichageDemande = !S.affichageDemande;
   else if (act === 'compo') S.compo = a;
-  else if (act === 'fiche') S.largeurFiche = S.largeurFiche === 'full' ? 420 : 'full';
+  else if (act === 'fiche') S.ficheMini = Math.max(280, Math.min(1600, S.ficheMini + (+a)));
   else if (act === 'wakfu') S.wakfuLance = !S.wakfuLance;
   else if (act === 'quit') S.appOpen = false;
   else if (act === 'relaunch') S.appOpen = true;
@@ -1315,13 +1329,13 @@ document.addEventListener('mousedown', ev => {
     ev.preventDefault();
     const card = g.closest('.card'), win = g.closest('.win');
     const x0 = ev.clientX, w0 = card.getBoundingClientRect().width;
-    // La largeur est GLOBALE, pas par tour (#5) : on pousse la variable CSS.
+    // On regle le MINIMUM, global et jamais par tour (#5). Les colonnes
+    // suivent : la fiche tiree s'elargit, et a un moment il n'en tient plus
+    // que deux, puis une.
     drag(g, e => {
-      const w = Math.max(300, Math.min(1600, Math.round(w0 + e.clientX - x0)));
-      S.largeurFiche = w;
-      win.style.setProperty('--cardw', w + 'px');
-      win.querySelector('.turns').classList.remove('full');
-      tag().textContent = w + ' px';
+      S.ficheMini = Math.max(280, Math.min(1600, Math.round(w0 + e.clientX - x0)));
+      win.style.setProperty('--fichemin', S.ficheMini + 'px');
+      tag().textContent = S.ficheMini + ' px mini · ' + nbColonnes(win) + ' col.';
       majDock();
     }, render);
     return;
@@ -1341,12 +1355,19 @@ document.addEventListener('mousedown', ev => {
     });
   }
 });
-// Double-clic sur la poignee : toute la largeur — le cas ou il n'en tient qu'une.
+// Double-clic sur la poignee : retour au minimum par defaut.
 document.addEventListener('dblclick', ev => {
   if (!ev.target.closest('.grip')) return;
-  S.largeurFiche = S.largeurFiche === 'full' ? 420 : 'full';
+  S.ficheMini = 400;
   render();
 });
+// Combien de colonnes la grille sert VRAIMENT : on le lit sur la grille, on ne
+// le recalcule pas.
+function nbColonnes(win) {
+  const t = (win || document).querySelector('.turns');
+  if (!t) return 1;
+  return getComputedStyle(t).gridTemplateColumns.split(' ').filter(Boolean).length;
+}
 
 function syncURL() {
   const u = new URL(location);
