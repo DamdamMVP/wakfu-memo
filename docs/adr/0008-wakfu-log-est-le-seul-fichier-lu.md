@@ -39,3 +39,7 @@ quoi que ce soit.
 - Fait brut non expliqué, à garder en tête : la rotation joue côté Steam et pas
   côté launcher, à `log4j.properties` identique. Ne pas s'appuyer sur
   l'existence des fichiers tournés, ni sur leur absence.
+- **Corrige l'ADR `0007`**, qui posait la corrélation horodatée entre les deux
+  fichiers comme un travail restant, avec le passage de minuit et le chat log non
+  purgé comme cas tordus. Ces trois problèmes n'existent pas : il n'y a qu'un
+  fichier.

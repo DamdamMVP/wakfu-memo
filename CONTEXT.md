@@ -155,8 +155,18 @@ _Avoid_: round, numéro de tour, compteur
 Le fond teinté de la ligne de l'Emplacement sur lequel la Rotation est arrivée.
 Ne promet pas l'instant : après une Frontière de tour la Rotation avance tout de
 suite, même si des monstres jouent avant. Une seule ligne à la fois — le
-suivant n'est pas annoncé.
+suivant n'est pas annoncé. Son apparition est le seul signe qu'un combat est
+vivant : hors combat la fiche du premier Tour est là, et aucune ligne n'est
+teintée.
 _Avoid_: surbrillance, highlight, actif, joue
+
+**Affichage demandé** :
+L'intention de montrer l'overlay, posée par l'interrupteur ou le raccourci
+global. Persistée : elle survit au redémarrage de l'app et ne se redemande
+jamais entre deux combats. L'overlay n'est dessiné que si trois conditions sont
+vraies ensemble — l'Affichage est demandé, une fenêtre de Wakfu existe, une
+Strat est choisie.
+_Avoid_: armé, activé, visible, allumé
 
 **Emplacement inactif** :
 Un Emplacement que la Rotation franchit sans l'attendre, pour l'une de deux
