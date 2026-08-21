@@ -98,17 +98,38 @@ demande en phase de placement, rattrapable par un échange par clic.
 _Avoid_: ambiguïté, erreur
 
 **Demande d'ajout** :
-La question posée en phase de placement pour chaque combattant joué que le
-Roster ne connaît pas : l'ajouter à un Profil de joueur, le rattacher à un
-Personnage sans ID d'entité, ou en faire un Personnage ignoré. Ne pas répondre
-ne vaut pas refus.
+La question posée pour chaque combattant joué que le Roster ne connaît pas :
+l'ajouter à un Profil de joueur, le rattacher à un Personnage sans ID d'entité,
+ou en faire un Personnage ignoré. Groupée pour tout un combat, elle surgit en
+phase de placement sur son propre Overlay et reste tant qu'on n'y a pas
+répondu. Ne pas répondre ne vaut pas refus.
 _Avoid_: modale, popup, invite
+
+**Échange par clic** :
+Le geste qui permute les Personnages liés à deux Emplacements de même classe,
+en cliquant leur icône dans la fiche du Tour. Seule réparation d'une Liaison
+pendant un combat, et la seule qui existe sur un combat rattrapé à froid.
+_Avoid_: permutation, swap, correction
 
 **Préférence de liaison** :
 La résolution mémorisée d'un Conflit, pour ne pas reposer la question : dans
 telle Strat, tel Personnage occupe tel Emplacement. Ne retient jamais la
 composition du combat, donc elle répond encore quand l'équipe change.
 _Avoid_: exception, composition, assignation
+
+### Les surfaces — où ça s'affiche
+
+**Fenêtre principale** :
+La fenêtre native de l'application : le Roster, les Strats, les Réglages,
+l'onboarding, et l'interrupteur d'Affichage demandé. La fermer ferme tout, les
+Overlays compris.
+_Avoid_: application, app, fenêtre de l'app
+
+**Overlay** :
+Une surface dessinée par-dessus le jeu, sans barre de titre ni bouton de
+fermeture. Il y en a deux : celui qui porte le Tour courant, et celui qui porte
+la Demande d'ajout.
+_Avoid_: fenêtre, HUD, popup, incrustation
 
 ### Les logs — d'où vient l'état
 
