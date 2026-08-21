@@ -142,6 +142,16 @@ fermeture. Il y en a deux : celui qui porte le Tour courant, et celui qui porte
 la Demande d'ajout.
 _Avoid_: fenêtre, HUD, popup, incrustation
 
+**Overlay verrouillé** :
+L'état de l'Overlay du Tour qui décide où va un clic. Verrouillé, les clics le
+traversent et vont au jeu ; déverrouillé, il les attrape — ce qu'exigent
+l'Échange par clic et le placement à la souris. Se ferme au **cadenas** de
+l'en-tête de la fiche, et ne se rouvre qu'au raccourci global : le cadenas est
+traversé lui aussi, donc ce raccourci est le seul retour. Verrouillé par défaut.
+Ne s'applique jamais à l'Overlay de la Demande d'ajout, qu'une question sans
+réponse possible viderait de son sens.
+_Avoid_: click-through, transparent aux clics, épinglé, figé
+
 ### Les logs — d'où vient l'état
 
 **Frontière de tour** :
