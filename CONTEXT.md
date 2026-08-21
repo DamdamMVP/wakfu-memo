@@ -131,9 +131,10 @@ _Avoid_: application, app, fenêtre de l'app
 
 **Socle d'état** :
 Le pied de la colonne latérale de la Fenêtre principale : l'interrupteur
-d'Affichage demandé, les trois conditions d'affichage de l'Overlay cochées ou
-non, et la phrase qui conclut. Contrepartie nommée du silence que l'ADR `0006`
-impose à l'Overlay.
+d'Affichage demandé, les quatre conditions d'affichage de l'Overlay cochées ou
+non, et la phrase qui conclut. Les quatre lignes sont permanentes, et seule
+celle des logs porte une action — décochée, elle mène aux Réglages.
+Contrepartie nommée du silence que l'ADR `0006` impose à l'Overlay.
 _Avoid_: statut, indicateur, barre d'état
 
 **Overlay** :
@@ -205,9 +206,10 @@ _Avoid_: surbrillance, highlight, actif, joue
 **Affichage demandé** :
 L'intention de montrer l'overlay, posée par l'interrupteur ou le raccourci
 global. Persistée : elle survit au redémarrage de l'app et ne se redemande
-jamais entre deux combats. L'overlay n'est dessiné que si trois conditions sont
-vraies ensemble — l'Affichage est demandé, une fenêtre de Wakfu existe, une
-Strat est choisie.
+jamais entre deux combats. L'overlay n'est dessiné que si quatre conditions sont
+vraies ensemble — l'Affichage est demandé, les logs de Wakfu sont trouvés (un
+`wakfu.log` lisible, jamais une question de fraîcheur), une fenêtre de Wakfu
+existe, une Strat est choisie.
 _Avoid_: armé, activé, visible, allumé
 
 **Emplacement inactif** :
