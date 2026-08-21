@@ -253,6 +253,18 @@
     font:700 11px/1 ui-monospace,monospace; text-align:center; }
   .compo .frozen { padding:0 14px 14px; font-size:11px; color:var(--faint); line-height:1.45; }
 
+  /* Dix pastilles, plus une case pour retirer la couleur. Carrees, comme les
+     icones de classe : la maquette ne melange pas deux idiomes de coin. */
+  .palette { display:grid; gap:3px; margin-top:2px; }
+  .compo .palette { padding:9px 8px 10px; border-top:1px solid var(--line);
+    grid-template-columns:repeat(2,1fr); }
+  .compo:not(.tight) .palette { padding:9px 12px 10px; grid-template-columns:repeat(4,1fr); }
+  .hcompo .palette { display:flex; gap:3px; margin:0; }
+  .hcompo .palette .swatch { width:19px; height:19px; }
+  .swatch { aspect-ratio:1; cursor:pointer; border:1px solid #ffffff1a; border-radius:0; }
+  .swatch:hover { outline:2px solid var(--accent); outline-offset:-2px; }
+  .swatch.clear { background:repeating-linear-gradient(45deg,#0c0e12 0 3px,#3a4150 3px 6px); }
+
   /* compo 2 — colonne serree : le Rang passe en pastille sur l'icone, la colonne
      se reduit a son contenu. Les ~76 px rendus vont aux fiches. */
   .compo.tight { width:64px; }
@@ -265,8 +277,8 @@
     background:transparent; border:0; border-radius:0; }
   .slot.tight:hover { background:transparent; }
   .slot.tight.over { box-shadow:0 0 0 2px var(--accent); }
-  .slot.tight .rank { position:absolute; right:2px; top:2px; left:auto; width:auto; z-index:1;
-    font-size:9.5px; color:var(--txt); background:#0c0e12d9; border-radius:4px;
+  .slot.tight .rank { position:absolute; right:0; top:0; left:auto; width:auto; z-index:1;
+    font-size:9.5px; color:var(--txt); background:#0c0e12e6; border-radius:0;
     padding:1px 3px; line-height:1.1; }
   .compo.tight .frozen { display:none; }
 
@@ -592,19 +604,36 @@ function ficheHTML(st, i, editable) {
   const t = st.tours[i];
   return `<div class="card">
     <header><span class="tnum">T${i+1}</span>
-      <span class="glob" ${editable?'contenteditable data-ph="description du tour…"':''}
-        >${esc(t.global)}</span></header>
+      <span class="glob" ${editable
+        ? `contenteditable data-ph="description du tour…" data-f="global"
+           data-sid="${st.id}" data-ti="${i}"` : ''}
+        >${t.global}</span></header>
     <div class="rows">${st.emplacements.map(e => {
       const c = t.consignes[e.id];
       return `<div class="row">${clsHTML(e,'sm')}<div class="cons ${c?'':'vide'}"
-        ${editable?'contenteditable data-ph="consigne…"':''}
-        >${c ? esc(c) : (editable ? '' : '—')}</div></div>`;
+        ${editable
+          ? `contenteditable data-ph="consigne…" data-f="cons" data-sid="${st.id}"
+             data-ti="${i}" data-eid="${e.id}"` : ''}
+        >${c || (editable ? '' : '—')}</div></div>`;
     }).join('')}</div>
     ${(t.note || editable) ? `<div class="note"><span class="arrow">↳</span>
-      <div class="txt" ${editable?'contenteditable data-ph="note libre…"':''}
-        >${esc(t.note)}</div></div>` : ''}
+      <div class="txt" ${editable
+        ? `contenteditable data-ph="note libre…" data-f="note"
+           data-sid="${st.id}" data-ti="${i}"` : ''}
+        >${t.note}</div></div>` : ''}
   </div>`;
 }
+
+// Les dix couleurs de #5, dans son ordre.
+const PALETTE = [
+  ['rouge','#ef5350'], ['orange','#f08c3a'], ['jaune','#e8c33c'], ['vert','#48c07d'],
+  ['cyan','#2fb3c9'], ['bleu','#5b8cff'], ['violet','#a97ae8'], ['rose','#e85fa8'],
+  ['gris','#9aa2b2'], ['blanc','#e8eaef'],
+];
+const paletteHTML = () => `<div class="palette">${
+  PALETTE.map(([n,c]) => `<div class="swatch" data-c="${c}" title="${n}"
+    style="background:${c}"></div>`).join('')
+  }<div class="swatch clear" data-c="" title="retirer la couleur"></div></div>`;
 
 // La composition : l'ordre EST le Rang, et il se corrige au glisser-deposer —
 // ce que #14 avait tranché et #5 figé « en colonne verticale à gauche ». Les
@@ -623,12 +652,14 @@ function compoHTML(st, editable) {
   if (S.compo === '3') return `<div class="hcompo">
     <h2>Compo <span>${st.emplacements.length}/6</span></h2>
     <div class="hslots">${items}</div>
+    ${editable ? paletteHTML() : ''}
     <p class="frozen">${RANGHINT}</p></div>`;
   return `<aside class="compo ${S.compo==='2'?'tight':''}" title="${
       S.compo==='2' ? "L'ordre est le Rang : glisser pour le corriger." : ''}">
     <h2>${S.compo==='2' ? 'Compo' : 'Composition'} <span>${st.emplacements.length}/6</span></h2>
     <div class="slots">${items}</div>
-    <p class="frozen">${RANGHINT}</p></aside>`;
+    <p class="frozen">${RANGHINT}</p>
+    ${editable ? paletteHTML() : ''}</aside>`;
 }
 
 // L'editeur : la composition, et les fiches de Tour en grille.
@@ -1264,10 +1295,37 @@ document.addEventListener('blur', ev => {
     if (S.renommeId) { S.renommeId = null; render(); }
   }
 }, true);
-// Les consignes sont editables pour que la densite soit vraie sous la main ;
-// elles remontent au modele sans re-rendu, sinon le caret sauterait.
+// Les trois textes libres remontent au modele SANS re-rendu — sinon le caret
+// sauterait — et ils y remontent en HTML, la couleur etant portee par des
+// <span style>. ⚠️ Le modele gelé par #11 stocke des runs [{t,c}], pas du HTML :
+// c'est un raccourci de maquette, comme dans le prototype de #5.
 document.addEventListener('input', ev => {
-  if (ev.target.isContentEditable) dump();
+  const el = ev.target.closest('[data-f]');
+  if (!el) { if (ev.target.isContentEditable) dump(); return; }
+  const st = strat(el.dataset.sid);
+  if (!st) return;
+  const t = st.tours[+el.dataset.ti];
+  if (el.dataset.f === 'global') t.global = el.innerHTML;
+  else if (el.dataset.f === 'note') t.note = el.innerHTML;
+  else t.consignes[el.dataset.eid] = el.innerHTML;
+  dump();
+});
+
+// La coloration libre du texte : on clique une couleur, la selection la prend.
+// `mousedown` + preventDefault, sinon le clic vole le focus et la selection
+// disparait avant qu'on ait pu la colorer. Aucun raccourci clavier (#5).
+document.addEventListener('mousedown', ev => {
+  const sw = ev.target.closest('.swatch');
+  if (!sw) return;
+  ev.preventDefault();
+  if (sw.dataset.c) {
+    document.execCommand('styleWithCSS', false, true);
+    document.execCommand('foreColor', false, sw.dataset.c);
+  } else {
+    document.execCommand('removeFormat');
+  }
+  const el = document.activeElement && document.activeElement.closest('[data-f]');
+  if (el) el.dispatchEvent(new Event('input', { bubbles:true }));
 });
 
 /* ------------------------------------------------- glisser-deposer du Rang -- */
