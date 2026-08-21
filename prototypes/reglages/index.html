@@ -166,24 +166,54 @@
   .cls img { width:32px; height:32px; display:block; background:#0c0e12;
     box-shadow:0 0 0 1px #ffffff14 inset; }
   .cls.sm img { width:24px; height:24px; }
-  .fiche { background:var(--panel); border:1px solid var(--line); border-radius:14px;
-    overflow:hidden; font-size:var(--fs,14px); font-family:var(--ff,inherit); }
+  .fiche { position:relative; background:var(--panel); border:1px solid var(--line);
+    border-radius:14px; font-size:var(--fs,14px); font-family:var(--ff,inherit); }
+  .fiche > *:first-child { border-radius:13px 13px 0 0; }
+  .fiche > *:last-child { border-radius:0 0 13px 13px; }
+  /* LA BARRE DE STRAT, au-dessus de « T1 » : le nom de la Strat sur toute la
+     ligne, et le cadenas a son bout.
+     ⚠️ RECTIFIE #6, qui gardait le selecteur « en chip discret dans l'en-tete ».
+     Deux motifs. Un chip ne dit pas qu'il se clique, alors que le nom de la Strat
+     est ce qu'on verifie d'un coup d'oeil avant un pull et ce qu'on change entre
+     deux salles. Et le cadenas avait besoin d'un bout de ligne a lui : il ne se
+     dispute plus la place avec la description du Tour, qui recupere toute sa
+     largeur.
+     Une forme concurrente a ete essayee et ECARTEE : le nom en texte simple, et
+     une icone de liste a cote du cadenas pour ouvrir le menu. Mesure sur maquette
+     — cible de 568 px2 contre 3167, pour zero place gagnee, et deux boutons de
+     25 px anonymes et adjacents dont l'un change la Strat et l'autre ce que fait
+     la souris. Elle survit sur la branche `prototype/overlay-entete`. */
+  .stratbar { position:relative; display:flex; align-items:center; gap:6px;
+    padding:4px 6px 4px 5px;
+    background:#14161c; border-bottom:1px solid var(--line); }
+  .stratbar .grow { flex:1; }
+  .stratpick { display:flex; align-items:center; gap:6px; max-width:100%;
+    background:transparent; border:1px solid transparent; border-radius:8px;
+    padding:2px 8px; font-size:.92em; color:var(--txt); font-weight:500; }
+  .stratpick:hover { background:var(--raise); border-color:var(--line-2); }
+  .stratpick .chev { flex:none; color:var(--dim); }
+  .stratpick:hover .chev { color:var(--txt); }
+  .stratmenu { position:absolute; z-index:20; top:calc(100% + 3px); left:4px;
+    min-width:210px; background:var(--panel-2); border:1px solid var(--line-2);
+    border-radius:10px; padding:4px; box-shadow:0 16px 40px #000c;
+    display:flex; flex-direction:column; gap:2px; }
+  .stratmenu button { border:0; background:transparent; border-radius:7px;
+    padding:5px 9px; font-size:.9em; color:var(--dim); }
+  .stratmenu button:hover { background:var(--raise); color:var(--txt); }
+  .stratmenu button.cur { color:var(--txt); background:#22304d; }
   .fiche > header { display:flex; align-items:center; gap:10px; padding:9px 12px;
     background:linear-gradient(#1e2330,#1a1e28); border-bottom:1px solid var(--line); }
   .tnum { flex:none; min-width:32px; padding:2px 7px; border-radius:9px;
     background:#0c0e12; border:1px solid var(--line-2); color:var(--accent);
     font:700 1em/1.5 ui-monospace,monospace; text-align:center; }
   .fiche > header .glob { flex:1; min-width:0; font-weight:500; overflow-wrap:anywhere; }
-  /* Le cadenas : le SEUL bouton que l'Overlay du Tour porte, a cote du chip de
-     Strat de #6. Verrouille, il est lui aussi traverse par les clics — d'ou le
-     raccourci obligatoire pour revenir. */
-  .fiche .cadenas { flex:none; padding:1px 6px; font-size:.85em; line-height:1.5;
+  /* Le cadenas : au bout de la barre de Strat. Verrouille, il est lui aussi
+     traverse par les clics — d'ou le raccourci obligatoire pour revenir. */
+  .fiche .cadenas { flex:none; align-self:center; padding:1px 6px; font-size:.85em; line-height:1.5;
     background:transparent; border:1px solid var(--line-2); border-radius:7px;
     color:var(--dim); }
   .fiche .cadenas:hover { border-color:var(--accent); background:#283040; }
   .fiche .cadenas.ferme { opacity:.55; }
-  .fiche .chip { flex:none; font-size:.8em; color:var(--dim); border:1px solid var(--line-2);
-    border-radius:7px; padding:1px 7px; }
   .fiche .rows { padding:5px 0; }
   .fiche .row { display:flex; align-items:center; gap:10px; padding:6px 13px 6px 10px; }
   .fiche .row + .row { border-top:1px solid #202531; }
@@ -356,12 +386,16 @@ const TOUR = {
 // l'inventaire mais #6 ne l'avait jamais confirmee, et trois choix de police ne
 // reglent rien que la taille du texte ne regle deja. La fiche garde donc la
 // police du systeme, comme partout ailleurs dans l'app.
+// Les noms de #21 : un selecteur ne se juge pas sur une liste d'un seul nom.
+const STRATS = ['Ombre Épaisse','Tal Kasha duo','Nélifir — 4 comptes',
+                'Wabbit — rush','Blop Coiffeur'];
 const POLICE_FICHE = 'ui-sans-serif,system-ui,"Segoe UI",sans-serif';
 
 /* ================================================================= etat === */
 const S = {
   ecran:'reglages',            // strats | roster | reglages | onboarding
   wakfuLance:true, affichageDemande:true, stratChoisie:'Ombre Épaisse',
+  stratMenu:false,             // le selecteur de Strat, deplie
   combat:false,                // pour voir la Mise en avant sur la fiche
   surjeu:false,                // variante 3 : on est parti regler sur l'objet
   capture:false,               // capture d'un raccourci en cours
@@ -415,14 +449,24 @@ const clsHTML = (e, size) =>
 function ficheHTML() {
   const avant = S.combat ? 1 : -1;   // la Rotation est arrivee sur le Rang 2
   return `<div class="fiche" style="--fs:${R().tailleTexte}px;--ff:${POLICE_FICHE}">
-    <header><span class="tnum">T${TOUR.n}</span>
-      <span class="glob">${esc(TOUR.global)}</span>
-      <span class="chip">${esc(S.stratChoisie || '—')}</span>
+    <div class="stratbar">
+      <button class="stratpick" data-act="stratmenu"
+        title="changer de strat">${esc(S.stratChoisie || 'aucune strat')}
+        <svg class="chev" width="9" height="6" viewBox="0 0 9 6" fill="none"
+          stroke="currentColor" stroke-width="1.4" aria-hidden="true"
+          ><path d="M1 1.4 4.5 4.7 8 1.4"></path></svg></button>
+      <div class="grow"></div>
       <button class="cadenas ${R().verrouille?'ferme':''}" data-act="cadenas"
         title="${R().verrouille
           ? 'verrouillé — les clics vont au jeu. Le raccourci le déverrouille.'
           : 'déverrouillé — l’overlay attrape les clics. Cliquer : verrouiller.'}"
-        >${cadenasSVG(R().verrouille)}</button></header>
+        >${cadenasSVG(R().verrouille)}</button>
+      ${S.stratMenu ? `<div class="stratmenu">${STRATS.map(n =>
+        `<button data-act="pickstrat:${encodeURIComponent(n)}"
+           class="${n===S.stratChoisie?'cur':''}">${esc(n)}</button>`).join('')}</div>` : ''}
+    </div>
+    <header><span class="tnum">T${TOUR.n}</span>
+      <span class="glob">${esc(TOUR.global)}</span></header>
     <div class="rows">${EMPL.map((e,i) => {
       const c = TOUR.consignes[i];
       const on = i === avant;
@@ -701,7 +745,10 @@ document.addEventListener('click', ev => {
   else if (act === 'cadenas') {
     S.reg.verrouille = !S.reg.verrouille;
     if (S.reg.verrouille) S.surjeu = false;
+    S.stratMenu = false;          // verrouiller replie ce qui etait ouvert
   }
+  else if (act === 'stratmenu') S.stratMenu = !S.stratMenu;
+  else if (act === 'pickstrat') { S.stratChoisie = decodeURIComponent(a); S.stratMenu = false; }
   else if (act === 'recentrer') { S.reg.posX = 1246; S.reg.posY = 322; }
   else if (act === 'pickdir') S.reg.dossierLogsManuel = 'E:\\Jeux\\Wakfu\\preferences\\logs';
   else if (act === 'autodir') S.reg.dossierLogsManuel = null;
@@ -810,6 +857,7 @@ const q = new URLSearchParams(location.search);
 S.posLocalX = 320; S.posLocalY = 54;
 if (q.get('surjeu')) S.surjeu = true;
 if (q.get('wakfu') === '0') S.wakfuLance = false;
+if (q.get('menu')) S.stratMenu = true;  // selecteur deja deplie, pour la capture
 render();
 </script>
 </body>
