@@ -173,6 +173,14 @@
     background:#0c0e12; border:1px solid var(--line-2); color:var(--accent);
     font:700 1em/1.5 ui-monospace,monospace; text-align:center; }
   .fiche > header .glob { flex:1; min-width:0; font-weight:500; overflow-wrap:anywhere; }
+  /* Le cadenas : le SEUL bouton que l'Overlay du Tour porte, a cote du chip de
+     Strat de #6. Verrouille, il est lui aussi traverse par les clics — d'ou le
+     raccourci obligatoire pour revenir. */
+  .fiche .cadenas { flex:none; padding:1px 6px; font-size:.85em; line-height:1.5;
+    background:transparent; border:1px solid var(--line-2); border-radius:7px;
+    color:var(--dim); }
+  .fiche .cadenas:hover { border-color:var(--accent); background:#283040; }
+  .fiche .cadenas.ferme { opacity:.55; }
   .fiche .chip { flex:none; font-size:.8em; color:var(--dim); border:1px solid var(--line-2);
     border-radius:7px; padding:1px 7px; }
   .fiche .rows { padding:5px 0; }
@@ -425,6 +433,7 @@ const S = {
     verrouille:true,           // la souris passe au travers
     ficheMiniFenetre:400,      // px — l'AUTRE grandeur (#21), dans la Fenetre
     raccourciOverlay:'Ctrl+Alt+W',
+    raccourciVerrou:'Ctrl+Alt+L',   // obligatoire : sans lui, plus de retour
     raccourciFenetre:null,     // #12 : le raccourci pourrait aussi rappeler la Fenetre
     dossierLogsManuel:null,    // #4 : le secours, quand la decouverte echoue
   },
@@ -465,7 +474,12 @@ function ficheHTML() {
   return `<div class="fiche" style="--fs:${R().tailleTexte}px;--ff:${POLICE_FICHE}">
     <header><span class="tnum">T${TOUR.n}</span>
       <span class="glob">${esc(TOUR.global)}</span>
-      <span class="chip">${esc(S.stratChoisie || '—')}</span></header>
+      <span class="chip">${esc(S.stratChoisie || '—')}</span>
+      <button class="cadenas ${R().verrouille?'ferme':''}" data-act="cadenas"
+        title="${R().verrouille
+          ? 'verrouillé — les clics vont au jeu. Le raccourci le déverrouille.'
+          : 'déverrouillé — l’overlay attrape les clics. Cliquer : verrouiller.'}"
+        >${cadenasSVG(R().verrouille)}</button></header>
     <div class="rows">${EMPL.map((e,i) => {
       const c = TOUR.consignes[i];
       const on = i === avant;
@@ -477,6 +491,17 @@ function ficheHTML() {
   </div>`;
 }
 
+// Anse fermee au-dessus du corps, ou basculee a droite : deux chemins, aucun
+// texte, et la couleur du bouton (donc du theme).
+const cadenasSVG = (ferme) => `<svg width="11" height="13" viewBox="0 0 11 13"
+  fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"
+  style="vertical-align:-2px">
+  <rect x="0.7" y="5.6" width="9.6" height="6.7" rx="1.4" fill="currentColor"
+    stroke="none" opacity=".85"></rect>
+  <path d="${ferme ? 'M2.9 5.6V3.6a2.6 2.6 0 0 1 5.2 0v2'
+                   : 'M2.9 5.6V3.6a2.6 2.6 0 0 1 5.2 0'}"></path>
+</svg>`;
+
 /* --- les briques de reglage, communes aux trois variantes ----------------- */
 const rangeHTML = (k, min, max, step) =>
   `<input type="range" data-reg="${k}" min="${min}" max="${max}" step="${step||1}"
@@ -484,12 +509,19 @@ const rangeHTML = (k, min, max, step) =>
 const segHTML = (k, opts) => `<span class="seg">${opts.map(([v,l]) =>
   `<button data-set="${k}:${v}" class="${String(R()[k])===String(v)?'on':''}">${l}</button>`
   ).join('')}</span>`;
+const CLES_RACC = { overlay:'raccourciOverlay', verrou:'raccourciVerrou',
+                    fenetre:'raccourciFenetre' };
+// Le raccourci du VERROU ne s'efface pas : verrouille, l'Overlay est traverse
+// par les clics, cadenas compris — le raccourci est le seul chemin de retour.
+// Il se change, il ne se retire pas.
+const EFFACABLE = { overlay:true, verrou:false, fenetre:true };
 const kbdHTML = (cible) => {
-  const k = cible === 'fenetre' ? 'raccourciFenetre' : 'raccourciOverlay';
+  const k = CLES_RACC[cible];
   const cap = S.capture && S.captureCible === cible;
   return `<button class="kbd ${cap?'cap':''}" data-act="capture:${cible}">${
     cap ? 'appuyez sur une combinaison…' : (R()[k] || 'aucun')
-  }</button>${R()[k] && !cap ? `<button class="ghost" data-act="clearkey:${cible}">retirer</button>` : ''}`;
+  }</button>${R()[k] && !cap && EFFACABLE[cible]
+    ? `<button class="ghost" data-act="clearkey:${cible}">retirer</button>` : ''}`;
 };
 
 // La ligne d'un reglage : libelle, phrase d'explication (ADR 0012 : c'est ICI
@@ -523,13 +555,8 @@ function aspectLignes(dup) {
        <button data-act="recentrer">Recentrer sur la fenêtre du jeu</button>`,
       gesteNote('se prend surtout en <b>déplaçant l’overlay</b> à la souris.')));
   }
-  out.push(ligne('Overlay verrouillé',
-    R().verrouille
-      ? 'la souris passe au travers : le clic va au jeu'
-      : "⚠️ la souris s'arrête sur l'overlay : les clics ne vont plus au jeu",
-    `<button class="sw ${R().verrouille?'on':''}" data-act="toggle:verrouille">
-       <span class="track"><i></i></span>
-       <span class="cap">${R().verrouille?'verrouillé':'déverrouillé'}</span></button>`));
+  // L'INTERRUPTEUR « verrouille » A QUITTE LA PAGE : il vit sur l'Overlay
+  // lui-meme, en cadenas dans l'en-tete de la fiche, et se rouvre au raccourci.
   return out.join('');
 }
 
@@ -539,6 +566,9 @@ function raccourciLignes() {
   return ligne('Afficher / masquer l’overlay',
       "c'est l'Affichage demandé, le même que l'interrupteur du bas",
       kbdHTML('overlay'))
+    + ligne('Verrouiller / déverrouiller l’overlay',
+      'verrouillé, le cadenas de la fiche ne se clique plus : ce raccourci est le seul retour',
+      kbdHTML('verrou'))
     + ligne('Rappeler la fenêtre principale',
       'facultatif — la fenêtre se perd derrière le jeu en plein écran fenêtré (#12)',
       kbdHTML('fenetre'));
@@ -666,9 +696,9 @@ function variante3() {
         <div class="txtcol">
           <h2>${pret ? 'Régler l’overlay sur le jeu' : 'Wakfu n’est pas lancé'}</h2>
           <p>${pret
-            ? `L’overlay passe devant Wakfu et devient saisissable : glissez-le pour le
+            ? `L’overlay passe devant Wakfu et se <b>déverrouille</b> : glissez-le pour le
                placer, attrapez son bord droit pour la largeur, l’opacité et le texte
-               sont dans la barrette du bas.`
+               sont dans la barrette du bas. Son cadenas le reverrouille.`
             : `L’opacité ne se juge que contre les pixels du jeu. Vous pouvez régler
                quand même, sur un décor factice — ou lancer Wakfu d’abord.`}</p>
         </div>
@@ -814,6 +844,7 @@ ${JSON.stringify({ schema:1,
   overlayVerrouille:R().verrouille,
   ficheMiniFenetre:R().ficheMiniFenetre,
   raccourciOverlay:R().raccourciOverlay,
+  raccourciVerrou:R().raccourciVerrou,
   raccourciFenetre:R().raccourciFenetre,
   dossierLogsManuel:R().dossierLogsManuel,
   affichageDemande:S.affichageDemande,
@@ -850,8 +881,12 @@ document.addEventListener('click', ev => {
     else if (a === 'verrouille') S.reg.verrouille = !S.reg.verrouille;
   }
   else if (act === 'capture') { S.capture = true; S.captureCible = a; }
-  else if (act === 'clearkey') {
-    S.reg[a === 'fenetre' ? 'raccourciFenetre' : 'raccourciOverlay'] = null;
+  else if (act === 'clearkey') { if (EFFACABLE[a]) S.reg[CLES_RACC[a]] = null; }
+  // Le cadenas verrouille ; s'il ferme pendant un reglage sur l'objet, il en
+  // sort — regler et laisser saisissable sont le meme etat.
+  else if (act === 'cadenas') {
+    S.reg.verrouille = !S.reg.verrouille;
+    if (S.reg.verrouille) S.surjeu = false;
   }
   else if (act === 'recentrer') { S.reg.posX = 1246; S.reg.posY = 322; }
   else if (act === 'pickdir') S.reg.dossierLogsManuel = 'E:\\Jeux\\Wakfu\\preferences\\logs';
@@ -860,7 +895,7 @@ document.addEventListener('click', ev => {
   else if (act === 'surjeu') {
     // On entre dans le reglage sur l'objet : la position ECRAN devient une
     // position dans le plateau, l'overlay se deverrouille le temps du reglage.
-    S.surjeu = true;
+    S.surjeu = true; S.reg.verrouille = false;
     const st = document.querySelector('.win').getBoundingClientRect();
     S.posLocalX = Math.min(Math.max(24, R().posX % Math.max(200, st.width - R().largeurFiche)), st.width - R().largeurFiche - 12);
     S.posLocalY = 54;
@@ -894,8 +929,7 @@ document.addEventListener('keydown', ev => {
     const k = ev.key.length === 1 ? ev.key.toUpperCase()
       : ['Control','Alt','Shift','Meta'].includes(ev.key) ? null : ev.key;
     if (!k || !mods.length) return;
-    S.reg[S.captureCible === 'fenetre' ? 'raccourciFenetre' : 'raccourciOverlay']
-      = mods.concat(k).join('+');
+    S.reg[CLES_RACC[S.captureCible]] = mods.concat(k).join('+');
     S.capture = false; render();
     return;
   }
@@ -918,7 +952,7 @@ function drag(onMove, onEnd) {
 }
 document.addEventListener('mousedown', ev => {
   // le bord droit de la fiche : la largeur, minimum 340 px (#5)
-  const g = ev.target.closest('#grip');
+  const g = R().verrouille ? null : ev.target.closest('#grip');
   if (g) {
     ev.preventDefault();
     const x0 = ev.clientX, w0 = R().largeurFiche, ovl = document.getElementById('ovl');
@@ -929,8 +963,8 @@ document.addEventListener('mousedown', ev => {
     }, () => render());
     return;
   }
-  // le corps de l'overlay : la position
-  const o = ev.target.closest('#ovl');
+  // le corps de l'overlay : la position. Verrouille, il ne s'attrape pas.
+  const o = R().verrouille ? null : ev.target.closest('#ovl');
   if (o) {
     ev.preventDefault();
     const x0 = ev.clientX, y0 = ev.clientY, px = S.posLocalX, py = S.posLocalY;
