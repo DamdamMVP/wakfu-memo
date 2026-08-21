@@ -493,7 +493,7 @@ const S = {
   inactif:{},          // rang -> true (Emplacement inactif, pour la densite)
   // etats d'interface, propres a chaque variante
   held:null, chipMenu:null, ratMenu:null, swapMenu:null, hoverRow:null, swapSrc:null,
-  profil:'1', newProfil:null,
+  profil:'2', newProfil:null,
   dragSrc:null, warn:null, qIndex:0, folded:false, profMenu:null,
   ghost:{}, flash:{},
   fs:1, w:430, op:94,
@@ -911,11 +911,27 @@ function render(){
 
   const mw = document.getElementById('mainwin');
   mw.style.display = S.demande==='C' ? '' : 'none';
-  if (S.demande==='C'){ mw.innerHTML = mainwinHTML();
+  if (S.demande==='C'){ mw.innerHTML = mainwinHTML(); fitPopovers(mw);
     if (!mw.dataset.placed){ mw.style.left='500px'; mw.style.top='96px'; mw.dataset.placed='1'; } }
 
   renderSwitcher();
   renderPanel();
+}
+
+/* Une liste flottante ne doit jamais sortir de la fenetre qui la porte : une
+   application de bureau n'a pas ce droit-la, et le cadre arrondi la couperait
+   de toute facon. Elle s'ouvre vers le bas s'il y a la place, vers le haut
+   sinon — et on garde la marge de 8 px du bord. */
+function fitPopovers(mw){
+  const cadre = mw.getBoundingClientRect();
+  mw.querySelectorAll('.profpop, .newprof').forEach(el=>{
+    el.style.top = ''; el.style.bottom = '';
+    const r = el.getBoundingClientRect();
+    if (r.bottom > cadre.bottom - 8){
+      el.style.top = 'auto';
+      el.style.bottom = 'calc(100% - 4px)';
+    }
+  });
 }
 
 function renderSwitcher(){
