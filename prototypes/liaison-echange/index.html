@@ -261,6 +261,15 @@
      quel menu contextuel du système. Le seul cadre qui le contraint encore est
      l'écran. */
   .poplayer { position:absolute; inset:0; z-index:150; pointer-events:none; }
+  .quit { position:absolute; left:50%; top:44%; transform:translate(-50%,-50%);
+    width:400px; display:flex; flex-direction:column; gap:9px; text-align:center;
+    background:var(--panel); border:1px solid var(--line-2); border-radius:14px;
+    padding:18px 20px; box-shadow:0 18px 50px #000c; }
+  .quit b { font-size:15px; }
+  .quit span { color:var(--faint); font-size:12px; line-height:1.5; }
+  .mainwin.devant { animation:devant .5s ease-out; }
+  @keyframes devant { 0% { box-shadow:0 0 0 3px var(--accent), 0 20px 60px #000e; }
+                    100% { box-shadow:0 20px 60px #000e; } }
   .poplayer > * { pointer-events:auto; }
   .profpop { position:absolute; min-width:168px; background:#0c0e12; border:1px solid var(--line-2);
     border-radius:10px; padding:4px; box-shadow:0 12px 30px #000d; }
@@ -332,6 +341,13 @@
     <div class="ov" id="ov"></div>
     <div class="compagnon" id="compagnon" style="display:none"></div>
     <div class="poplayer" id="poplayer"></div>
+    <div class="quit" id="quit" style="display:none">
+      <b>L'application est fermée.</b>
+      <span>Fermer la fenêtre principale ferme tout — l'overlay part avec elle.
+        C'est « application normale : la fermer ferme tout » (#17), montré
+        plutôt qu'écrit.</span>
+      <button class="big-btn" id="relancer">Relancer l'application</button>
+    </div>
     <div class="dropnote">glisser une capture d'écran de Wakfu ici pour juger sur un vrai fond</div>
   </div>
 
@@ -368,11 +384,12 @@
        bas</b>, et l'échange par clic est le <b>seul</b> correctif. Aucune
        modale au milieu d'un combat.</p>
 
-    <h3>La fenêtre principale</h3>
-    <button class="big-btn" id="rouvrir">Rouvrir la fenêtre</button>
-    <p class="hint">La pastille de l'overlay ne s'affiche que s'il reste des
-       inconnus. Fenêtre fermée <b>et</b> rien à identifier, il n'existe plus
-       aucun chemin de retour — ce bouton est la télécommande, pas une réponse.</p>
+    <h3>L'application</h3>
+    <button class="big-btn" id="rouvrir">Relancer l'application</button>
+    <p class="hint">La fenêtre principale <b>est</b> l'application : l'éditeur de
+       strat, le roster, les réglages, l'onboarding, l'interrupteur d'affichage.
+       Son ✕ quitte, et l'overlay part avec. Pendant qu'on joue elle n'est pas
+       fermée, elle est <b>derrière le jeu</b> — la pastille l'y ramène.</p>
 
     <h3>Le combat avance</h3>
     <div class="rowbtn">
@@ -497,7 +514,7 @@ const TURNS = [
 
 const S = {
   demande:'C', echange:'2',   // retenues par Damien ; A/B et 1/3 restent visitables
-  mainOpen:true,
+  appOpen:true,   // la fenêtre principale EST l'application : la fermer quitte
   purge:[],
   phase:'placement', scenario:'reel',
   turn:1, cursor:0,
@@ -910,6 +927,8 @@ const PROFILS = {
 
 function render(){
   const ov = document.getElementById('ov');
+  ov.style.display = S.appOpen ? '' : 'none';
+  document.getElementById('quit').style.display = S.appOpen ? 'none' : '';
   ov.style.setProperty('--w', S.w+'px');
   ov.style.setProperty('--fs', S.fs);
   ov.style.setProperty('--op', S.op);
@@ -918,13 +937,13 @@ function render(){
   mountMenus();
 
   const cg = document.getElementById('compagnon');
-  const showCg = S.demande==='B' && !S.folded && questionsEnAttente()>0;
+  const showCg = S.appOpen && S.demande==='B' && !S.folded && questionsEnAttente()>0;
   cg.style.display = showCg ? '' : 'none';
   if (showCg){ cg.innerHTML = compagnonHTML();
     if (!cg.dataset.placed){ cg.style.left=(34+S.w+18)+'px'; cg.style.top='30px'; cg.dataset.placed='1'; } }
 
   const mw = document.getElementById('mainwin');
-  const showMw = S.demande==='C' && S.mainOpen;
+  const showMw = S.demande==='C' && S.appOpen;
   mw.style.display = showMw ? '' : 'none';
   if (showMw){ mw.innerHTML = mainwinHTML();
     if (!mw.dataset.placed){ mw.style.left='500px'; mw.style.top='96px'; mw.dataset.placed='1'; } }
@@ -1012,7 +1031,7 @@ function renderPanel(){
   document.querySelectorAll('[data-sc]').forEach(b=>
     b.classList.toggle('on', b.dataset.sc===S.scenario));
   document.getElementById('chaud').classList.toggle('on', S.chaud);
-  document.getElementById('rouvrir').disabled = S.mainOpen || S.demande!=='C';
+  document.getElementById('rouvrir').disabled = S.appOpen;
 
   const L = liaison();
   const perm = slots().map((_,r)=>r).filter(estPermutable);
@@ -1021,7 +1040,7 @@ function renderPanel(){
       `  y survit pourtant. A et B se cognent ici ; C non.` : '';
   document.getElementById('dump').textContent =
     `moment         ${S.phase}${S.chaud?'  (rattrapé à froid)':''}\n`+
-    `fenêtre        ${S.demande==='C' ? (S.mainOpen?'ouverte':'FERMÉE') : '—'}\n`+
+    `application    ${S.appOpen?'lancée':'FERMÉE — overlay compris'}\n`+
     `à identifier   ${unknowns().map(c=>c.nom).join(', ')||'aucun'}\n`+
     `conflits       ${conflits().map(c=>CLASSES[c.cls]+' ×'+c.personnages.length).join(', ')||'aucun'}\n`+
     `liaison        ${slots().map((s,r)=>`n°${r+1} ${COLOR_NAMES[s.color]} → ${L[r]?L[r].nom:'—'}`).join('\n               ')}\n`+
@@ -1122,15 +1141,20 @@ stage.addEventListener('click', e=>{
     return repondre(+nok.dataset.newok, 'profil', nom); }
   if (t.closest('[data-newcancel]')){ S.newProfil=null; return render(); }
   if (t.closest('[data-fold]')){ S.folded=true; return render(); }
-  // la pastille rouvre la fenêtre — et la ramène en vue si elle a été traînée
-  // hors de l'écran entre-temps.
+  // La pastille AMENE AU PREMIER PLAN. Elle ne « rouvre » rien : la fenêtre
+  // principale n'est jamais fermée tant que l'application tourne — elle est
+  // derrière le jeu. Un clic vaut donc un alt-tab.
   if (t.closest('[data-raise]')){
     const mw=document.getElementById('mainwin');
-    if (!S.mainOpen){ S.mainOpen=true; mw.dataset.placed=''; }
+    mw.dataset.placed='';                 // la ramène en vue si on l'a traînée
+    mw.classList.remove('devant'); void mw.offsetWidth; mw.classList.add('devant');
     return render();
   }
+  // Le ✕ de la fenêtre principale est le ✕ de l'APPLICATION : « application
+  // normale, la fermer ferme tout » (périmètre V1, #17). L'overlay part avec —
+  // c'est tout l'intérêt de le montrer plutôt que de l'écrire.
   if (t.closest('[data-ferme]')){
-    S.mainOpen=false; S.profMenu=null; S.newProfil=null; return render();
+    S.appOpen=false; S.profMenu=null; S.newProfil=null; return render();
   }
 
   // --- A : prendre un pseudo en main, puis cliquer sa ligne ---
@@ -1239,8 +1263,10 @@ document.getElementById('tick').onclick = ()=>{
   render();
 };
 document.getElementById('reset').onclick = ()=>{ hardReset(true); render(); };
-document.getElementById('rouvrir').onclick = ()=>{
-  S.mainOpen=true; document.getElementById('mainwin').dataset.placed=''; render(); };
+const relancer = ()=>{ S.appOpen=true;
+  document.getElementById('mainwin').dataset.placed=''; render(); };
+document.getElementById('rouvrir').onclick = relancer;
+document.getElementById('relancer').onclick = relancer;
 // « le cas réel » part du Roster de départ ; les deux autres scénarios partent
 // d'un Roster qui connaît déjà tout le monde — c'est le deuxième farm de la
 // soirée, et c'est là que le Conflit et l'échange existent tout seuls.
@@ -1257,7 +1283,7 @@ function hardReset(all){
   S.newProfil=null; S.purge=[];
   S.warn=null; S.swapMenu=null; S.swapSrc=null; S.hoverRow=null; S.dragSrc=null;
   S.folded=false; S.qIndex=0; S.ghost={}; S.flash={};
-  if (all){ S.clicks=0; S.phase='placement'; S.turn=1; S.cursor=0; S.chaud=false; S.mainOpen=true; }
+  if (all){ S.clicks=0; S.phase='placement'; S.turn=1; S.cursor=0; S.chaud=false; S.appOpen=true; }
 }
 const sl=(id,vid,fmt,set)=>{ const r=document.getElementById(id);
   r.oninput=()=>{ set(+r.value); document.getElementById(vid).textContent=fmt(+r.value); render(); };
