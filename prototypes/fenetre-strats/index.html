@@ -119,11 +119,13 @@
   .rail .brand { padding:13px 15px 11px; font-size:12px; letter-spacing:.9px;
     text-transform:uppercase; color:var(--faint); }
   .rail .items { padding:0 8px; display:flex; flex-direction:column; gap:2px; }
-  .rail .items button { border:0; background:transparent; border-radius:8px;
-    padding:8px 11px; color:var(--dim); display:flex; align-items:center; gap:9px; }
+  .rail .items button { position:relative; border:0; background:transparent;
+    border-radius:8px; padding:8px 11px; color:var(--dim);
+    display:flex; align-items:center; gap:9px; }
   .rail .items button:hover { background:var(--raise); color:var(--txt); }
-  .rail .items button.cur { background:var(--panel-2); color:var(--txt);
-    box-shadow:inset 2px 0 0 var(--accent); }
+  .rail .items button.cur { background:var(--panel-2); color:var(--txt); }
+  .rail .items button.cur:before { content:''; position:absolute; left:0; top:0; bottom:0;
+    width:3px; background:var(--accent); }
   .rail .items .cnt { margin-left:auto; font:11px ui-monospace,monospace; color:var(--faint); }
   .rail .grow { flex:1; }
 
@@ -197,7 +199,6 @@
     border:1px solid var(--line); border-radius:12px; background:var(--panel);
     margin-bottom:7px; }
   .srow:hover { border-color:var(--line-2); background:var(--panel-2); }
-  .srow.chosen { box-shadow:inset 3px 0 0 var(--accent); }
   .srow .nm { font-size:14.5px; font-weight:500; }
   .srow .meta { font-size:11.5px; color:var(--faint); }
   .srow .grow { flex:1; min-width:0; }
@@ -249,8 +250,8 @@
   .cls img { width:32px; height:32px; display:block; background:#0c0e12;
     box-shadow:0 0 0 1px #ffffff14 inset; }
   .cls.sm img { width:24px; height:24px; }
-  .cls.xs .edge { width:2px; }
-  .cls.xs img { width:19px; height:19px; }
+  .cls.xs .edge { width:3px; }
+  .cls.xs img { width:26px; height:26px; }
 
   .turns { flex:1; min-width:0; overflow:auto; padding:16px 18px 40px; }
   .card { background:var(--panel); border:1px solid var(--line); border-radius:14px;
@@ -287,7 +288,10 @@
   .pane-l .it { display:flex; align-items:center; gap:8px; padding:7px 9px; border-radius:9px;
     cursor:pointer; }
   .pane-l .it:hover { background:var(--raise); }
-  .pane-l .it.cur { background:var(--panel-2); box-shadow:inset 2px 0 0 var(--accent); }
+  .pane-l .it { position:relative; }
+  .pane-l .it.cur { background:var(--panel-2); }
+  .pane-l .it.cur:before { content:''; position:absolute; left:0; top:0; bottom:0;
+    width:3px; background:var(--accent); }
   .pane-l .it .nm { flex:1; min-width:0; font-size:13.5px; overflow:hidden;
     text-overflow:ellipsis; white-space:nowrap; }
   .pane-l .it .n { font:11px ui-monospace,monospace; color:var(--faint); }
@@ -304,7 +308,6 @@
   .blk { border:1px solid var(--line); border-radius:13px; background:var(--panel);
     margin-bottom:9px; overflow:hidden; }
   .blk.open { border-color:var(--line-2); }
-  .blk.chosen { box-shadow:inset 3px 0 0 var(--accent); }
   .blk > .bh { display:flex; align-items:center; gap:11px; padding:10px 13px; cursor:pointer; }
   .blk > .bh:hover { background:var(--panel-2); }
   .blk > .bh .chev { color:var(--dim); font-size:13px; width:13px; flex:none; }
@@ -477,7 +480,7 @@ const JEU_COMPLET = () => [
 ];
 
 const S = {
-  coque:'A', variante:'1',
+  coque:'B', variante:'1',   // B retenue par Damien ; A et C restent visitables
   appOpen:true, wakfuLance:true, affichageDemande:true,
   ecran:'strats',                 // strats | roster | reglages | onboarding | accueil
   strats:JEU_COMPLET(),
@@ -737,7 +740,7 @@ function strats1() {
       <div class="grow"></div>
       <button data-act="create">＋ Nouvelle strat</button></div>
     <div class="scrbody"><div class="slist">
-      ${S.strats.map(st => `<div class="srow ${S.choisieId===st.id?'chosen':''}">
+      ${S.strats.map(st => `<div class="srow">
         <span class="pick ${S.choisieId===st.id?'on':''}" data-act="choose:${st.id}"
           title="utiliser cette strat"></span>
         <div class="grow" data-act="open:${st.id}" style="cursor:pointer">
@@ -747,7 +750,6 @@ function strats1() {
           <div class="meta">${metaHTML(st)}</div>
         </div>
         ${compostripHTML(st)}
-        ${S.choisieId===st.id?'<span class="badge">choisie</span>':''}
         <div class="acts">
           <button class="ghost" data-act="open:${st.id}">Ouvrir</button>
           <button class="ghost" data-act="menu:${st.id}">⋯</button>
@@ -804,8 +806,10 @@ function strats3() {
     <div class="scrbody"><div class="blocks">
     ${S.strats.map(st => {
       const open = S.deplies.has(st.id), edit = S.editionId === st.id;
-      return `<div class="blk ${open?'open':''} ${S.choisieId===st.id?'chosen':''}">
+      return `<div class="blk ${open?'open':''}">
         <div class="bh" data-act="open:${st.id}">
+          <span class="pick ${S.choisieId===st.id?'on':''}" data-act="choose:${st.id}"
+            title="utiliser cette strat"></span>
           <span class="chev">${open?'▾':'▸'}</span>
           <div class="grow">
             ${S.renommeId===st.id
@@ -814,8 +818,6 @@ function strats3() {
             <div class="meta" style="font-size:11.5px;color:var(--faint)">${metaHTML(st)}</div>
           </div>
           ${compostripHTML(st)}
-          ${S.choisieId===st.id ? '<span class="badge">choisie</span>'
-            : `<button class="ghost" data-act="choose:${st.id}">Utiliser</button>`}
           <div class="acts">
             <button class="ghost" data-act="rename:${st.id}">Renommer</button>
             <button class="ghost" data-act="dup:${st.id}">Dupliquer</button>
