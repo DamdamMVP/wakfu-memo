@@ -240,22 +240,45 @@
   .warnbox b { color:var(--warn); }
 
   /* ========================= C — LA FENETRE PRINCIPALE =================== */
-  .mainwin { position:absolute; width:580px; background:var(--panel);
+  /* ---- LE SECOND OVERLAY : l'identification, par-dessus le jeu -----------
+     Il n'est PAS une fenêtre de l'application. Il parle donc la langue de la
+     fiche — même fond translucide, même rayon, même bordure — et n'a ni barre
+     de titre système, ni ✕ : on le replie, on ne le ferme pas (#17 : ne pas
+     répondre ne vaut pas refus, donc rien ne doit ressembler à un refus). */
+  .ovask { position:absolute; width:560px;
+    background:color-mix(in srgb, var(--panel) calc(var(--op,94) * 1%), transparent);
+    border:1px solid var(--line); border-radius:14px; box-shadow:0 14px 40px #000a;
+    backdrop-filter:blur(2px); overflow:visible; }
+  .ovask .oah { display:flex; align-items:center; gap:9px; padding:8px 12px;
+    background:linear-gradient(#1e2330,#1a1e28); border-bottom:1px solid var(--line);
+    border-radius:14px 14px 0 0; cursor:grab; font-size:12.5px; color:var(--dim); }
+  .ovask .oah b { color:var(--txt); }
+  .ovask .oah .later { margin-left:auto; color:var(--faint); cursor:pointer; }
+  .ovask .oah .later:hover { color:var(--txt); }
+  .ovask .oab { padding:10px 11px 12px; }
+
+  /* ---- L'APPLICATION NATIVE : une vraie fenêtre, opaque, avec un ✕ ------- */
+  .app { position:absolute; width:580px; background:var(--panel);
     border:1px solid var(--line-2); border-radius:12px; box-shadow:0 20px 60px #000e;
     overflow:hidden; }
-  .mainwin .tb { display:flex; align-items:center; gap:9px; padding:8px 12px;
+  .app .tb { display:flex; align-items:center; gap:9px; padding:8px 12px;
     background:#12151c; border-bottom:1px solid var(--line); cursor:grab; }
-  .mainwin .tb .t { font-size:12.5px; color:var(--dim); }
-  .mainwin .tb .ferme { margin-left:auto; width:22px; height:22px; line-height:22px;
+  .app .tb .t { font-size:12.5px; color:var(--dim); }
+  .app .tb .ferme { margin-left:auto; width:22px; height:22px; line-height:22px;
     text-align:center; border-radius:6px; color:var(--dim); cursor:pointer; font-size:13px; }
-  .mainwin .tb .ferme:hover { background:#3a2226; color:#ff8a80; }
-  .mainwin .mb { padding:12px 13px 14px; max-height:430px; overflow:auto; }
-  .mainwin h4 { margin:0 0 8px; font-size:11px; letter-spacing:1px;
+  .app .tb .ferme:hover { background:#3a2226; color:#ff8a80; }
+  .app .mb { padding:12px 13px 14px; max-height:430px; overflow:auto; }
+  .app .onglets { display:flex; gap:4px; padding:8px 12px 0; }
+  .app .onglets span { padding:5px 11px; border-radius:8px 8px 0 0; font-size:12.5px;
+    color:var(--faint); cursor:default; }
+  .app .onglets span.cur { color:var(--txt); background:var(--panel-2);
+    border:1px solid var(--line); border-bottom-color:transparent; }
+  .app h4 { margin:0 0 8px; font-size:11px; letter-spacing:1px;
     text-transform:uppercase; color:var(--dim); }
-  .mainwin h4.sec { margin-top:15px; }
+  .app h4.sec { margin-top:15px; }
   /* l'écran d'identification ne défile pas : la liste est courte (6 au pire)
      et les listes flottantes doivent pouvoir en sortir. */
-  .mainwin .mb.identif { max-height:none; overflow:visible; }
+  .app .mb.identif { max-height:none; overflow:visible; }
   /* La couche des menus. Ils ne sont PLUS enfants de la fenêtre : un menu
      natif (`Menu.popup()` côté Electron) déborde du cadre, comme n'importe
      quel menu contextuel du système. Le seul cadre qui le contraint encore est
@@ -267,7 +290,7 @@
     padding:18px 20px; box-shadow:0 18px 50px #000c; }
   .quit b { font-size:15px; }
   .quit span { color:var(--faint); font-size:12px; line-height:1.5; }
-  .mainwin.devant { animation:devant .5s ease-out; }
+  .app.devant, .ovask.devant { animation:devant .5s ease-out; }
   @keyframes devant { 0% { box-shadow:0 0 0 3px var(--accent), 0 20px 60px #000e; }
                     100% { box-shadow:0 20px 60px #000e; } }
   .poplayer > * { pointer-events:auto; }
@@ -337,7 +360,8 @@
 
 <div class="wrap">
   <div class="stage" id="stage">
-    <div class="mainwin" id="mainwin" style="display:none"></div>
+    <div class="app" id="app" style="display:none"></div>
+    <div class="ovask" id="ovask" style="display:none"></div>
     <div class="ov" id="ov"></div>
     <div class="compagnon" id="compagnon" style="display:none"></div>
     <div class="poplayer" id="poplayer"></div>
@@ -385,11 +409,15 @@
        modale au milieu d'un combat.</p>
 
     <h3>L'application</h3>
-    <button class="big-btn" id="rouvrir">Relancer l'application</button>
-    <p class="hint">La fenêtre principale <b>est</b> l'application : l'éditeur de
-       strat, le roster, les réglages, l'onboarding, l'interrupteur d'affichage.
-       Son ✕ quitte, et l'overlay part avec. Pendant qu'on joue elle n'est pas
-       fermée, elle est <b>derrière le jeu</b> — la pastille l'y ramène.</p>
+    <div class="rowbtn">
+      <button id="alttab">Alt-tab vers l'application</button>
+      <button class="big-btn" id="rouvrir" style="width:auto">Relancer</button>
+    </div>
+    <p class="hint">Trois surfaces, et une seule est une fenêtre : l'application
+       native — roster, strats, réglages — qu'on lance et dont le <b>✕ quitte
+       tout</b>. Les deux autres sont des overlays : la <b>fiche du Tour</b>, et
+       la <b>demande d'identification</b> qui surgit au placement. Pendant qu'on
+       joue, l'application est derrière le jeu.</p>
 
     <h3>Le combat avance</h3>
     <div class="rowbtn">
@@ -514,7 +542,8 @@ const TURNS = [
 
 const S = {
   demande:'C', echange:'2',   // retenues par Damien ; A/B et 1/3 restent visitables
-  appOpen:true,   // la fenêtre principale EST l'application : la fermer quitte
+  appOpen:true,   // l'application native tourne ; la fermer quitte tout
+  appFront:false, // ... mais elle est derrière le jeu tant qu'on n'y va pas
   purge:[],
   phase:'placement', scenario:'reel',
   turn:1, cursor:0,
@@ -841,17 +870,35 @@ function compagnonHTML(){
 /* L'identification et le Roster sont DEUX ECRANS, pas deux sections du meme.
    Lister le Roster sous les questions ne sert a rien au moment de repondre :
    la consultation du Roster est un autre geste, a un autre moment. */
-function mainwinHTML(){
+/* LE SECOND OVERLAY. Il surgit en phase de placement quand des combattants
+   joués sont inconnus, par-dessus le jeu, à côté de la fiche. Ce n'est pas une
+   fenêtre de l'application : pas de barre de titre système, pas de ✕ — un
+   « plus tard » qui replie, parce que ne pas répondre ne vaut pas refus (#17)
+   et que rien ne doit ressembler à un refus. */
+function ovaskHTML(inc){
+  return `<div class="oah">
+      <b>${inc.length} combattant${inc.length>1?'s':''}</b> à identifier
+      <span class="later" data-fold>plus tard ▾</span></div>
+    <div class="oab">${identifHTML(inc, true)}</div>`;
+}
+
+/* L'APPLICATION NATIVE. C'est l'autre endroit — celui où on retrouve son
+   roster et ses strats, et où une Demande restée sans réponse se rattrape
+   deux minutes après le combat, comme #18 l'exigeait. Les onglets sont un
+   DÉCOR : ils situent la surface, ils ne proposent rien. */
+function appHTML(){
   const inc = unknowns();
   return `<div class="tb"><span class="t">Wakfu Mémo</span>
-      <span class="ferme" data-ferme title="Fermer">✕</span></div>
-    <div class="mb${inc.length?' identif':''}">${inc.length ? identifHTML(inc) : rosterHTML()}</div>`;
+      <span class="ferme" data-ferme title="Quitter">✕</span></div>
+    <div class="onglets"><span class="cur">Roster</span><span>Strats</span>
+      <span>Réglages</span></div>
+    <div class="mb">${inc.length ? identifHTML(inc, false)+rosterHTML() : rosterHTML()}</div>`;
 }
 
 const profils = () => [...new Set(S.roster.map(p=>p.profil))];
 
-function identifHTML(inc){
-  return `<h4>À identifier (${inc.length})</h4>
+function identifHTML(inc, surOverlay){
+  return `${surOverlay ? '' : `<h4>À identifier (${inc.length})</h4>`}
     ${inc.map(c=>`<div class="askrow">
         ${clsHTML(c.cls,'')}
         <div><div class="nm">${c.nom}</div>
@@ -870,14 +917,13 @@ function identifHTML(inc){
 /* L'ecran de consultation du Roster — ce que la fenetre montre quand il n'y a
    rien a identifier. C'est ici que la liste des Personnages a sa place. */
 function rosterHTML(){
-  return `<h4>Roster</h4>
+  return `<h4 class="sec">Roster</h4>
     ${profils().map(pr=>`<div class="prof">${pr}</div>
       ${S.roster.filter(p=>p.profil===pr).map(p=>`<div class="rosterline">
         ${clsHTML(p.cls,'','tiny')}<span class="nm">${p.nom}</span>
         <span>${CLASSES[p.cls]}</span>
         <span class="eid">${p.eid ? '#'+p.eid : 'sans ID'}</span></div>`).join('')}`).join('')}
-    <div class="empty">Rien à identifier : tous les combattants du dernier
-      combat sont dans le Roster.</div>`;
+`;
 }
 
 /* --------------------------------------- trois idees pour le choix du profil */
@@ -919,7 +965,7 @@ function newProfilHTML(c){
 /* ================================================================ render = */
 const DEMANDES = {
   A:'Tout dans la fiche', B:'Une carte compagnon',
-  C:'Rien dans le combat' };
+  C:'Un second overlay' };
 const ECHANGES = {
   '1':'Le menu au clic', '2':'Deux clics, survol', '3':'Le glisser-déposer' };
 const PROFILS = {
@@ -942,11 +988,21 @@ function render(){
   if (showCg){ cg.innerHTML = compagnonHTML();
     if (!cg.dataset.placed){ cg.style.left=(34+S.w+18)+'px'; cg.style.top='30px'; cg.dataset.placed='1'; } }
 
-  const mw = document.getElementById('mainwin');
-  const showMw = S.demande==='C' && S.appOpen;
-  mw.style.display = showMw ? '' : 'none';
-  if (showMw){ mw.innerHTML = mainwinHTML();
-    if (!mw.dataset.placed){ mw.style.left='500px'; mw.style.top='96px'; mw.dataset.placed='1'; } }
+  // le second overlay : par-dessus le jeu, tant qu'il reste des inconnus
+  const oa = document.getElementById('ovask');
+  const inc = unknowns();
+  const showOa = S.appOpen && S.demande==='C' && inc.length>0 && !S.folded;
+  oa.style.display = showOa ? '' : 'none';
+  oa.style.setProperty('--op', S.op);
+  if (showOa){ oa.innerHTML = ovaskHTML(inc);
+    if (!oa.dataset.placed){ oa.style.left='34px'; oa.style.top='430px'; oa.dataset.placed='1'; } }
+
+  // l'application native : au premier plan seulement quand on l'y met
+  const ap = document.getElementById('app');
+  const showAp = S.appOpen && S.appFront;
+  ap.style.display = showAp ? '' : 'none';
+  if (showAp){ ap.innerHTML = appHTML();
+    if (!ap.dataset.placed){ ap.style.left='470px'; ap.style.top='90px'; ap.dataset.placed='1'; } }
 
   mountPop();
   renderSwitcher();
@@ -971,9 +1027,10 @@ function mountPop(){
   const eid = (S.newProfil!==null) ? S.newProfil : S.profMenu;
   if (eid===null) return;
   const c = combatantOf(eid); if (!c) return;
-  const mw = document.getElementById('mainwin');
-  const anchor = mw.querySelector(`[data-ans="${eid}:profilmenu"]`)
-              || mw.querySelector(`[data-ans="${eid}:nouveau"]`);
+  const anchor = document.querySelector(`#ovask [data-ans="${eid}:profilmenu"]`)
+              || document.querySelector(`#app   [data-ans="${eid}:profilmenu"]`)
+              || document.querySelector(`#ovask [data-ans="${eid}:nouveau"]`)
+              || document.querySelector(`#app   [data-ans="${eid}:nouveau"]`);
   if (!anchor) return;
 
   const d = document.createElement('div');
@@ -1032,6 +1089,8 @@ function renderPanel(){
     b.classList.toggle('on', b.dataset.sc===S.scenario));
   document.getElementById('chaud').classList.toggle('on', S.chaud);
   document.getElementById('rouvrir').disabled = S.appOpen;
+  document.getElementById('alttab').disabled = !S.appOpen;
+  document.getElementById('alttab').classList.toggle('on', S.appFront);
 
   const L = liaison();
   const perm = slots().map((_,r)=>r).filter(estPermutable);
@@ -1040,7 +1099,8 @@ function renderPanel(){
       `  y survit pourtant. A et B se cognent ici ; C non.` : '';
   document.getElementById('dump').textContent =
     `moment         ${S.phase}${S.chaud?'  (rattrapé à froid)':''}\n`+
-    `application    ${S.appOpen?'lancée':'FERMÉE — overlay compris'}\n`+
+    `application    ${S.appOpen?(S.appFront?'lancée, au premier plan':'lancée, derrière le jeu'):'FERMÉE — overlays compris'}\n`+
+    `2e overlay     ${!S.appOpen?'—':(unknowns().length===0?'rien à identifier':(S.folded?'replié (« plus tard »)':'affiché'))}\n`+
     `à identifier   ${unknowns().map(c=>c.nom).join(', ')||'aucun'}\n`+
     `conflits       ${conflits().map(c=>CLASSES[c.cls]+' ×'+c.personnages.length).join(', ')||'aucun'}\n`+
     `liaison        ${slots().map((s,r)=>`n°${r+1} ${COLOR_NAMES[s.color]} → ${L[r]?L[r].nom:'—'}`).join('\n               ')}\n`+
@@ -1141,13 +1201,14 @@ stage.addEventListener('click', e=>{
     return repondre(+nok.dataset.newok, 'profil', nom); }
   if (t.closest('[data-newcancel]')){ S.newProfil=null; return render(); }
   if (t.closest('[data-fold]')){ S.folded=true; return render(); }
-  // La pastille AMENE AU PREMIER PLAN. Elle ne « rouvre » rien : la fenêtre
-  // principale n'est jamais fermée tant que l'application tourne — elle est
-  // derrière le jeu. Un clic vaut donc un alt-tab.
+  // La pastille ramène le SECOND OVERLAY qu'on a replié — pas l'application.
+  // C'est le seul rôle qui lui reste, et il n'existe que parce que « plus
+  // tard » replie sans répondre.
   if (t.closest('[data-raise]')){
-    const mw=document.getElementById('mainwin');
-    mw.dataset.placed='';                 // la ramène en vue si on l'a traînée
-    mw.classList.remove('devant'); void mw.offsetWidth; mw.classList.add('devant');
+    S.folded=false;
+    const oa=document.getElementById('ovask');
+    oa.dataset.placed='';
+    oa.classList.remove('devant'); void oa.offsetWidth; oa.classList.add('devant');
     return render();
   }
   // Le ✕ de la fenêtre principale est le ✕ de l'APPLICATION : « application
@@ -1232,7 +1293,7 @@ stage.addEventListener('pointerdown', e=>{
 });
 
 // deplacer l'overlay, la carte et la fenetre principale
-[['ov','header.oh'],['compagnon','.ch'],['mainwin','.tb']].forEach(([id,handle])=>{
+[['ov','header.oh'],['compagnon','.ch'],['ovask','.oah'],['app','.tb']].forEach(([id,handle])=>{
   const el = document.getElementById(id);
   el.addEventListener('pointerdown', e=>{
     if (!e.target.closest(handle) || e.target.closest('.later,.chip,.askdot')) return;
@@ -1263,9 +1324,16 @@ document.getElementById('tick').onclick = ()=>{
   render();
 };
 document.getElementById('reset').onclick = ()=>{ hardReset(true); render(); };
-const relancer = ()=>{ S.appOpen=true;
-  document.getElementById('mainwin').dataset.placed=''; render(); };
+const relancer = ()=>{ S.appOpen=true; S.folded=false;
+  document.getElementById('app').dataset.placed='';
+  document.getElementById('ovask').dataset.placed=''; render(); };
 document.getElementById('rouvrir').onclick = relancer;
+document.getElementById('alttab').onclick = ()=>{
+  S.appFront=!S.appFront;
+  const ap=document.getElementById('app');
+  if (S.appFront){ ap.dataset.placed=''; ap.classList.remove('devant');
+    void ap.offsetWidth; ap.classList.add('devant'); }
+  render(); };
 document.getElementById('relancer').onclick = relancer;
 // « le cas réel » part du Roster de départ ; les deux autres scénarios partent
 // d'un Roster qui connaît déjà tout le monde — c'est le deuxième farm de la
@@ -1283,7 +1351,8 @@ function hardReset(all){
   S.newProfil=null; S.purge=[];
   S.warn=null; S.swapMenu=null; S.swapSrc=null; S.hoverRow=null; S.dragSrc=null;
   S.folded=false; S.qIndex=0; S.ghost={}; S.flash={};
-  if (all){ S.clicks=0; S.phase='placement'; S.turn=1; S.cursor=0; S.chaud=false; S.appOpen=true; }
+  if (all){ S.clicks=0; S.phase='placement'; S.turn=1; S.cursor=0; S.chaud=false;
+            S.appOpen=true; S.appFront=false; }
 }
 const sl=(id,vid,fmt,set)=>{ const r=document.getElementById(id);
   r.oninput=()=>{ set(+r.value); document.getElementById(vid).textContent=fmt(+r.value); render(); };
