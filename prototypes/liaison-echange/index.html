@@ -252,15 +252,19 @@
   /* l'écran d'identification ne défile pas : la liste est courte (6 au pire)
      et les listes flottantes doivent pouvoir en sortir. */
   .mainwin .mb.identif { max-height:none; overflow:visible; }
-  .profpop { position:absolute; right:8px; top:calc(100% - 4px); z-index:20;
-    min-width:168px; background:#0c0e12; border:1px solid var(--line-2);
+  /* La couche des menus. Ils ne sont PLUS enfants de la fenêtre : un menu
+     natif (`Menu.popup()` côté Electron) déborde du cadre, comme n'importe
+     quel menu contextuel du système. Le seul cadre qui le contraint encore est
+     l'écran. */
+  .poplayer { position:absolute; inset:0; z-index:150; pointer-events:none; }
+  .poplayer > * { pointer-events:auto; }
+  .profpop { position:absolute; min-width:168px; background:#0c0e12; border:1px solid var(--line-2);
     border-radius:10px; padding:4px; box-shadow:0 12px 30px #000d; }
   .profpop .it { padding:6px 10px; border-radius:7px; cursor:pointer; font-size:12.5px; }
   .profpop .it:hover { background:var(--raise); }
   .profpop .it.neuf { color:var(--accent); border-top:1px solid var(--line); margin-top:3px;
     padding-top:7px; border-radius:0 0 7px 7px; }
-  .newprof { position:absolute; right:8px; top:calc(100% - 4px); z-index:21;
-    display:flex; gap:5px; background:#0c0e12; border:1px solid var(--accent);
+  .newprof { position:absolute; display:flex; gap:5px; background:#0c0e12; border:1px solid var(--accent);
     border-radius:10px; padding:5px; box-shadow:0 12px 30px #000d; }
   .newprof input { background:#171a21; border:1px solid var(--line-2); color:var(--txt);
     border-radius:7px; padding:5px 8px; font:inherit; font-size:12.5px; width:140px; }
@@ -323,6 +327,7 @@
     <div class="mainwin" id="mainwin" style="display:none"></div>
     <div class="ov" id="ov"></div>
     <div class="compagnon" id="compagnon" style="display:none"></div>
+    <div class="poplayer" id="poplayer"></div>
     <div class="dropnote">glisser une capture d'écran de Wakfu ici pour juger sur un vrai fond</div>
   </div>
 
@@ -824,8 +829,6 @@ function identifHTML(inc){
         <div><div class="nm">${c.nom}</div>
           <div class="sub">${CLASSES[c.cls]} · vu en combat</div></div>
         <div class="acts">${actsHTML(c)}</div>
-        ${S.profMenu===c.eid ? profPopHTML(c) : ''}
-        ${S.newProfil===c.eid ? newProfilHTML(c) : ''}
       </div>
       ${S.warn && S.warn.eid===c.eid ? `<div class="warnbox" style="margin:0 0 8px 44px">
           « <b>${byId(S.warn.pid).nom}</b> » est enregistré comme
@@ -911,37 +914,58 @@ function render(){
 
   const mw = document.getElementById('mainwin');
   mw.style.display = S.demande==='C' ? '' : 'none';
-  if (S.demande==='C'){ mw.innerHTML = mainwinHTML(); fitPopovers(mw);
+  if (S.demande==='C'){ mw.innerHTML = mainwinHTML();
     if (!mw.dataset.placed){ mw.style.left='500px'; mw.style.top='96px'; mw.dataset.placed='1'; } }
 
+  mountPop();
   renderSwitcher();
   renderPanel();
 }
 
-/* Une liste flottante ne doit jamais sortir de la fenetre qui la porte : une
-   application de bureau n'a pas ce droit-la, et le cadre arrondi la couperait
-   de toute facon.
+/* Le menu de profils DEBORDE de la fenetre, exprès. La contrainte que je lui
+   avais donnee — « une application de bureau ne dessine pas hors de sa
+   fenetre » — etait fausse : c'est vrai d'un `<div>`, faux d'un menu natif.
+   Cote implementation, ceci est `Menu.popup()` (menu de l'OS, deborde
+   librement) ou une petite fenetre sans cadre, PAS un element du DOM de la
+   fenetre principale.
 
-   Retourner la liste vers le haut ne suffit pas — quand elle est plus haute
-   que la place disponible DES DEUX COTES, elle est coupee dans les deux sens.
-   On choisit donc le cote ou il y a le plus de place, et on la contraint a
-   cette place : elle defile plutot qu'elle ne deborde. */
+   Le seul cadre qui le contraint encore est l'ECRAN : il s'ouvre vers le bas
+   s'il y a la place, vers le haut sinon, et ne defile que s'il ne tient nulle
+   part — ce qui, avec la hauteur d'un ecran, n'arrive pas. */
 const MARGE = 8;
-function fitPopovers(mw){
-  const cadre = mw.getBoundingClientRect();
-  mw.querySelectorAll('.profpop, .newprof').forEach(el=>{
-    el.style.top=''; el.style.bottom=''; el.style.maxHeight=''; el.style.overflowY='';
-    const anc = el.parentElement.getBoundingClientRect();
-    const dessous = cadre.bottom - anc.bottom - MARGE;
-    const dessus  = anc.top - cadre.top - MARGE;
-    const h = el.getBoundingClientRect().height;
-    const versLeHaut = () => { el.style.top='auto'; el.style.bottom='calc(100% - 4px)'; };
-    if (h <= dessous) return;                       // elle tient dessous
-    if (h <= dessus)  return versLeHaut();          // elle tient dessus
-    if (dessus > dessous) versLeHaut();             // nulle part : le plus grand côté
-    el.style.maxHeight = Math.max(64, Math.max(dessous, dessus)) + 'px';
-    el.style.overflowY = 'auto';
-  });
+function mountPop(){
+  const layer = document.getElementById('poplayer');
+  layer.innerHTML = '';
+  if (S.demande!=='C') return;
+  const eid = (S.newProfil!==null) ? S.newProfil : S.profMenu;
+  if (eid===null) return;
+  const c = combatantOf(eid); if (!c) return;
+  const mw = document.getElementById('mainwin');
+  const anchor = mw.querySelector(`[data-ans="${eid}:profilmenu"]`)
+              || mw.querySelector(`[data-ans="${eid}:nouveau"]`);
+  if (!anchor) return;
+
+  const d = document.createElement('div');
+  d.innerHTML = (S.newProfil!==null) ? newProfilHTML(c) : profPopHTML(c);
+  const el = d.firstElementChild;
+  if (!el) return;
+  layer.appendChild(el);
+
+  const st = document.getElementById('stage').getBoundingClientRect();
+  const a  = anchor.getBoundingClientRect();
+  const r  = el.getBoundingClientRect();
+  const dessous = innerHeight - a.bottom - MARGE;
+  const dessus  = a.top - MARGE;
+  let top = a.bottom + 4;
+  if (r.height > dessous){
+    if (r.height <= dessus) top = a.top - r.height - 4;
+    else { if (dessus > dessous) top = a.top - r.height - 4;
+           el.style.maxHeight = Math.max(dessous, dessus) + 'px';
+           el.style.overflowY = 'auto'; }
+  }
+  el.style.top  = (top - st.top) + 'px';
+  el.style.left = Math.max(4, a.right - r.width - st.left) + 'px';
+  const f = document.getElementById('npf'); if (f) f.focus();
 }
 
 function renderSwitcher(){
@@ -1124,6 +1148,11 @@ stage.addEventListener('click', e=>{
       }
     }
   }
+  // cliquer ailleurs referme le menu — il flotte au-dessus de tout, donc il
+  // faut le fermer explicitement, un `overflow` ne s'en charge plus.
+  if ((S.profMenu!==null || S.newProfil!==null) && !t.closest('.profpop,.newprof,[data-ans$=":profilmenu"],[data-ans$=":nouveau"]')){
+    S.profMenu=null; S.newProfil=null; render();
+  }
   if (S.swapMenu!==null){ S.swapMenu=null; render(); }
   if (S.swapSrc!==null){ S.swapSrc=null; render(); }
 });
@@ -1161,6 +1190,7 @@ stage.addEventListener('pointerdown', e=>{
   const el = document.getElementById(id);
   el.addEventListener('pointerdown', e=>{
     if (!e.target.closest(handle) || e.target.closest('.later,.chip,.askdot')) return;
+    if (S.profMenu!==null || S.newProfil!==null){ S.profMenu=null; S.newProfil=null; render(); }
     const r=el.getBoundingClientRect(), st=stage.getBoundingClientRect();
     const dx=e.clientX-r.left, dy=e.clientY-r.top;
     const mv=ev=>{ el.style.left=(ev.clientX-st.left-dx)+'px'; el.style.top=(ev.clientY-st.top-dy)+'px'; };
@@ -1240,7 +1270,8 @@ addEventListener('keydown', e=>{
   if (e.key==='ArrowDown')  { e.preventDefault(); cycle('echange', 1); }
   if (e.key==='p')          { cycle('profil', 1); }
   if (e.key===' ')          { e.preventDefault(); document.getElementById('tick').click(); }
-  if (e.key==='Escape')     { S.swapSrc=null; S.swapMenu=null; S.chipMenu=null; render(); }
+  if (e.key==='Escape')     { S.swapSrc=null; S.swapMenu=null; S.chipMenu=null;
+                              S.profMenu=null; S.newProfil=null; render(); }
 });
 
 /* ============================================== une capture en fond ====== */
