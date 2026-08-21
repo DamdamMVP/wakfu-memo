@@ -305,16 +305,6 @@
   .card { position:relative; background:var(--panel); border:1px solid var(--line);
     border-radius:14px; overflow:hidden; min-width:0; }
   .turns > .addturn, .turns > .why { grid-column:1 / -1; }
-  /* La poignee est le BORD DROIT de la fiche sur toute sa hauteur, comme #5 l'a
-     figé : cible large, pas un coin de 16 px. Double-clic = toute la largeur. */
-  .grip { position:absolute; right:0; top:0; bottom:0; width:9px; z-index:2;
-    cursor:ew-resize; display:grid; place-items:center; }
-  .grip:before { content:''; width:3px; height:100%; border-radius:3px;
-    background:var(--accent); opacity:0; transition:opacity .12s; }
-  .grip:hover:before, .grip.on:before { opacity:.85; }
-  .grip:after { content:''; position:absolute; width:2px; height:22px; border-radius:2px;
-    background:var(--line-2); }
-  .grip:hover:after, .grip.on:after { background:transparent; }
   #sizetag { position:fixed; z-index:99; padding:3px 8px; border-radius:7px;
     background:#0c0e12; border:1px solid var(--accent); color:var(--txt);
     font:600 12px/1 ui-monospace,monospace; pointer-events:none; display:none; }
@@ -437,7 +427,7 @@
   details.state pre { max-height:200px; overflow:auto; color:#a9b2c2; font-size:11.5px; }
 </style>
 </head>
-<body>
+<body spellcheck="false">
 <div class="ribbon">PROTOTYPE JETABLE — #21 « la coque de la Fenêtre principale et l'écran des Strats » · la barre du bas est la télécommande, pas l'interface · rien n'est sauvegardé</div>
 
 <div class="stage" id="stage"></div>
@@ -546,7 +536,7 @@ const JEU_COMPLET = () => [
 
 const S = {
   coque:'B', variante:'1',   // B + 1 retenues par Damien ; le reste reste visitable
-  compo:'1',                 // 1 colonne (#5) · 2 colonne serree · 3 en ligne
+  compo:'2',                 // 2 retenue par Damien ; 1 = la colonne de #5, 3 = en ligne
   ficheMini:400,             // px : largeur MINIMALE d'une fiche. Le nombre de
                              // colonnes en decoule, il ne se regle pas.
   winW:null, winH:null,      // taille de la Fenetre principale, en px
@@ -600,7 +590,7 @@ const metaHTML = st => `${plur(st.tours.length,'tour')} · ${plur(st.emplacement
 // La fiche de Tour, telle que #5 la fige. Reproduite, pas proposee.
 function ficheHTML(st, i, editable) {
   const t = st.tours[i];
-  return `<div class="card">${editable ? '<div class="grip" title="glisser : largeur des fiches · double-clic : toute la largeur"></div>' : ''}
+  return `<div class="card">
     <header><span class="tnum">T${i+1}</span>
       <span class="glob" ${editable?'contenteditable data-ph="description du tour…"':''}
         >${esc(t.global)}</span></header>
@@ -1324,22 +1314,6 @@ function drag(el, onMove, onEnd) {
   el.classList.add('on'); tag().style.display = 'block';
 }
 document.addEventListener('mousedown', ev => {
-  const g = ev.target.closest('.grip');
-  if (g) {
-    ev.preventDefault();
-    const card = g.closest('.card'), win = g.closest('.win');
-    const x0 = ev.clientX, w0 = card.getBoundingClientRect().width;
-    // On regle le MINIMUM, global et jamais par tour (#5). Les colonnes
-    // suivent : la fiche tiree s'elargit, et a un moment il n'en tient plus
-    // que deux, puis une.
-    drag(g, e => {
-      S.ficheMini = Math.max(280, Math.min(1600, Math.round(w0 + e.clientX - x0)));
-      win.style.setProperty('--fichemin', S.ficheMini + 'px');
-      tag().textContent = S.ficheMini + ' px mini · ' + nbColonnes(win) + ' col.';
-      majDock();
-    }, render);
-    return;
-  }
   const wg = ev.target.closest('.wingrip');
   if (wg) {
     ev.preventDefault();
@@ -1354,12 +1328,6 @@ document.addEventListener('mousedown', ev => {
       majDock();
     });
   }
-});
-// Double-clic sur la poignee : retour au minimum par defaut.
-document.addEventListener('dblclick', ev => {
-  if (!ev.target.closest('.grip')) return;
-  S.ficheMini = 400;
-  render();
 });
 // Combien de colonnes la grille sert VRAIMENT : on le lit sur la grille, on ne
 // le recalcule pas.
