@@ -24,6 +24,35 @@
   Le panneau de droite est la telecommande du prototype, pas l'interface.
   Rien n'est persiste. Glisser une capture d'ecran de Wakfu sur la scene pour
   juger la lisibilite sur un vrai fond.
+
+  ────────────────────────────────────────────────────────────────────────────
+  REMISE A NIVEAU DU 21 AOUT 2026 — et ce qui n'a PAS ete reverifie.
+
+  Ce fichier avait vieilli sur des decisions prises APRES lui, et il vieillissait
+  mal pour une raison precise : c'est la SEULE maquette ou on peut glisser une
+  vraie capture de Wakfu pour juger la lisibilite sur un fond de jeu. Une palette
+  fausse y sabote donc le seul travail qu'il sait faire. Trois corrections :
+
+    1. LES SIX COULEURS. L'ancien jeu (`#26c6da` + `#5b8cff`) mettait deux bleus
+       a 35° l'un de l'autre dans un lisere de 3 px, et n'avait pas de gris. #21 a
+       rectifie l'ADR 0003 : rouge, jaune, vert, bleu, rose, GRIS — la Couleur se
+       DIT au telephone, donc ni les teintes ni les MOTS ne doivent se confondre.
+    2. LE FILET SOMBRE d'1 px a droite du lisere, ajoute par #21 sur une mesure :
+       quatorze portraits sur dix-huit ont des pixels au-dela de 210 de luminance
+       la ou le lisere les touche.
+    3. LA BARRE DE STRAT remplace le chip de l'en-tete — voir le rectificatif en
+       commentaire sur ce ticket. Le selecteur n'est donc plus une option de la
+       telecommande : il est tranche.
+
+  ⚠️ CE QUI RESTE SUSPECT ET N'A PAS ETE TOUCHE :
+
+    - « La strat X s'arrete au T7. Le combat continue sans consigne. » Cette
+      PHRASE, affichee par l'overlay au-dela du dernier Tour, ressemble a du
+      vocabulaire que l'ADR 0006 lui retire, et #18 a gele que l'overlay « dessine
+      ce que la Strat contient » sans trancher ce cas-la. Laissee telle quelle
+      faute de decision : a trancher, pas a supposer.
+    - Le reste du fichier n'a pas ete audite ligne par ligne. Il est daté : c'est
+      la source primaire de #6, pas une documentation vivante.
 -->
 <style>
   :root {
@@ -85,23 +114,44 @@
   /* la description globale du tour se LIT : elle passe a la ligne plutot que
      d'etre coupee, la hauteur de l'overlay est dictee par le contenu (#5). */
   header.oh .glob { flex:1; min-width:0; font-weight:500; padding-top:2px; }
-  /* le chip de strat : #7 le veut atteignable en combat, #17 n'en voulait pas.
-     Se masque depuis la telecommande, le temps de trancher. */
-  .chip { flex:none; position:relative; font-size:.82em; color:var(--dim);
-    padding:2px 7px; border-radius:7px; border:1px solid var(--line-2);
-    background:#0c0e12; cursor:pointer; white-space:nowrap; }
-  .chip:hover { color:var(--txt); border-color:var(--accent); }
-  .picker { position:absolute; right:0; top:calc(100% + 5px); z-index:9;
-    min-width:170px; background:#0c0e12; border:1px solid var(--line-2);
+  /* LA BARRE DE STRAT, au-dessus de « T1 ».
+     ⚠️ RECTIFIE la decision de ce ticket, qui gardait le selecteur « en chip
+     discret dans l'en-tete ». Un chip NE DIT PAS qu'il se clique, alors que le
+     nom de la Strat est ce qu'on verifie d'un coup d'oeil avant un pull et ce
+     qu'on change entre deux salles. Il monte donc sur sa propre ligne, et c'est
+     LUI le bouton. La description du Tour recupere toute sa largeur.
+     Forme concurrente essayee et ECARTEE (branche `prototype/overlay-entete`) :
+     le nom en texte simple et une icone de liste pres du bord. Mesure — cible de
+     568 px2 contre 3167, pour zero place gagnee, et deux boutons anonymes de
+     25 px cote a cote. */
+  .stratbar { position:relative; display:flex; align-items:center; gap:6px;
+    padding:4px 6px 4px 5px; background:#14161c;
+    border-bottom:1px solid var(--line); cursor:grab; }
+  .stratpick { display:flex; align-items:center; gap:6px; max-width:100%;
+    background:transparent; border:1px solid transparent; border-radius:8px;
+    padding:2px 8px; font-size:.92em; color:var(--txt); font-weight:500;
+    cursor:pointer; }
+  .stratpick:hover { background:var(--raise); border-color:var(--line-2); }
+  .stratpick .chev { flex:none; color:var(--dim); }
+  .stratpick:hover .chev { color:var(--txt); }
+  .picker { position:absolute; left:4px; top:calc(100% + 3px); z-index:9;
+    min-width:190px; background:#0c0e12; border:1px solid var(--line-2);
     border-radius:10px; padding:4px; box-shadow:0 10px 30px #000c; }
-  .picker div { padding:5px 9px; border-radius:7px; color:var(--txt); font-size:.95em; }
-  .picker div:hover { background:var(--raise); }
-  .picker div.cur { color:var(--accent); }
+  .picker div { padding:5px 9px; border-radius:7px; color:var(--dim); font-size:.95em;
+    cursor:pointer; }
+  .picker div:hover { background:var(--raise); color:var(--txt); }
+  .picker div.cur { color:var(--txt); background:#22304d; }
 
   /* l'unite visuelle de #5 : lisere 3px colle au bord gauche de l'icone carree.
      Aucun texte a cote — ni role, ni classe, ni pseudo (ADR 0003). */
   .cls { display:flex; align-items:stretch; flex:none; }
-  .cls .edge { width:3px; flex:none; background:var(--c,transparent); }
+  /* Le lisere garde ses 3 px (#5) et gagne un FILET SOMBRE d'1 px a sa droite,
+     ajoute par #21 sur une mesure : QUATORZE portraits sur dix-huit ont des
+     pixels au-dela de 210 de luminance la ou le lisere les touche. Le gris (168)
+     n'en souffre pas, le jaune (216) si — le filet garantit la frontiere pour les
+     six. C'est d'autant plus vrai ici, ou l'overlay est pose sur le jeu. */
+  .cls .edge { width:3px; flex:none; background:var(--c,transparent);
+    box-shadow:1px 0 0 #0a0c10; }
   .cls img { width:30px; height:30px; display:block;
     background:#0c0e12; box-shadow:0 0 0 1px #ffffff14 inset; }
   .cls.tiny img { width:24px; height:24px; }
@@ -159,7 +209,7 @@
 </style>
 </head>
 <body>
-<div class="ribbon">PROTOTYPE JETABLE — #6 « l'overlay en combat » · variante A retenue · le panneau de droite est la télécommande, pas l'interface · rien n'est sauvegardé</div>
+<div class="ribbon">PROTOTYPE JETABLE — #6 « l'overlay en combat » · variante A retenue · remis à niveau le 21/08/2026 (couleurs, filet, barre de strat) · le panneau de droite est la télécommande</div>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -184,14 +234,14 @@
        6 jouée à 4). « tombé » = <code>est KO !</code>, mort ou abandon. Les deux
        sont indistinguables à l'affichage.</p>
 
-    <h3>Reste à trancher</h3>
+    <h3>Au-delà de la strat</h3>
     <div class="rowbtn">
-      <button id="pick">Sélecteur de strat</button>
       <button id="pastend">Au-delà du T7</button>
     </div>
-    <p class="hint">Le sélecteur met en scène #7 (« atteignable en combat »)
-       contre #17 (« pas de sélecteur dans l'overlay »). « Au-delà du T7 » : la
-       strat s'arrête, le combat continue.</p>
+    <p class="hint">La strat s'arrête, le combat continue. ⚠️ Le texte que
+       l'overlay affiche alors n'a jamais été tranché : voir la note en tête du
+       fichier.<br>Le <b>sélecteur de strat</b> n'est plus une option à basculer —
+       il est tranché, et c'est le nom de la Strat, sur sa barre en haut.</p>
 
     <h3>Réglages V1</h3>
     <div class="sl"><span>texte</span><input type="range" id="fs" min="80" max="180" value="100"><span class="v" id="fsv">100%</span></div>
@@ -234,7 +284,17 @@ const ICO = [
   "data:image/png;base64,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"
 ];
 const ico = i => ICO[i];
-const SLOT_COLORS = ['#f2544b','#f5a524','#3ecf7a','#26c6da','#5b8cff','#c56bea'];
+// Les six Couleurs de l'ADR 0003, telles que #21 les a RECTIFIEES.
+// ⚠️ L'ancien jeu de cette maquette — `#f2544b #f5a524 #3ecf7a #26c6da #5b8cff
+// #c56bea` — est mort : le `cyan` et le `bleu` n'etaient qu'a 35° l'un de
+// l'autre, soit DEUX BLEUS dans un lisere de 3 px, et il n'y avait pas de gris.
+// Le critere a gagne sa moitie ORALE : la Couleur se DIT au telephone, donc deux
+// joueurs ne doivent confondre ni la teinte ni le MOT.
+// Cinq teintes plus un GRIS qui sort de la roue : a six, la region vert-cyan-bleu
+// ne peut pas porter deux teintes distinctes. Le gris se distingue par la CLARTE
+// (luminance 168, a mi-chemin), pas par la teinte — le seul des six qui
+// contraste a la fois sur un portrait sombre et sur un portrait pale.
+const SLOT_COLORS = ['#ff5252','#ffdd33','#4ade50','#22d3d3','#ff4fd8','#a3a8b0'];
 
 /* ============================================================== modele === */
 // L'ordre du tableau EST le Rang (comme la colonne de l'editeur, #5).
@@ -246,7 +306,7 @@ const S = {
   slots:[ mk(7,SLOT_COLORS[0]), mk(6,SLOT_COLORS[1]), mk(1,SLOT_COLORS[2]),
           mk(8,SLOT_COLORS[3]), mk(0,SLOT_COLORS[4]), mk(4,SLOT_COLORS[5]) ],
   turns:[], turn:1, cursor:0,
-  showPicker:true, pickerOpen:false,
+  pickerOpen:false,            // le selecteur n'est plus optionnel : il est tranche
   fs:1, w:420, op:92,
 };
 
@@ -308,14 +368,19 @@ const clsHTML = (s,extra='') =>
 
 function overlayHTML(){
   const t = curTurn();
-  const chip = S.showPicker
-    ? `<span class="chip" data-pick>${S.strat} ▾</span>
-       ${S.pickerOpen ? `<div class="picker">${S.strats.map(n=>
-         `<div data-strat="${n}" class="${n===S.strat?'cur':''}">${n}</div>`).join('')}</div>`:''}`
-    : '';
-  const head = `<header class="oh">
+  // Le chevron est DESSINE, comme partout ailleurs depuis #21 : le glyphe ▾ ne
+  // sort pas dans toutes les polices systeme et se lisait comme un point.
+  const bar = `<div class="stratbar">
+      <span class="stratpick" data-pick>${S.strat}
+        <svg class="chev" width="9" height="6" viewBox="0 0 9 6" fill="none"
+          stroke="currentColor" stroke-width="1.4" aria-hidden="true"
+          ><path d="M1 1.4 4.5 4.7 8 1.4"></path></svg></span>
+      ${S.pickerOpen ? `<div class="picker">${S.strats.map(n=>
+        `<div data-strat="${n}" class="${n===S.strat?'cur':''}">${n}</div>`).join('')}</div>`:''}
+    </div>`;
+  const head = bar + `<header class="oh">
       <span class="tnum">T${S.turn}</span>
-      <div class="glob">${t ? (t.global||'') : ''}</div>${chip}
+      <div class="glob">${t ? (t.global||'') : ''}</div>
     </header>`;
   const rows = S.slots.map((s,i)=>{
     const off = !isActive(s);
@@ -356,13 +421,11 @@ function renderPanel(){
     </div>`).join('');
   host.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{
     const [i,st] = b.dataset.st.split(':'); S.slots[i].state = st; render(); });
-  document.getElementById('pick').classList.toggle('on', S.showPicker);
   document.getElementById('pastend').classList.toggle('on', !curTurn());
 }
 document.getElementById('tick').onclick  = tick;
 document.getElementById('back').onclick  = back;
 document.getElementById('reset').onclick = ()=>{ S.turn=1; S.cursor=0; render(); };
-document.getElementById('pick').onclick  = ()=>{ S.showPicker=!S.showPicker; S.pickerOpen=false; render(); };
 document.getElementById('pastend').onclick = ()=>{
   S.turn = curTurn() ? S.turns.length+2 : 1; S.cursor=0; render(); };
 const sl=(id,vid,fmt,set)=>{ const r=document.getElementById(id);
@@ -383,7 +446,11 @@ ov.addEventListener('click', e=>{
 // deplacer l'overlay, en l'attrapant par son en-tete
 ov.addEventListener('pointerdown', e=>{
   if (e.target.closest('.chip,.picker,#grip')) return;
-  if (!e.target.closest('header.oh')) return;
+  // La barre de Strat est desormais la bande du HAUT, donc elle doit se saisir
+  // aussi — sinon le bord superieur de l'overlay n'est plus attrapable. Mais pas
+  // sur le nom ni dans le menu, qui se cliquent.
+  if (e.target.closest('[data-pick], .picker')) return;
+  if (!e.target.closest('header.oh, .stratbar')) return;
   const r=ov.getBoundingClientRect(), st=document.getElementById('stage').getBoundingClientRect();
   const dx=e.clientX-r.left, dy=e.clientY-r.top;
   const mv=ev=>{ ov.style.left=(ev.clientX-st.left-dx)+'px'; ov.style.top=(ev.clientY-st.top-dy)+'px'; };
