@@ -400,11 +400,11 @@ const TOUR = {
   note:'(TP SUR HUPPER)',
 };
 
-const POLICES = [
-  ['systeme','Système', 'ui-sans-serif,system-ui,"Segoe UI",sans-serif'],
-  ['etroite','Étroite', '"Segoe UI Semibold","Liberation Sans Narrow",Roboto Condensed,sans-serif'],
-  ['serif',  'Serif',   'Georgia,"Liberation Serif",serif'],
-];
+// LA POLICE EST SORTIE DE LA V1, tranche en seance : elle etait dans
+// l'inventaire mais #6 ne l'avait jamais confirmee, et trois choix de police ne
+// reglent rien que la taille du texte ne regle deja. La fiche garde donc la
+// police du systeme, comme partout ailleurs dans l'app.
+const POLICE_FICHE = 'ui-sans-serif,system-ui,"Segoe UI",sans-serif';
 
 /* ================================================================= etat === */
 const S = {
@@ -423,7 +423,6 @@ const S = {
     opacite:85,                // %
     tailleTexte:14,            // px
     largeurFiche:420,          // px, mini 340 (#5) — c'est la fiche de l'OVERLAY
-    police:'systeme',
     posX:1246, posY:322,       // px, coin haut-gauche de l'Overlay
     verrouille:true,           // la souris passe au travers
     ficheMiniFenetre:400,      // px — l'AUTRE grandeur (#21), dans la Fenetre
@@ -446,7 +445,6 @@ const DOSSIER_DONNEES = 'C:\\Users\\damien\\AppData\\Roaming\\wakfu-memo';
 const esc = s => String(s == null ? '' : s)
   .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const R = () => S.reg;
-const policeCSS = () => (POLICES.find(p => p[0] === R().police) || POLICES[0])[2];
 // Les trois conditions de CONTEXT.md. Le Socle d'etat les nomme (#21, ADR 0012).
 function conditions() {
   return [
@@ -467,7 +465,7 @@ const clsHTML = (e, size) =>
 // discret (#6), la Mise en avant seulement si un combat est vivant (#18).
 function ficheHTML() {
   const avant = S.combat ? 1 : -1;   // la Rotation est arrivee sur le Rang 2
-  return `<div class="fiche" style="--fs:${R().tailleTexte}px;--ff:${policeCSS()}">
+  return `<div class="fiche" style="--fs:${R().tailleTexte}px;--ff:${POLICE_FICHE}">
     <header><span class="tnum">T${TOUR.n}</span>
       <span class="glob">${esc(TOUR.global)}</span>
       <span class="chip">${esc(S.stratChoisie || '—')}</span></header>
@@ -517,8 +515,6 @@ function aspectLignes(dup) {
   out.push(ligne('Taille du texte',
     'la hauteur de la fiche suit — elle ne se règle pas (#5)',
     `${rangeHTML('tailleTexte',11,22)}<span class="val">${R().tailleTexte} px</span>`));
-  out.push(ligne('Police', 'trois choix, pas la liste du système',
-    segHTML('police', POLICES.map(p => [p[0], p[1]]))));
   if (dup) {
     out.push(ligne('Largeur de la fiche',
       'la même pour tous les tours et toutes les strats (#6)',
@@ -596,8 +592,10 @@ function fenetreLignes() {
   const cols = S.winW ? Math.max(1, Math.floor((S.winW - 206 - 36) / R().ficheMiniFenetre)) : 2;
   return ligne('Largeur minimale d’une fiche',
     `dans l’écran des strats — ${cols} colonne${cols>1?'s':''} à la taille actuelle de la fenêtre`,
-    `${rangeHTML('ficheMiniFenetre',300,700,10)}<span class="val">${R().ficheMiniFenetre} px</span>`,
-    gesteNote('rien à voir avec la largeur de la fiche de l’overlay : celle-ci est un <b>minimum</b> dans une grille (#21).'));
+    // Pas de phrase pour distinguer cette largeur de celle de l'Overlay : la
+    // confusion que #21 craignait n'existe pas sur cet ecran, ou l'autre
+    // largeur ne figure meme pas — elle se prend sur l'objet.
+    `${rangeHTML('ficheMiniFenetre',300,700,10)}<span class="val">${R().ficheMiniFenetre} px</span>`);
 }
 
 /* ---- l'Apercu : les Reglages dessinent EUX-MEMES une fiche, sur un decor
@@ -700,13 +698,6 @@ function variante3() {
                sont dans la barrette du bas.`
             : `L’opacité ne se juge que contre les pixels du jeu. Vous pouvez régler
                quand même, sur un décor factice — ou lancer Wakfu d’abord.`}</p>
-          <div class="mini">
-            <span>opacité ${R().opacite} %</span>
-            <span>texte ${R().tailleTexte} px</span>
-            <span>largeur ${R().largeurFiche} px</span>
-            <span>x ${R().posX} · y ${R().posY}</span>
-            <span>${(POLICES.find(p=>p[0]===R().police)||POLICES[0])[1].toLowerCase()}</span>
-          </div>
         </div>
         <button class="cta ${pret?'':'alt'}" data-act="surjeu">${
           pret ? 'Régler maintenant' : 'Régler sur un décor factice'}</button>
@@ -739,7 +730,6 @@ function surjeuHTML() {
         <span class="val">${R().opacite} %</span></div>
       <div class="grp"><label>texte</label>${rangeHTML('tailleTexte',11,22)}
         <span class="val">${R().tailleTexte} px</span></div>
-      <div class="grp"><label>police</label>${segHTML('police', POLICES.map(p=>[p[0],p[1]]))}</div>
       <div class="grow"></div>
       <span class="why">largeur ${R().largeurFiche} px · x ${Math.round(S.posLocalX)} ·
         y ${Math.round(S.posLocalY)}</span>
@@ -846,7 +836,7 @@ function dump() {
 // pas tranches ; ce ticket juge la SURFACE, pas le schema.
 ${JSON.stringify({ schema:1,
   opacite:R().opacite, tailleTexte:R().tailleTexte,
-  largeurFicheOverlay:R().largeurFiche, police:R().police,
+  largeurFicheOverlay:R().largeurFiche,
   positionOverlay:{ x:R().posX, y:R().posY },
   overlayVerrouille:R().verrouille,
   ficheMiniFenetre:R().ficheMiniFenetre,
