@@ -32,9 +32,13 @@
     - ADR 0002 : des qu'un ID d'entite est attache, LE LOG FAIT FOI — nom et
            Classe ne sont plus editables. C'est la contrainte structurante :
            deux sortes de Personnages sur le meme ecran.
-    - #17  saisie manuelle = nom + Classe, sans ID, avec l'avertissement que le
-           nom doit etre EXACTEMENT celui en jeu. Personnage ignore : retenu
-           par ID d'entite, jamais repropose, reversible.
+    - #17  saisie manuelle = nom + Classe, sans ID. ⚠️ L'AVERTISSEMENT DE #17
+           (« le nom doit etre exactement celui en jeu ») EST RETIRE : le champ
+           canonise pendant la frappe, donc il n'y a plus rien a avertir. Une
+           majuscule ne peut se trouver qu'en tete, apres un tiret ou apres une
+           apostrophe — le champ la met, l'utilisateur la voit, et c'est tout ce
+           que le libelle disait. Personnage ignore : retenu par ID d'entite,
+           jamais repropose, reversible.
     - #11  suppression en CASCADE AU GESTE ; la confirmation DIT OU le
            Personnage est engage ; supprimer n'est pas ignorer, donc la
            confirmation offre les deux. Profil supprime → ses Personnages
@@ -984,7 +988,8 @@ function popHTML() {
 }
 
 /* La saisie manuelle : nom + Classe, sans ID (#17).
-   ⚠️ L'AVERTISSEMENT A CHANGE DE SENS, et ce n'est pas une retouche de libelle.
+   ⚠️ IL N'Y A PLUS D'AVERTISSEMENT DU TOUT, et ce n'est pas une retouche de
+   libelle : c'est la consequence de la regle canonique.
    Il disait « exactement le nom en jeu, accents et majuscules compris » — la
    lecture littérale de l'ADR 0011, qui compare caractere pour caractere. Damien
    demande l'inverse : que l'accrochage IGNORE la casse et les accents. Ce que
@@ -1005,8 +1010,6 @@ function formHTML() {
     <h5>${edit ? 'Corriger' : 'Saisir à la main'}${pr ? ' — ' + esc(pr.nom) : ''}</h5>
     <input id="fnom" value="${esc(f.nom)}" placeholder="nom en jeu" autofocus>
     <p class="warn" id="fdup"></p>
-    <p class="warn">Les majuscules se mettent toutes seules, comme en jeu.
-      Si tu te trompes de lettre, tu le rattraperas au premier combat.</p>
     <div class="clsgrid">${CLASSES.map((n,ci) =>
       `<img src="${ICONS[ci]}" alt="${esc(n)}" title="${esc(n)}"
         class="${f.cls===ci?'cur':''}" data-act="formcls:${ci}">`).join('')}</div>
