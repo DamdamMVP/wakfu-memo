@@ -113,13 +113,15 @@ _Avoid_: exception, composition, assignation
 ### Les logs — d'où vient l'état
 
 **Frontière de tour** :
-La ligne `N seconde(s) reportée(s)` du chat log. Marque la fin du tour d'un
-Personnage contrôlé — les monstres n'en émettent aucune.
+La ligne `N seconde(s) reportée(s)` de `wakfu.log`. Marque la fin du tour d'un
+Personnage contrôlé — les monstres et les Invocations n'en émettent aucune.
+C'est le seul signal qui fait avancer la Rotation.
 _Avoid_: tick, fin de tour
 
 **Ligne nommée** :
-Une ligne du chat log qui porte le nom d'un combattant, et qui sert donc à
-attribuer un tour.
+Une ligne de log qui porte le nom d'un combattant. Elle n'attribue aucun tour :
+le nom qu'elle porte peut être celui du tour qui vient de finir, et sa copie
+tardive arrive parfois après la Frontière de tour suivante.
 _Avoid_: événement, log de combat
 
 **Transition** :
@@ -130,19 +132,28 @@ _Avoid_: événement, changement
 
 **Tick** :
 Une ligne de log qu'on compte, et qu'il faut donc dédupliquer. La Frontière de
-tour est la seule.
+tour est la seule : on retient la première vue et on ignore les `k−1` suivantes,
+`k` étant le nombre de clients Wakfu engagés dans le combat.
 _Avoid_: compteur, battement
 
 ### Le suivi — où on en est
 
 **Rotation** :
-La suite des Emplacements actifs, par Rang croissant, que le suivi parcourt. Ne
-s'arrête jamais sur un Emplacement inactif, ni sur un monstre.
-_Avoid_: cycle, tour de table, ordre
+La suite des Emplacements actifs, par Rang croissant, que le suivi parcourt, et
+la position courante dans cette suite. Ne s'arrête jamais sur un Emplacement
+inactif, ni sur un monstre. Chaque Frontière de tour l'avance d'un cran ; quand
+elle revient au plus petit Rang actif, le Tour courant change.
+_Avoid_: cycle, tour de table, ordre, curseur
+
+**Tour courant** :
+Le Tour de la Strat en vigueur, celui dont l'overlay affiche la fiche. Vaut 1 à
+l'ouverture du combat et avance d'un cran chaque fois que la Rotation boucle.
+Rien ne le corrige à la main, et rien n'avoue qu'il pourrait être faux.
+_Avoid_: round, numéro de tour, compteur
 
 **Mise en avant** :
 Le fond teinté de la ligne de l'Emplacement sur lequel la Rotation est arrivée.
-Ne promet pas l'instant : après une Frontière de tour le curseur avance tout de
+Ne promet pas l'instant : après une Frontière de tour la Rotation avance tout de
 suite, même si des monstres jouent avant. Une seule ligne à la fois — le
 suivant n'est pas annoncé.
 _Avoid_: surbrillance, highlight, actif, joue

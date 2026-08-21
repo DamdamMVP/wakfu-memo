@@ -50,12 +50,18 @@ Conséquence, vérifiée par le test multi-compte : deux clients lancés depuis 
 même installation écrivent dans **les mêmes fichiers**, et y dupliquent chaque
 événement.
 
-Fichiers utiles : `wakfu.log` (rotation `.1`, `.2`) et `wakfu_chat.log`.
+**Un seul fichier est utile : `wakfu.log`.** `wakfu_chat.log` en est un
+**sous-ensemble strict** — voir « Les deux fichiers sont redondants » ci-dessous.
 
-⚠️ **La rotation annoncée ne s'observe pas.** Malgré `MaxFileSize=1MB`, un
-`wakfu.log` mesuré à **1 473 576 octets** (4 lancements de client, 10 combats,
-une soirée) n'avait produit **ni `.1` ni `.2`**. Ne pas compter sur un plafond
-de taille pour borner ce fichier, ni sur l'existence des fichiers tournés.
+⚠️ **La rotation est réelle, mais incohérente d'une installation à l'autre.**
+Côté Steam, `wakfu.log.1` (1 051 550 o) et `wakfu.log.2` (1 049 400 o) existent
+bel et bien. Côté launcher, un `wakfu.log` mesuré à **1 543 222 octets** (4
+lancements de client, 10 combats, une soirée) n'avait produit **ni `.1` ni
+`.2`** — à `log4j.properties` identique. Fait brut, non expliqué. Ne compter ni
+sur un plafond de taille pour borner ce fichier, ni sur l'existence des fichiers
+tournés, ni sur leur absence. Un fichier tourné peut commencer **en pleine
+session**, sans marqueur de démarrage : `wakfu.log.1` contient 43 lignes
+`[_FL_]` et zéro `log path=`.
 Les autres (`wakfu_lua`, `wakfu_theme`, `wakfu_camera`, `wakfu_animation`,
 `wakfu_particles_scripts`, `wakfu_fileLoading`) sont vides ou hors sujet.
 
@@ -115,12 +121,49 @@ Corrélé au `fightId` du début. Marqueur explicite et fiable.
 précède `1584017389` (21:46:21). C'est un identifiant, pas un compteur — ne
 jamais ordonner des combats par `fightId`, seul l'ordre des lignes fait foi.
 
-### Ce que `wakfu.log` ne contient PAS
+### Les deux fichiers sont redondants — `wakfu_chat.log` est inutile
 
-Aucun événement de tour. Les deux seuls tags structurés du fichier sont
-`[_FL_]` (30 occurrences, uniquement les entrées en combat) et `[FIGHT]`
-(uniquement « End fight »). **La piste « le canal `[_FL_]` contient
-peut-être des événements de tour nommés » est un cul-de-sac.**
+`log4j.properties` déclare `log4j.rootLogger=INFO, stdout, mainLog, Sentry` et
+`log4j.logger.chat=INFO, chat` **sans `log4j.additivity.chat=false`** — seuls
+`LUA`, `animation`, `camera`, `fileLoadingLogger` et `theme` portent ce drapeau.
+Le logger de chat est donc **additif** : tout ce qu'il écrit part aussi dans
+`mainLog`. Vérifié canal par canal :
+
+| | `wakfu.log` | `wakfu_chat.log` |
+|---|---|---|
+| `[Information (combat)]` | 1115 | 1115 |
+| frontières `reportée` | 85 | 85 |
+| `lance le sort` | 212 | 212 |
+| `est KO !` | 8 | 8 |
+| `[Communauté (FR)]` | 346 | 346 |
+
+`wakfu.log` porte donc le roster, la fin de combat **et** tout le détail des
+tours, dans un seul flux déjà ordonné. C'est décisif parce qu'**aucun des deux
+fichiers ne porte de date** : fusionner deux flux aurait demandé d'inventer les
+dates et de gérer le passage de minuit. Avec un seul fichier, l'ordre des octets
+fait foi. Voir l'ADR `0008`.
+
+⚠️ Une version précédente de ce document affirmait que `wakfu.log` **ne contient
+aucun événement de tour** et que `[_FL_]` et `[FIGHT]` en sont **les deux seuls
+tags structurés**. Les deux sont **faux**. Le fichier porte aussi `[NATION]`
+(735), `[Commerce]` (517), `[FIGHT_REFACTOR]` (341), `[LUA]` (71),
+`[Animation]` (68), `[CHAT]` (33), `[Fight]` (30), `[LD]` (18), `[DEATH]` (10)
+et d'autres. Reste vrai en revanche : **il n'existe aucun événement « c'est le
+tour de X »**, et `[FIGHT]` n'a qu'une seule forme, `End fight with id <N>` —
+il n'y a **pas** de ligne d'ouverture symétrique.
+
+Une paire symétrique non taguée existe cependant, `NetInFight Added` /
+`NetInFight Removed` : 2 `Added` et 1 `Removed` par combat et par client,
+invariant sur 25 combats et 2 builds, le `Removed` émis 1 ms après `End fight`.
+Elle est **inutilisable pour le suivi** parce qu'elle ne porte aucun `fightId`,
+donc elle est inattribuable en multi-compte — notée ici au cas où.
+
+Deux autres pistes vérifiées et mortes : la ligne `Resynchronisation de la
+position d'un fighter dans notre combat. FightID = …` ne désigne **pas** notre
+combat (86 `FightID` distincts pour 10 combats joués, et 6 combats sur 10 n'en
+produisent aucune), et le canal `Information (combat)` n'est **pas** une preuve
+d'être en combat (`Vous avez défié amicalement X`, `Combat terminé, cliquez ici…`
+tombent hors de toute fenêtre de combat).
 
 ## `wakfu_chat.log` — le détail des tours
 
@@ -304,10 +347,18 @@ jamais nommer « Mulmouth Enragé ». Seul `[_FL_]` donne le nom réel.
 ```
 
 Sur un échantillon solo, les deux côtés de la frontière portent le même nom :
-impossible de trancher à qui appartient quoi. **Le multi-compte l'a tranché —
-le passif qui suit la frontière nomme le personnage dont le tour vient de se
-terminer, pas celui qui commence.** Les sorts servent d'ancre : ils précèdent
-la frontière qui clôt leur propre tour.
+impossible de trancher à qui appartient quoi. Le multi-compte a montré que le
+passif **voisin** de la frontière nomme le personnage dont le tour vient de se
+terminer, pas celui qui commence. Les sorts servent d'ancre : ils précèdent la
+frontière qui clôt leur propre tour.
+
+⚠️ **Mais la position du passif n'est pas stable**, contrairement à ce
+qu'affirmait ce document. Sur `duo`, `duel` et `pack4` le passif **suit** la
+frontière de 100 à 900 ms ; sur `revive` il la **précède** de 1 ms
+(`PJ4: 0 PW (Grâce naturelle)` à 21:45:14,385 puis la frontière à
+21:45:14,387). Toute règle d'attribution qui s'appuie sur « le passif d'après »
+est donc fausse. Sans conséquence pour le produit, qui n'attribue plus rien par
+le passif — la Frontière de tour porte tout.
 
 ```
 18:46:33,484 - PJ1 lance le sort Capucine       <- PJ1 agit
@@ -514,36 +565,101 @@ marque la fin du tour d'un **personnage joué**, rien de plus. Le suivi ne peut
 donc pas être un simple compteur — c'est ce que supposait la version
 précédente de ce document, et c'est faux.
 
-L'algorithme retenu :
+L'algorithme retenu — **remplace intégralement la version précédente de cette
+section**, qui dédupliquait sur une fenêtre de 500 ms, segmentait sur les
+**lignes nommées** et **apprenait** l'ordre des tours en observant le round 1.
+Les trois sont morts : l'ordre est **déclaré** par le joueur (le `Rang`), la
+frontière porte tout, et la dédup est un comptage.
 
-1. `[_FL_]` au début du combat → roster complet, avec l'ID d'entité et
-   `isControlledByAI=false` pour isoler l'équipe du joueur.
-2. Dédupliquer le flux sur une fenêtre de 500 ms (voir plus haut) : sans ça,
-   tout est compté deux fois en multi-compte.
-3. Segmenter sur les **lignes nommées**, pas sur les frontières. Chaque
-   changement de nom dans la suite des lignes nommées est un changement de tour.
-4. Les frontières `reportée` restent un signal fiable et inconditionnel de
-   **fin de tour d'un personnage joué** — utile pour confirmer la segmentation
-   et pour détecter le tour d'un PJ qui n'a rien fait de loggable.
-5. L'ordre des tours est **figé au démarrage du combat** (règle de jeu Wakfu,
-   source : wiki). À la fin du round 1 l'ordre est donc connu, et le suivi
-   devient prédictif à partir du round 2.
-6. Pour du farm de donjon à équipe constante, mettre l'ordre en cache par
-   (donjon, équipe) rend le suivi prédictif dès le round 1 des runs suivantes.
+1. Lire **`wakfu.log` seul** (ADR `0008`), en appliquant une **liste blanche de
+   canaux** sur les lignes de chat qu'on y trouve.
+2. Au lancement, **relire depuis le dernier `log path=`** — la borne de la
+   session de client en cours — et rejouer les transitions pour reconstruire le
+   combat éventuellement déjà commencé. Un marqueur d'arrêt
+   (`Sending DisconnectionMessage`, `Stopping cGz...`) apparaissant après le
+   dernier `[_FL_]` ouvert ferme ce combat : sans ça, un client fermé en plein
+   combat laisse un **combat fantôme** déclaré en cours pendant des heures (cas
+   réel : `1552042367`, 4 h 39).
+3. `[_FL_]` donne le roster complet, avec l'ID d'entité et
+   `isControlledByAI=false` pour isoler l'équipe du joueur. Ces lignes se
+   dédupliquent sur l'**ID d'entité**, jamais sur le temps (écart mesuré de
+   1750 ms entre deux copies).
+4. Déterminer `k`, le nombre de clients engagés, comme le **maximum du nombre de
+   copies de la ligne `[_FL_]` d'une même entité** — et **surtout pas** comme le
+   nombre d'entités `isControlledByAI=false` distinctes, parce que les entités
+   n'arrivent pas ensemble : sur `1552030105`, PJ2 apparaît à 18:38:34,415 et
+   PJ1 seulement à 18:38:36,163. Conclure `k=1` donnerait un overlay **deux fois
+   trop rapide**. `k` est figé à la première frontière.
+5. Compter les frontières : **la première vue est une fin de tour, on avance,
+   puis on ignore les `k−1` suivantes**. La formulation compte — un découpage en
+   paquets absolus de `k` se décale définitivement sur la frontière **orpheline**
+   qui existe dans les logs (la première de `duo` n'a qu'une seule copie, d'où 31
+   lignes pour 16 tours). Voir l'ADR `0009`.
+6. Toutes les autres lignes utiles sont des **transitions** — `est KO !`,
+   `est réanimé`, `est ressuscité !`, `est hors-combat !`, `[_FL_]`,
+   `[FIGHT] End fight` — qui posent un état, sont idempotentes et **n'exigent
+   aucune déduplication**. On applique à la première vue et on ignore les copies.
+   C'est ce qui rend sans objet le skew de 1253 ms mesuré sur `est KO !`.
+7. L'ordre des tours n'est **pas** déduit : chaque Emplacement de la Strat porte
+   un `Rang` de 1 à 6, déclaré par le joueur. Le suivi ne s'arrête que sur les
+   Emplacements **actifs** et franchit les inactifs d'un bloc — sans quoi il se
+   bloquerait sur un monstre, qui n'émet jamais de frontière.
+
+### Ce qu'on a mesuré puis écarté
+
+- **La fenêtre temporelle pour les frontières.** Les mesures la recommandaient :
+  deux copies d'une frontière sont séparées de **1 à 173 ms**, deux vraies
+  frontières d'au moins **884 ms**, sans aucun recouvrement sur les 5
+  échantillons. Écartée parce que le comptage, correctement formulé, absorbe déjà
+  la frontière orpheline, et qu'un seuil en millisecondes est un réglage de plus à
+  défendre.
+- **`<nom> lance le sort <sort>` comme correcteur ou détecteur.** Le signal est
+  fiable — sur 35 tours et 7 combats, le nom porté par la suite des `lance le
+  sort` ne change **jamais** sans qu'une frontière s'interpose, et l'appariement
+  littéral n'a aucun faux positif (164 tokens `lance`, 162 sont
+  ` lance le sort `, les 2 autres sont le sort « Relance »). Mais sa couverture
+  n'est que de **48 %** (18 tours muets sur 35, et 14 sur 16 sur `duo`), donc il
+  ne peut rien piloter ; et il ne peut pas non plus **corriger**, parce que la
+  copie tardive d'un sort du tour précédent peut arriver après que le suivi a
+  avancé — le skew des lignes nommées se mesure en **secondes** (jusqu'à 3714 ms
+  entre deux copies d'un même lancement) contre 173 ms pour une frontière.
+  Restait l'usage en **détecteur**, avec la règle « on ignore le désaccord qui
+  nomme l'Emplacement qu'on vient de quitter » ; il est **hors périmètre V1**
+  depuis l'ADR `0006`, qui retire à l'overlay tout vocabulaire pour son propre
+  doute et lui ôte donc son seul consommateur.
+- **Les pièges d'un parseur de lignes nommées**, si le besoin revenait : les
+  monstres et les invocations lancent des sorts aussi ; `<PJ>: Invoque un(e) X`
+  n'est **pas** un signe de tour (sur `1584017389`, PJ3 invoque deux Phorreurs
+  sans avoir jamais joué, puis meurt) ; et `PJ1: Le Dieu Ecaflip (Niv. 1)` rejoue
+  le nom du sort juste après son lancement, donc apparier « nom + nom de sort »
+  compterait double.
+
+### Deux invariants et une réserve
+
+- **Un combat peut ne contenir aucune frontière** (`1584017389`) : le suivi doit
+  tenir sans un seul tick.
+- **Le dernier tour d'un combat n'est jamais fermé** : à `End fight`, le suivi est
+  en retard d'un cran. Sans conséquence.
+- ⚠️ **Réserve sur les noms.** Les personnages joués sont anonymisés en
+  `PJ1`…`PJ4` dans **tous** les échantillons — courts, ASCII, sans espace ni
+  apostrophe. Rien ne teste donc ce qu'un vrai pseudo subit dans une ligne de
+  combat. Des pseudos à apostrophe et tiret existent ailleurs dans les fichiers
+  (`Thor'Rompiche`, `Jt'Invok`, `Anusky-Bail`), et une forme à suffixe existe —
+  `Wingardium Nozadah (COMPTE) vient de quitter notre monde` — mais sur le canal
+  `Information (jeu)`.
 
 ### Points de rupture connus
 
-- Un combattant qui ne fait **rien de loggable** pendant son tour (déplacement
-  seul, tour passé) est invisible. Pour un personnage joué, la frontière
-  `reportée` le rattrape. Pour un **monstre**, rien ne le rattrape : son tour
-  ne laisse aucune trace. L'ordre appris peut donc comporter des trous côté
-  monstres. Sur l'échantillon, 3 monstres étaient au roster et seuls 2 ont agi.
-- Deux monstres homonymes sont indistinguables dans le chat log (voir plus
-  haut).
-- Les invocations et les résurrections sont insérées dans l'ordre des tours
-  juste après l'unité courante (règle de jeu) : elles décalent la rotation.
-- L'initiative n'apparaît nulle part dans les logs : impossible de déduire
-  l'ordre sans observer un round complet.
+- Deux monstres homonymes sont indistinguables dans les lignes de chat, qui ne
+  portent pas les ids d'entité (voir plus haut). Bénin : on ne suit précisément
+  que les personnages joués.
+- **Deux** frontières orphelines dans un même combat feraient perdre un tour ;
+  une seule est absorbée exactement. Une seule observée sur 7 combats.
+- Un `k` faux ne se détecte pas tout seul, et depuis l'ADR `0006` rien ne
+  l'afficherait. La règle de lecture de `k` du point 4 est la **seule** défense.
+- Non couvert par les échantillons : un client **relancé** pendant un combat déjà
+  ouvert. On ne sait pas si un combat rejoint réémet une rafale `[_FL_]`. Trou
+  assumé — l'overlay ne suivra pas ce combat et se recalera au suivant.
 
 ## Conformité
 
