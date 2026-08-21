@@ -943,9 +943,19 @@ function popHTML() {
   return '';
 }
 
-/* La saisie manuelle : nom + Classe, sans ID (#17). L'avertissement sur le nom
-   n'est pas de la politesse — un nom tape est « la premiere source de ça ne
-   marche pas » (#8), et c'est la donnee qui porte toute la jointure. */
+/* La saisie manuelle : nom + Classe, sans ID (#17).
+   ⚠️ L'AVERTISSEMENT A CHANGE DE SENS, et ce n'est pas une retouche de libelle.
+   Il disait « exactement le nom en jeu, accents et majuscules compris » — la
+   lecture littérale de l'ADR 0011, qui compare caractere pour caractere. Damien
+   demande l'inverse : que l'accrochage IGNORE la casse et les accents. Ce que
+   ça suppose, et qui n'est PAS verifie : deux personnages Wakfu distincts d'un
+   meme serveur ne diffèrent jamais par la seule casse ou le seul accent. Le
+   libelle ci-dessous fait donc une PROMESSE A CREDIT — a tenir ou a retirer
+   quand le fait sera etabli.
+   Ce qui est deja etabli, lui : « Thor'Rompiche », « Jt'Invok », « Anusky-Bail »
+   (doc de grammaire). Les majuscules INTERNES existent, apres une apostrophe ou
+   un tiret — donc on ne normalise JAMAIS la chaine stockee, on ne replie que la
+   clef de comparaison. */
 function formHTML() {
   const f = S.form;
   if (!f) return '';
@@ -954,8 +964,8 @@ function formHTML() {
   return `<div class="form" style="left:${f.x}px;top:${f.y}px">
     <h5>${edit ? 'Corriger' : 'Saisir à la main'}${pr ? ' — ' + esc(pr.nom) : ''}</h5>
     <input id="fnom" value="${esc(f.nom)}" placeholder="nom en jeu" autofocus>
-    <p class="warn">Exactement le nom en jeu, accents et majuscules compris.
-      C'est lui qui accrochera l'ID d'entité au premier combat.</p>
+    <p class="warn">Pas besoin de soigner les majuscules ni les accents.
+      Et si le nom est vraiment faux, tu le rattraperas au premier combat.</p>
     <div class="clsgrid">${CLASSES.map((n,ci) =>
       `<img src="${ICONS[ci]}" alt="${esc(n)}" title="${esc(n)}"
         class="${f.cls===ci?'cur':''}" data-act="formcls:${ci}">`).join('')}</div>
