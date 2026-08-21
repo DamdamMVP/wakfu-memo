@@ -1,0 +1,1025 @@
+# Échantillon « réanimation 2 » — 21 août 2026, combat 1584021160.
+# `wakfu.log` SEUL, session entière, dans l'ordre EXACT du fichier (ADR 0008).
+# Deux clients depuis la même installation launcher Ankama. PJ3 et PJ4 sont les
+# MÊMES personnages que dans revive-2026-08-20 : les ID d'entité sont identiques
+# d'un jour à l'autre, à travers un redémarrage du client ET une extinction du
+# PC — ce qui prolonge la vérification de #17 (ADR 0002).
+# Anonymisé : noms de personnages, ID d'entité, chemins, numéro de compte, IP
+# locale. 21 lignes de chat public tiers retirées (Commerce, Politique,
+# canal privé). Les tags [_FL_], [FIGHT], [CHAT], [CRAFT], [NATION] sont
+# TECHNIQUES et conservés — ce ne sont pas des canaux de chat.
+#
+# CE QUE CET ÉCHANTILLON ÉTABLIT — les deux questions de #10 :
+#
+#  1. UN TOMBÉ N'ÉMET PLUS DE FRONTIÈRE. PJ3 est KO à 15:55:26 et réanimé à
+#     15:55:46. Dans cette fenêtre : UNE seule frontière (15:55:35), pour deux
+#     personnages dont un à terre. S'il en émettait encore, il y en aurait deux.
+#
+#  2. UN RÉANIMÉ REJOUE DANS LE MÊME ROUND ET FERME SON TOUR. PJ4 le réanime
+#     PENDANT son propre tour (Rénisurrection 15:55:45, sa frontière 15:55:59) ;
+#     PJ3 joue ensuite (Braise 15:56:02, Météore 15:56:04) et émet sa frontière
+#     à 15:56:06. La règle du jeu — insertion juste après l'unité courante — est
+#     confirmée, et la frontière du réanimé n'est pas perdue.
+#     ⚠️ PORTÉE LIMITÉE : PJ4 joue en premier dans cette équipe (confirmé par
+#     Damien), donc « juste après PJ4 » EST la place normale de PJ3. Le cas
+#     dangereux — le réanimateur joue APRÈS le réanimé dans l'ordre déclaré,
+#     donc la réanimation le déplace en fin de round — N'EST PAS couvert ici.
+#
+#  3. PJ3 TOMBE AVANT D'AVOIR JOUÉ (aucune frontière avant son KO) : un fait
+#     déjà noté dans #10, reconfirmé sur une capture neuve.
+#
+#  4. LE DERNIER TOUR N'EST PAS FERMÉ : PJ4 agit de 15:56:14 à 15:56:19 et le
+#     combat finit à 15:56:20 sans sa frontière (#13).
+#
+# CE QU'IL RÉVÈLE EN PLUS, ET QUI N'ÉTAIT PAS CHERCHÉ :
+#
+#  5. LES DEUX CLIENTS N'ÉCRIVENT PAS EN ALTERNANCE DANS `wakfu.log` : ils y
+#     écrivent par BLOCS. Un seul recul d'horodatage dans tout le fichier
+#     (315 s), et la couture a DÉTRUIT une ligne — ` value for key
+#     content.15.32132`, dont la tête ` WARN 15:54:51,726 [...] Unable to get `
+#     a été écrasée. Les trois frontières du combat apparaissent donc deux fois
+#     à ~355 lignes d'écart, jamais côte à côte, alors que dans
+#     `wakfu_chat.log`, au même instant, les mêmes copies sont à 1 à 3 lignes.
+#     Sur le premier bloc seul — le seul visible PENDANT le combat — il y a UNE
+#     copie par entité, donc `k` se lit à 1 au lieu de 2 ; le second bloc n'a
+#     été écrit qu'environ 4 min après `End fight`. Ça pèse sur l'ADR 0009.
+#
+#  6. 257 des 995 lignes n'ont PAS d'horodatage : traces Java multi-lignes.
+#     Tout parseur ligne à ligne doit les traverser.
+#
+# Réserve : UNE seule session observée, et le mécanisme du point 5 n'est pas
+# établi (tampon par appender ? un `wakfu.log.1` a été tourné à 15:54).
+ERROR 15:54:38,755 [main] (FE:324) - Impossible de trouver le fichier de propriété /home/USER/.config/zaap/gamesLogs/wakfu/config
+ INFO 15:54:38,760 [main] (aVt:410) - Chargement de la configuration depuis le fichier : 'config.properties'
+ INFO 15:54:38,763 [main] (com.ankamagames.wakfu.client.WakfuClient:284) - Configuration loaded for region WESTERN (by country detection for null): config.properties
+ INFO 15:54:39,339 [main] (eEt:113) - 1.92 (build -1 [2026-08-21 @ 15H54min38])
+ INFO 15:54:39,354 [main] (com.ankamagames.wakfu.client.WakfuClient:195) - -Xms2G
+ INFO 15:54:39,354 [main] (com.ankamagames.wakfu.client.WakfuClient:195) - -Xmx4G
+ INFO 15:54:39,354 [main] (com.ankamagames.wakfu.client.WakfuClient:195) - -XX:+UnlockExperimentalVMOptions
+ INFO 15:54:39,354 [main] (com.ankamagames.wakfu.client.WakfuClient:195) - -XX:+UseG1GC
+ INFO 15:54:39,354 [main] (com.ankamagames.wakfu.client.WakfuClient:195) - -XX:G1NewSizePercent=20
+ INFO 15:54:39,354 [main] (com.ankamagames.wakfu.client.WakfuClient:195) - -XX:G1ReservePercent=20
+ INFO 15:54:39,354 [main] (com.ankamagames.wakfu.client.WakfuClient:195) - -Djava.net.preferIPv4Stack=true
+ INFO 15:54:39,354 [main] (com.ankamagames.wakfu.client.WakfuClient:195) - -Dsun.awt.noerasebackground=true
+ INFO 15:54:39,354 [main] (com.ankamagames.wakfu.client.WakfuClient:195) - -Dsun.java2d.noddraw=true
+ INFO 15:54:39,355 [main] (com.ankamagames.wakfu.client.WakfuClient:195) - -Djogl.disable.openglarbcontext
+ INFO 15:54:39,355 [main] (com.ankamagames.wakfu.client.WakfuClient:195) - -Dsun.java2d.opengl=true
+ INFO 15:54:39,355 [main] (com.ankamagames.wakfu.client.WakfuClient:195) - --add-opens=java.desktop/sun.awt=ALL-UNNAMED
+ INFO 15:54:39,355 [main] (com.ankamagames.wakfu.client.WakfuClient:195) - -Dsun.java2d.uiScale.enabled=true
+ INFO 15:54:39,355 [main] (com.ankamagames.wakfu.client.WakfuClient:195) - -Djava.library.path=natives/
+ INFO 15:54:39,355 [main] (com.ankamagames.wakfu.client.WakfuClient:197) - java.vm.vendor = Eclipse Adoptium
+ INFO 15:54:39,355 [main] (com.ankamagames.wakfu.client.WakfuClient:198) - java.runtime.name = OpenJDK Runtime Environment
+ INFO 15:54:39,355 [main] (com.ankamagames.wakfu.client.WakfuClient:199) - java.vm.name = OpenJDK 64-Bit Server VM
+ INFO 15:54:39,355 [main] (com.ankamagames.wakfu.client.WakfuClient:200) - java.vm.version = 21.0.11+10-LTS
+ INFO 15:54:39,355 [main] (com.ankamagames.wakfu.client.WakfuClient:201) - java.runtime.version = 21.0.11+10-LTS
+ INFO 15:54:39,356 [main] (com.ankamagames.wakfu.client.WakfuClient:202) - os.name = Linux
+ INFO 15:54:39,356 [main] (com.ankamagames.wakfu.client.WakfuClient:203) - os.arch = amd64
+ INFO 15:54:39,356 [main] (com.ankamagames.wakfu.client.WakfuClient:204) - os.version = 7.1.8-200.fc44.x86_64
+ INFO 15:54:39,356 [main] (com.ankamagames.wakfu.client.WakfuClient:205) - sun.os.patch.level = null
+ INFO 15:54:39,356 [main] (com.ankamagames.wakfu.client.WakfuClient:206) - user.language = en
+ INFO 15:54:39,356 [main] (com.ankamagames.wakfu.client.WakfuClient:207) - user.country = US
+ INFO 15:54:39,381 [main] (com.ankamagames.wakfu.client.WakfuClient:213) - log path=/home/USER/.config/zaap/gamesLogs/wakfu
+ INFO 15:54:39,849 [MessageScheduler] (aBA:299) - MessageScheduler running
+ INFO 15:54:40,018 [AWT-EventQueue-0] (cFw:27) - Starting cFC...
+ WARN 15:54:40,018 [AWT-EventQueue-0] (cFC:114) - Updater communication service is not currently configured: Service is unactivated.
+ INFO 15:54:40,060 [AWT-EventQueue-0] (UH:34) - GameDate initialized. Timezone : sun.util.calendar.ZoneInfo[id="UTC",offset=0,dstSavings=0,useDaylight=false,transitions=0,lastRule=null]
+ INFO 15:54:40,102 [AWT-EventQueue-0] (ahF:99) - Initializing GLApplication UI
+ INFO 15:54:40,479 [AWT-EventQueue-0] (ahF:103) - GLappUI : Workspace created
+ INFO 15:54:40,480 [AWT-EventQueue-0] (ahF:107) - GLappUI : Renderer created
+ INFO 15:54:40,537 [AWT-EventQueue-0] (ahF:134) - GLappUI : Frame created
+ INFO 15:54:40,588 [AWT-EventQueue-0] (ahF:422) - Applying resolution : {Resolution : 1712x1398x-1 Windowed 144Hz Prefered screen ID: :0.0 x: 1926 y: 37 hide taskbar: false}
+ INFO 15:54:41,108 [AWT-EventQueue-0] (ahF:450) - Surface scale : [1.0, 1.0]
+ INFO 15:54:41,114 [AWT-EventQueue-0] (ahF:354) - GLappUI : GL Rendering started
+ INFO 15:54:41,861 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/themeSimple.png
+ INFO 15:54:41,862 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/themeSimple2.png
+ INFO 15:54:41,863 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/themeSimple3.png
+ INFO 15:54:41,865 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/themeDefault.png
+ INFO 15:54:41,867 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/themeDefault2.png
+ INFO 15:54:41,868 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/themeOver.png
+ INFO 15:54:41,869 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/themeOver2.png
+ INFO 15:54:41,871 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/themePressed.png
+ INFO 15:54:41,872 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/themePressed2.png
+ INFO 15:54:41,874 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/themeDisabled.png
+ INFO 15:54:41,876 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/themeDisabled2.png
+ INFO 15:54:41,877 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/selectedThemeDefault.png
+ INFO 15:54:41,878 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/selectedThemeOver.png
+ INFO 15:54:41,879 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/selectedThemePressed.png
+ INFO 15:54:41,881 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/selectedThemeDisabled.png
+ INFO 15:54:41,882 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/iconesMruDefault.png
+ INFO 15:54:41,883 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/iconesMruDisabled.png
+ INFO 15:54:41,884 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/iconesMruOver.png
+ INFO 15:54:41,884 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/iconesMruPressed.png
+ INFO 15:54:41,887 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/havreSacDecor.png
+ INFO 15:54:41,888 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/dungeon.png
+ INFO 15:54:41,889 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/addCompanion.png
+ INFO 15:54:41,890 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/newCharacter.png
+ INFO 15:54:41,891 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/Paysage.png
+ INFO 15:54:41,892 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/socle_reward.png
+ INFO 15:54:41,894 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/passeport.png
+ INFO 15:54:41,895 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/ladder_donjon_empty.png
+ INFO 15:54:41,896 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/shardBlueFull.png
+ INFO 15:54:41,897 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/shardBlueEmpty.png
+ INFO 15:54:41,898 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/shardRedFull.png
+ INFO 15:54:41,899 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/shardRedEmpty.png
+ INFO 15:54:41,900 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/shardGreenFull.png
+ INFO 15:54:41,901 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/shardGreenEmpty.png
+ INFO 15:54:41,902 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/shardWhiteFull.png
+ INFO 15:54:41,903 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/shardWhiteEmpty.png
+ INFO 15:54:41,904 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/shardMultiEmpty.png
+ INFO 15:54:41,905 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/shardMultiFull.png
+ INFO 15:54:41,906 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/shardMultiHalf.png
+ INFO 15:54:41,907 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/itemsRarityBorders/old.png
+ INFO 15:54:41,907 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/itemsRarityBorders/common.png
+ INFO 15:54:41,907 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/itemsRarityBorders/rare.png
+ INFO 15:54:41,908 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/itemsRarityBorders/mythic.png
+ INFO 15:54:41,908 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/itemsRarityBorders/legendary.png
+ INFO 15:54:41,908 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/itemsRarityBorders/relic.png
+ INFO 15:54:41,908 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/itemsRarityBorders/souvenir.png
+ INFO 15:54:41,909 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/itemsRarityBorders/epic.png
+ INFO 15:54:41,909 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/l_flag.png
+ INFO 15:54:41,910 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/dungeonGameplay/0.png
+ INFO 15:54:41,911 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/dungeonGameplay/1.png
+ INFO 15:54:41,912 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/dungeonGameplay/2.png
+ INFO 15:54:41,912 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/dungeonGameplay/3.png
+ INFO 15:54:41,912 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/dungeonGameplay/4.png
+ INFO 15:54:41,913 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/dungeonGameplay/5.png
+ INFO 15:54:41,914 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/dungeonGameplay/6.png
+ INFO 15:54:41,914 [AWT-EventQueue-0] (fOX:2008) - Custom texture loaded : file:/home/USER/.config/Ankama/Wakfu/./themes/theme_Ymoka_Nightflow/theme/images/unidentifiedItem.png
+ INFO 15:54:42,328 [AWT-EventQueue-0] (ayh:271) - Renderer.init started
+ INFO 15:54:42,328 [AWT-EventQueue-0] (aye:40) - ------- GL dump ---------
+ INFO 15:54:42,329 [AWT-EventQueue-0] (aye:51) - GL_PROFILE : GL4bc
+ INFO 15:54:42,329 [AWT-EventQueue-0] (aye:53) - GL_RENDERER : NVIDIA GeForce RTX 3070 Ti/PCIe/SSE2
+ INFO 15:54:42,329 [AWT-EventQueue-0] (aye:54) - GL_VENDOR : NVIDIA Corporation
+ INFO 15:54:42,329 [AWT-EventQueue-0] (aye:55) - GL_VERSION : 4.6.0 NVIDIA 610.57.04
+ INFO 15:54:42,329 [AWT-EventQueue-0] (aye:57) - GL_DEPTH_TEST = false
+ INFO 15:54:42,329 [AWT-EventQueue-0] (aye:58) - GL_SCISSOR_TEST = false
+ INFO 15:54:42,329 [AWT-EventQueue-0] (aye:59) - GL_ALPHA_TEST = false
+ INFO 15:54:42,329 [AWT-EventQueue-0] (aye:61) - GL_STENCIL_TEST = false;  Stencil depth = 8 bits
+ INFO 15:54:42,330 [AWT-EventQueue-0] (aye:62) - GL_CULL_FACE = false
+ INFO 15:54:42,331 [AWT-EventQueue-0] (aye:65) - GL_VIEWPORT = [0;0] - [1712;1374]
+ INFO 15:54:42,331 [AWT-EventQueue-0] (aye:68) - GL_SCISSOR_BOX = [0;0] - [1712;1374]
+ INFO 15:54:42,331 [AWT-EventQueue-0] (aye:70) - GL_MAX_ELEMENTS_INDICES = 1048576
+ INFO 15:54:42,331 [AWT-EventQueue-0] (aye:72) - GL_MAX_ELEMENTS_VERTICES = 1048576
+ INFO 15:54:42,331 [AWT-EventQueue-0] (aye:75) - GL SHADING LANGUAGE VERSION SUPPORTED = 4.60 NVIDIA
+ INFO 15:54:42,332 [AWT-EventQueue-0] (ayh:341) - Using GLSL shaders
+ INFO 15:54:42,332 [AWT-EventQueue-0] (ayh:345) - Renderer.init ended
+ INFO 15:54:42,435 [AWT-EventQueue-0] (aIC:64) - UI scale option value = 0
+ INFO 15:54:42,435 [AWT-EventQueue-0] (aIC:66) - OS screen scale = 1.0
+ INFO 15:54:42,438 [AWT-EventQueue-0] (avx:37) - Initializing hardware tests...
+ INFO 15:54:42,481 [AWT-EventQueue-0] (avx:52) - Testing supported features...
+ INFO 15:54:42,482 [AWT-EventQueue-0] (avx:63) - 	* GL render targets... supported !
+ INFO 15:54:42,482 [AWT-EventQueue-0] (avx:63) - 	* GL texture compression... supported !
+ INFO 15:54:42,482 [AWT-EventQueue-0] (avx:63) - 	* GL texture non power of two... supported !
+ INFO 15:54:42,482 [AWT-EventQueue-0] (avx:63) - 	* GL multi-sampling... supported !
+ INFO 15:54:42,482 [AWT-EventQueue-0] (avx:63) - 	* GL multi-texturing... supported !
+ INFO 15:54:42,483 [AWT-EventQueue-0] (avx:63) - 	* GL fragment shaders... supported !
+ INFO 15:54:42,483 [AWT-EventQueue-0] (avx:63) - 	* GL vertex shaders... supported !
+ INFO 15:54:42,484 [AWT-EventQueue-0] (avx:63) - 	* GL compressed text image 2d fonction... supported !
+ INFO 15:54:42,491 [AWT-EventQueue-0] (avx:63) - 	* Basic Vsync (0-1)... supported !
+ INFO 15:54:42,492 [AWT-EventQueue-0] (avx:63) - 	* Adaptive Vsync swap control (-1 value)... not supported !
+ INFO 15:54:42,492 [AWT-EventQueue-0] (avx:63) - 	* OpenGL Shading language version is 120 or higher... supported !
+ INFO 15:54:42,492 [AWT-EventQueue-0] (avx:63) - 	* OpenGL driver in use are faulty AMD Adrenalin driver... not supported !
+ INFO 15:54:42,493 [AWT-EventQueue-0] (avx:63) - 	* AL debug Extension... supported !
+ INFO 15:54:42,493 [AWT-EventQueue-0] (avx:63) - 	* AL effects... supported !
+ INFO 15:54:42,493 [AWT-EventQueue-0] (avx:63) - 	* AL filters... supported !
+ INFO 15:54:42,493 [AWT-EventQueue-0] (avx:63) - 	* ALC Enumeration Extension... supported !
+ INFO 15:54:42,493 [AWT-EventQueue-0] (avx:63) - 	* ALC Enumerate All Extension... supported !
+ INFO 15:54:42,493 [AWT-EventQueue-0] (avx:63) - 	* AL SOFT events Extension... supported !
+ INFO 15:54:42,493 [AWT-EventQueue-0] (avx:63) - 	* ALC Soft system events Extension... supported !
+ INFO 15:54:42,493 [AWT-EventQueue-0] (avx:63) - 	* ALC Soft default playback device change event support... supported !
+ INFO 15:54:42,493 [AWT-EventQueue-0] (avx:63) - 	* ALC Soft HRTF Extension... supported !
+ INFO 15:54:42,493 [AWT-EventQueue-0] (avx:63) - 	* ALC Soft Output mode Extension... supported !
+ INFO 15:54:42,493 [AWT-EventQueue-0] (avx:63) - 	* ALC Soft reopen device Extension... supported !
+ INFO 15:54:42,493 [AWT-EventQueue-0] (avx:72) - Cleaning up hardware tests...
+ INFO 15:54:42,648 [AWT-EventQueue-0] (aHV:863) - ------- AL dump ---------
+ INFO 15:54:42,695 [SimpleBinaryStorage] (aqb:191) - BinaryStorage started Thread[#59,SimpleBinaryStorage,5,main]
+ INFO 15:54:42,761 [AWT-EventQueue-0] (aHV:865) - AL_VENDOR      OpenAL Community
+ INFO 15:54:42,762 [AWT-EventQueue-0] (aHV:865) - AL_RENDERER    OpenAL Soft
+ INFO 15:54:42,762 [AWT-EventQueue-0] (aHV:865) - AL_VERSION     1.1 (1.1 ALSOFT 1.24.3)
+ INFO 15:54:42,762 [AWT-EventQueue-0] (aHV:865) - AL_VENDOR_VERS 1.24.3 (ALSOFT 1.24.3)
+ INFO 15:54:42,762 [AWT-EventQueue-0] (aHV:865) - AL_EXTENSIONS  AL_EXT_ALAW AL_EXT_BFORMAT AL_EXT_debug AL_EXT_direct_context AL_EXT_DOUBLE AL_EXT_EXPONENT_DISTANCE AL_EXT_FLOAT32 AL_EXT_IMA4 AL_EXT_LINEAR_DISTANCE AL_EXT_MCFORMATS AL_EXT_MULAW AL_EXT_MULAW_BFORMAT AL_EXT_MULAW_MCFORMATS AL_EXT_OFFSET AL_EXT_source_distance_model AL_EXT_SOURCE_RADIUS AL_EXT_STATIC_BUFFER AL_EXT_STEREO_ANGLES AL_LOKI_quadriphonic AL_SOFT_bformat_ex AL_SOFT_bformat_hoa AL_SOFT_block_alignment AL_SOFT_buffer_length_query AL_SOFT_callback_buffer AL_SOFTX_convolution_effect AL_SOFT_deferred_updates AL_SOFT_direct_channels AL_SOFT_direct_channels_remix AL_SOFT_effect_target AL_SOFT_events AL_SOFT_gain_clamp_ex AL_SOFTX_hold_on_disconnect AL_SOFT_loop_points AL_SOFTX_map_buffer AL_SOFT_MSADPCM AL_SOFT_source_latency AL_SOFT_source_length AL_SOFTX_source_panning AL_SOFT_source_resampler AL_SOFT_source_spatialize AL_SOFT_source_start_delay AL_SOFT_UHJ AL_SOFT_UHJ_ex
+ INFO 15:54:42,762 [AWT-EventQueue-0] (aHV:865) - ALC_VERSION     1.1
+ INFO 15:54:42,762 [AWT-EventQueue-0] (aHV:865) - ALC_DEF_OUTPUT (With ALC_ENUMERATION_EXT) OpenAL Soft
+ INFO 15:54:42,762 [AWT-EventQueue-0] (aHV:865) - ALC_DEF_OUTPUT (With ALC_ENUMERATE_ALL_EXT) WH-1000XM4
+ INFO 15:54:42,762 [AWT-EventQueue-0] (aHV:865) - ALC_DEF_CAPTURE HD Pro Webcam C920 Analog Stereo
+ INFO 15:54:42,762 [AWT-EventQueue-0] (aHV:865) - ALC_SOFT_system_events supported
+ INFO 15:54:42,762 [AWT-EventQueue-0] (aHV:865) -     ALC_EVENT_TYPE_DEVICE_ADDED_SOFT event for playback devices is supported
+ INFO 15:54:42,762 [AWT-EventQueue-0] (aHV:865) -     ALC_EVENT_TYPE_DEVICE_ADDED_SOFT event for capture devices is supported
+ INFO 15:54:42,762 [AWT-EventQueue-0] (aHV:865) -     ALC_EVENT_TYPE_DEVICE_REMOVED_SOFT event for playback devices is supported
+ INFO 15:54:42,762 [AWT-EventQueue-0] (aHV:865) -     ALC_EVENT_TYPE_DEVICE_REMOVED_SOFT event for capture devices is supported
+ INFO 15:54:42,762 [AWT-EventQueue-0] (aHV:865) -     ALC_EVENT_TYPE_DEFAULT_DEVICE_CHANGED_SOFT event for playback devices is supported
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) -     ALC_EVENT_TYPE_DEFAULT_DEVICE_CHANGED_SOFT event for capture devices is supported
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) - Output devices (With ALC_ENUMERATE_ALL_EXT):
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) -     WH-1000XM4, output, default true, mixer[freq 48000, refresh 93 (min latency 10.752688 ms)], sources[mono 255, stereo 1]
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) -     Starship/Matisse HD Audio Controller Digital Stereo (IEC958), output, default false, mixer[freq 48000, refresh 93 (min latency 10.752688 ms)], sources[mono 255, stereo 1]
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) -     Yeti Stereo Microphone Analog Stereo, output, default false, mixer[freq 48000, refresh 93 (min latency 10.752688 ms)], sources[mono 255, stereo 1]
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) -     GA104 High Definition Audio Controller Digital Stereo (HDMI), output, default false, mixer[freq 48000, refresh 93 (min latency 10.752688 ms)], sources[mono 255, stereo 1]
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) -     TP2-2728, output, default false, mixer[freq 44100, refresh 88 (min latency 11.363636 ms)], sources[mono 255, stereo 1]
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) - Output devices (With ALC_ENUMERATION_EXT):
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) -     OpenAL Soft, output, default true, mixer[freq 48000, refresh 93 (min latency 10.752688 ms)], sources[mono 255, stereo 1]
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) - Capture devices:
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) -     HD Pro Webcam C920 Analog Stereo, input, default true
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) -     Monitor of Starship/Matisse HD Audio Controller Digital Stereo (IEC958), input, default false
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) -     Monitor of Yeti Stereo Microphone Analog Stereo, input, default false
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) -     Starship/Matisse HD Audio Controller Analog Stereo, input, default false
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) -     Monitor of GA104 High Definition Audio Controller Digital Stereo (HDMI), input, default false
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) -     Yeti Stereo Microphone Analog Stereo, input, default false
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) -     Monitor of WH-1000XM4, input, default false
+ INFO 15:54:42,763 [AWT-EventQueue-0] (aHV:865) -     WH-1000XM4, input, default false
+ INFO 15:54:42,764 [AWT-EventQueue-0] (aHV:865) -     Monitor of TP2-2728, input, default false
+ INFO 15:54:42,764 [AWT-EventQueue-0] (aHV:867) - HRTF Status : disabled
+ INFO 15:54:42,766 [AWT-EventQueue-0] (aHV:868) - Output Mode Status : Basic 2-channel mixing (e.g. pan-pot)
+ INFO 15:54:42,771 [AWT-EventQueue-0] (aHV:869) - Current context attributes : {4104=>93, 4096=>1, 6555=>3, 131075=>2, 131074=>0, 4103=>48000, 131073=>1, 4105=>0, 4097=>1, 6554=>0, 6572=>6574, 6547=>0, 6546=>0, 4113=>1, 4112=>255}
+ INFO 15:54:42,771 [AWT-EventQueue-0] (aHV:773) - Current sound context has debug output disabled.
+ INFO 15:54:42,775 [Initialization-Tasks-0] (aIG:633) - Loading embedded DayLight file.
+ERROR 15:54:42,776 [Initialization-Tasks-0] (aIG:639) - Le dayLight file n'est pas trouvable, on utilise celui par défaut
+ INFO 15:54:42,788 [AWT-EventQueue-0] (aHV:695) - Switch to following device : WH-1000XM4 (default device) - source : contextSwitch
+ INFO 15:54:42,788 [AWT-EventQueue-0] (aHV:296) - Max available sources : 255
+ INFO 15:54:42,789 [AWT-EventQueue-0] (aHV:702) - HRTF Status : disabled
+ INFO 15:54:42,789 [AWT-EventQueue-0] (aHV:703) - Output Mode Status : Basic 2-channel mixing (e.g. pan-pot)
+ INFO 15:54:42,789 [AWT-EventQueue-0] (aHV:704) - Current contexts attributes : {4104=>93, 4096=>1, 6555=>3, 131075=>2, 131074=>0, 4103=>48000, 131073=>1, 4105=>0, 4097=>1, 6554=>0, 6572=>6574, 6547=>0, 6546=>0, 4113=>1, 4112=>255}
+ INFO 15:54:42,825 [SoundManager] (aHV:954) - SoundManager running
+ INFO 15:54:43,422 [Initialization-Tasks-0] (bcT:54) - Default mode. Retrieve class eBy
+ INFO 15:54:43,423 [pool-5-thread-1] (eBr:121) - connect(ENV_VARIABLES)
+ INFO 15:54:43,445 [pool-5-thread-1] (bcU:60) - Connected to Zaap. Starting class eBy fill
+ INFO 15:54:43,449 [pool-6-thread-1] (eBr:197) - User info received from Zaap
+ INFO 15:54:43,457 [pool-6-thread-1] (bcV:65) - class eBy fetched
+ WARN 15:54:43,516 [Initialization-Tasks-0] (ME:157) - Unable to get value for key 
+ WARN 15:54:45,457 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.9988
+ WARN 15:54:45,524 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.13846
+ WARN 15:54:45,525 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.13847
+ WARN 15:54:45,525 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.13848
+ WARN 15:54:45,526 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.14022
+ WARN 15:54:45,526 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.14027
+ WARN 15:54:45,543 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.14958
+ WARN 15:54:45,591 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.17655
+ WARN 15:54:45,635 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.20924
+ WARN 15:54:45,635 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.20925
+ WARN 15:54:45,723 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.24281
+ WARN 15:54:45,723 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.24282
+ WARN 15:54:45,723 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.24283
+ WARN 15:54:45,723 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.24284
+ WARN 15:54:45,909 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.29575
+ WARN 15:54:45,909 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.29577
+ WARN 15:54:45,926 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.30000
+ WARN 15:54:45,966 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.31127
+ WARN 15:54:45,988 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.31479
+ WARN 15:54:45,993 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.31572
+ WARN 15:54:45,999 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.31754
+ WARN 15:54:46,025 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32119
+ WARN 15:54:46,025 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32120
+ WARN 15:54:46,025 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32121
+ WARN 15:54:46,025 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32122
+ WARN 15:54:46,025 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32123
+ WARN 15:54:46,025 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32124
+ WARN 15:54:46,025 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32125
+ WARN 15:54:46,025 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32126
+ WARN 15:54:46,025 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32127
+ WARN 15:54:46,025 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32128
+ WARN 15:54:46,026 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32129
+ WARN 15:54:46,027 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32130
+ WARN 15:54:46,027 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32131
+ WARN 15:54:46,027 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32132
+ WARN 15:54:46,027 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32133
+ WARN 15:54:46,027 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32134
+ WARN 15:54:46,027 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32135
+ WARN 15:54:46,027 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32136
+ WARN 15:54:46,027 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32137
+ WARN 15:54:46,027 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32138
+ WARN 15:54:46,027 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32139
+ WARN 15:54:46,027 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32140
+ WARN 15:54:46,027 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32141
+ WARN 15:54:46,027 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32142
+ WARN 15:54:46,027 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32143
+ WARN 15:54:46,028 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32144
+ WARN 15:54:46,028 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32145
+ WARN 15:54:46,028 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32146
+ WARN 15:54:46,028 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32147
+ WARN 15:54:46,028 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32148
+ WARN 15:54:46,028 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32149
+ WARN 15:54:46,028 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32150
+ WARN 15:54:46,028 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32151
+ WARN 15:54:46,028 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32152
+ WARN 15:54:46,028 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32154
+ WARN 15:54:46,028 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32155
+ WARN 15:54:46,028 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32156
+ WARN 15:54:46,029 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32157
+ WARN 15:54:46,029 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32158
+ WARN 15:54:46,029 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32159
+ WARN 15:54:46,029 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32160
+ WARN 15:54:46,029 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32161
+ WARN 15:54:46,029 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32162
+ WARN 15:54:46,029 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32163
+ WARN 15:54:46,035 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32260
+ WARN 15:54:46,035 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32262
+ WARN 15:54:46,035 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32263
+ WARN 15:54:46,035 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32265
+ WARN 15:54:46,052 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32659
+ WARN 15:54:46,052 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32660
+ WARN 15:54:46,052 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32664
+ WARN 15:54:46,052 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32665
+ WARN 15:54:46,058 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32899
+ WARN 15:54:46,059 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32937
+ WARN 15:54:46,059 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32943
+ WARN 15:54:46,060 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.33000
+ WARN 15:54:46,587 [Initialization-Tasks-0] (aqJ:72) - Pas de aPl existant. id=8522
+java.lang.Exception
+	at aqJ.a(SourceFile:72)
+	at aqK.a(SourceFile:79)
+	at aqN.tQ(SourceFile:20)
+	at bQi.IJ(SourceFile:44)
+	at blP.dx(SourceFile:172)
+	at bbU.a(SourceFile:106)
+	at bbU.a(SourceFile:52)
+	at bbU.f(SourceFile:43)
+	at aqJ.a(SourceFile:100)
+	at aqK.a(SourceFile:73)
+	at bbU.a(SourceFile:42)
+	at WW.d(SourceFile:436)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+ WARN 15:54:46,589 [Initialization-Tasks-0] (aqJ:72) - Pas de aPl existant. id=8523
+java.lang.Exception
+	at aqJ.a(SourceFile:72)
+	at aqK.a(SourceFile:79)
+	at aqN.tQ(SourceFile:20)
+	at bQi.IJ(SourceFile:44)
+	at blP.dx(SourceFile:172)
+	at bbU.a(SourceFile:106)
+	at bbU.a(SourceFile:52)
+	at bbU.f(SourceFile:43)
+	at aqJ.a(SourceFile:100)
+	at aqK.a(SourceFile:73)
+	at bbU.a(SourceFile:42)
+	at WW.d(SourceFile:436)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+ WARN 15:54:46,592 [Initialization-Tasks-0] (aqJ:72) - Pas de aPl existant. id=8520
+java.lang.Exception
+	at aqJ.a(SourceFile:72)
+	at aqK.a(SourceFile:79)
+	at aqN.tQ(SourceFile:20)
+	at bQi.IJ(SourceFile:44)
+	at blP.dx(SourceFile:172)
+	at bbU.a(SourceFile:106)
+	at bbU.a(SourceFile:52)
+	at bbU.f(SourceFile:43)
+	at aqJ.a(SourceFile:100)
+	at aqK.a(SourceFile:73)
+	at bbU.a(SourceFile:42)
+	at WW.d(SourceFile:436)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+ WARN 15:54:46,592 [Initialization-Tasks-0] (aqJ:72) - Pas de aPl existant. id=8521
+java.lang.Exception
+	at aqJ.a(SourceFile:72)
+	at aqK.a(SourceFile:79)
+	at aqN.tQ(SourceFile:20)
+	at bQi.IJ(SourceFile:44)
+	at blP.dx(SourceFile:172)
+	at bbU.a(SourceFile:106)
+	at bbU.a(SourceFile:52)
+	at bbU.f(SourceFile:43)
+	at aqJ.a(SourceFile:100)
+	at aqK.a(SourceFile:73)
+	at bbU.a(SourceFile:42)
+	at WW.d(SourceFile:436)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+ WARN 15:54:46,593 [Initialization-Tasks-0] (aqJ:72) - Pas de aPl existant. id=8524
+java.lang.Exception
+	at aqJ.a(SourceFile:72)
+	at aqK.a(SourceFile:79)
+	at aqN.tQ(SourceFile:20)
+	at bQi.IJ(SourceFile:44)
+	at blP.dx(SourceFile:172)
+	at bbU.a(SourceFile:106)
+	at bbU.a(SourceFile:52)
+	at bbU.f(SourceFile:43)
+	at aqJ.a(SourceFile:100)
+	at aqK.a(SourceFile:73)
+	at bbU.a(SourceFile:42)
+	at WW.d(SourceFile:436)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+ WARN 15:54:46,593 [Initialization-Tasks-0] (aqJ:72) - Pas de aPl existant. id=8525
+java.lang.Exception
+	at aqJ.a(SourceFile:72)
+	at aqK.a(SourceFile:79)
+	at aqN.tQ(SourceFile:20)
+	at bQi.IJ(SourceFile:44)
+	at blP.dx(SourceFile:172)
+	at bbU.a(SourceFile:106)
+	at bbU.a(SourceFile:52)
+	at bbU.f(SourceFile:43)
+	at aqJ.a(SourceFile:100)
+	at aqK.a(SourceFile:73)
+	at bbU.a(SourceFile:42)
+	at WW.d(SourceFile:436)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+ERROR 15:54:47,462 [Initialization-Tasks-0] (cdU:43) - l'element 61792 n'a pas été exporté
+ERROR 15:54:47,463 [Initialization-Tasks-0] (cdU:43) - l'element 61791 n'a pas été exporté
+ERROR 15:54:47,463 [Initialization-Tasks-0] (cdU:43) - l'element 61792 n'a pas été exporté
+ERROR 15:54:47,463 [Initialization-Tasks-0] (cdU:43) - l'element 61789 n'a pas été exporté
+ERROR 15:54:47,463 [Initialization-Tasks-0] (cdU:43) - l'element 22077 n'a pas été exporté
+ERROR 15:54:47,463 [Initialization-Tasks-0] (cdU:43) - l'element 61790 n'a pas été exporté
+ERROR 15:54:47,463 [Initialization-Tasks-0] (cdU:43) - l'element 61788 n'a pas été exporté
+ERROR 15:54:47,463 [Initialization-Tasks-0] (cdU:43) - l'element 61790 n'a pas été exporté
+ERROR 15:54:47,486 [Initialization-Tasks-0] (cdU:43) - l'element 61792 n'a pas été exporté
+ERROR 15:54:47,487 [Initialization-Tasks-0] (cdU:43) - l'element 61791 n'a pas été exporté
+ERROR 15:54:47,487 [Initialization-Tasks-0] (cdU:43) - l'element 61792 n'a pas été exporté
+ERROR 15:54:47,487 [Initialization-Tasks-0] (cdU:43) - l'element 61789 n'a pas été exporté
+ERROR 15:54:47,487 [Initialization-Tasks-0] (cdU:43) - l'element 22077 n'a pas été exporté
+ERROR 15:54:47,487 [Initialization-Tasks-0] (cdU:43) - l'element 61790 n'a pas été exporté
+ERROR 15:54:47,487 [Initialization-Tasks-0] (cdU:43) - l'element 61788 n'a pas été exporté
+ERROR 15:54:47,487 [Initialization-Tasks-0] (cdU:43) - l'element 61790 n'a pas été exporté
+ INFO 15:54:47,522 [Initialization-Tasks-0] (bcs:43) - Default mode. Starting connection to Zaap
+ INFO 15:54:47,523 [pool-7-thread-1] (eBr:121) - connect(ENV_VARIABLES)
+ INFO 15:54:47,529 [pool-7-thread-1] (bct:48) - Connected to Zaap. Starting token fill
+ INFO 15:54:47,692 [pool-8-thread-1] (eBr:162) - Token received from Zaap
+ INFO 15:54:47,692 [pool-8-thread-1] (bcu:52) - Token obtained from Zaap. Starting autologin
+ INFO 15:54:47,864 [AWT-EventQueue-0] (cgd:71) - Raison de la déconnection de l'entité -1 : 39
+ INFO 15:54:47,868 [AWT-EventQueue-0] (aVj:62) - Connexion au proxy :wakfu-dispatcher.ankama-games.com:5558 / ssl : true
+ INFO 15:54:48,299 [Net-Cnx-wakfu-dispatcher.ankama-games.com:5558>0] (cgf:135) - onNewConnection ChannelHandlerContext(aVk#0, [id: 0x951126a7, L:/192.168.0.0:44670 - R:wakfu-dispatcher.ankama-games.com/52.208.195.184:5558])
+ INFO 15:54:49,278 [AWT-EventQueue-0] (cgp:375) - Authentication result 0
+ WARN 15:54:50,558 [AWT-EventQueue-0] (ME:157) - Unable to get value for key server.group.9
+ WARN 15:54:50,560 [AWT-EventQueue-0] (ME:157) - Unable to get value for key server.group.10
+ WARN 15:54:50,561 [AWT-EventQueue-0] (ME:157) - Unable to get value for key server.group.20
+ WARN 15:54:50,585 [AWT-EventQueue-0] (ME:157) - Unable to get value for key server.group.9
+ WARN 15:54:50,585 [AWT-EventQueue-0] (ME:157) - Unable to get value for key server.group.10
+ WARN 15:54:50,585 [AWT-EventQueue-0] (ME:157) - Unable to get value for key server.group.20
+ INFO 15:54:59,179 [AWT-EventQueue-0] (cgp:360) - Authentication token received from dispatch server : 2790183e-aa65-4002-821b-10634f1e13f0 errorCode=0
+ INFO 15:54:59,188 [AWT-EventQueue-0] (aVv:664) - Sending DisconnectionMessage to Servers. Reason : {Dispatch}
+ INFO 15:54:59,189 [AWT-EventQueue-0] (cgd:71) - Raison de la déconnection de l'entité -1 : 39
+ INFO 15:54:59,189 [AWT-EventQueue-0] (aVj:62) - Connexion au proxy :wakfu-pandora.ankama-games.com:5556 / ssl : true
+ INFO 15:54:59,196 [Net-Cnx-wakfu-dispatcher.ankama-games.com:5558>0] (cgf:43) - Connexion avec le serveur perdue ChannelHandlerContext(aVk#0, [id: 0x951126a7, L:/192.168.0.0:44670 ! R:wakfu-dispatcher.ankama-games.com/52.208.195.184:5558])
+ INFO 15:54:59,329 [Net-Cnx-wakfu-pandora.ankama-games.com:5556>0] (cgf:135) - onNewConnection ChannelHandlerContext(aVk#0, [id: 0x901b1889, L:/192.168.0.0:34198 - R:wakfu-pandora.ankama-games.com/34.241.166.4:5556])
+ INFO 15:54:59,358 [inter-chat-2-1] (io.netty.util.internal.logging.AbstractInternalLogger:148) - [id: 0x2147b224] CONNECT: zaap-chat.ankama.com/54.195.46.170:6337
+ INFO 15:54:59,393 [inter-chat-2-1] (io.netty.util.internal.logging.AbstractInternalLogger:148) - [id: 0x2147b224, L:/192.168.0.0:60232 - R:zaap-chat.ankama.com/54.195.46.170:6337] ACTIVE
+ INFO 15:54:59,690 [AWT-EventQueue-0] (cgd:71) - Raison de la déconnection de l'entité -1 : 2
+ INFO 15:54:59,721 [AWT-EventQueue-0] (UP:73) - WakfuGameCalendar : adding periodic ClimateUpdateEvent event, period= 12 minutes 
+ERROR 15:54:59,807 [OkHttp https://haapi.ankama.com/...] (aZw:49) - [CHAT] Error 403 requesting Chat token : {"status":403,"message":"Unauthorized service '\\Ankama\\Account'"}
+ WARN 15:55:00,234 [AsyncLoader-9] (Gi:59) - Unable to read file:./contents/animations/equipments/equipments.jar!/211600100.anm : JAR entry 211600100.anm not found in ./contents/animations/equipments/equipments.jar
+ERROR 15:55:00,249 [AWT-EventQueue-0] (bcX:49) - [CRAFT] CraftAccountData of current account COMPTE can't be retrieved
+ERROR 15:55:00,252 [AWT-EventQueue-0] (anp:58) - Expected exception on INFEQ | User : Damdam Ecaflip Target : Damdam Ecaflip Context : eYl@1178d6b4
+amO: Unable to get craftHandler of user
+	at eHe.n(SourceFile:492)
+	at eId.d(SourceFile:63)
+	at amV.a(SourceFile:28)
+	at anp.b(SourceFile:52)
+	at fmo.a(SourceFile:193)
+	at eFD.fsR(SourceFile:226)
+	at eFD.dpG(SourceFile:64)
+	at eEB.dpG(SourceFile:1622)
+	at biP.dpG(SourceFile:3038)
+	at bjZ.dpG(SourceFile:1684)
+	at bjk.dpG(SourceFile:1803)
+	at bkj.zm(SourceFile:2011)
+	at fj.zp(SourceFile:72)
+	at eFx.ex(SourceFile:617)
+	at eEB.as(SourceFile:1330)
+	at biP.as(SourceFile:2241)
+	at bji.dX(SourceFile:143)
+	at bji.a(SourceFile:80)
+	at cgt.a(SourceFile:205)
+	at cgt.b(SourceFile:93)
+	at azd.b(SourceFile:67)
+	at cgL.b(SourceFile:38)
+	at azd.b(SourceFile:67)
+	at aBl.bHs(SourceFile:56)
+	at aBc.f(SourceFile:77)
+	at aBc.e(SourceFile:70)
+	at aBc.a(SourceFile:53)
+	at aBc.run(SourceFile:40)
+	at java.desktop/java.awt.event.InvocationEvent.dispatch(Unknown Source)
+	at java.desktop/java.awt.EventQueue.dispatchEventImpl(Unknown Source)
+	at java.desktop/java.awt.EventQueue$4.run(Unknown Source)
+	at java.desktop/java.awt.EventQueue$4.run(Unknown Source)
+	at java.base/java.security.AccessController.doPrivileged(Unknown Source)
+	at java.base/java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(Unknown Source)
+	at java.desktop/java.awt.EventQueue.dispatchEvent(Unknown Source)
+	at java.desktop/java.awt.EventDispatchThread.pumpOneEventForFilters(Unknown Source)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForFilter(Unknown Source)
+	at java.desktop/java.awt.EventDispatchThread.pumpEventsForHierarchy(Unknown Source)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(Unknown Source)
+	at java.desktop/java.awt.EventDispatchThread.pumpEvents(Unknown Source)
+	at java.desktop/java.awt.EventDispatchThread.run(Unknown Source)
+ WARN 15:55:00,280 [AsyncLoader-10] (Gi:59) - Unable to read file:./contents/animations/equipments/equipments.jar!/210330101.anm : JAR entry 210330101.anm not found in ./contents/animations/equipments/equipments.jar
+ WARN 15:55:00,376 [AsyncLoader-12] (Gi:59) - Unable to read file:./contents/animations/equipments/equipments.jar!/210320101.anm : JAR entry 210320101.anm not found in ./contents/animations/equipments/equipments.jar
+ INFO 15:55:00,391 [AWT-EventQueue-0] (aZO:35) - Receiving companion list
+ INFO 15:55:00,394 [AWT-EventQueue-0] (aZO:58) - Companions received : 4
+ INFO 15:55:00,513 [OkHttp https://haapi.ankama.com/...] (chq:353) - Device information sent
+ INFO 15:55:04,416 [AWT-EventQueue-0] (cgx:256) - Received FriendListMessage
+ INFO 15:55:04,418 [AWT-EventQueue-0] (chk:134) - [NATION] Reception d'un message de synchro de nation demandant l'ajout d'une nouvelle nation : 30
+ INFO 15:55:04,418 [AWT-EventQueue-0] (chk:134) - [NATION] Reception d'un message de synchro de nation demandant l'ajout d'une nouvelle nation : 33
+ INFO 15:55:04,418 [AWT-EventQueue-0] (chk:134) - [NATION] Reception d'un message de synchro de nation demandant l'ajout d'une nouvelle nation : 32
+ INFO 15:55:04,419 [AWT-EventQueue-0] (chk:134) - [NATION] Reception d'un message de synchro de nation demandant l'ajout d'une nouvelle nation : 31
+ INFO 15:55:04,464 [AWT-EventQueue-0] (ber:407) - Déserialisation des achievements : size=12990
+ WARN 15:55:04,464 [AWT-EventQueue-0] (ber:463) - Achievement inexistant : Id=2193
+ WARN 15:55:04,464 [AWT-EventQueue-0] (ber:463) - Achievement inexistant : Id=2194
+ WARN 15:55:04,464 [AWT-EventQueue-0] (ber:463) - Achievement inexistant : Id=5035
+ WARN 15:55:04,519 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:04,519 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:04,519 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:04,519 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:04,519 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:04,519 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:04,519 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:04,519 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:04,520 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:04,520 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:04,520 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:04,520 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ERROR 15:55:04,547 [inter-chat-2-1] (aZu:65) - [CHAT] Authentication failed error code=9
+ INFO 15:55:04,553 [AWT-EventQueue-0] (baz:89) - Loading chat file.
+ WARN 15:55:04,575 [inter-chat-2-1] (aZn:52) - [CHAT] Connection lost, reconnection in 2992ms
+ INFO 15:55:05,035 [AWT-EventQueue-0] (Wh:60) - cdt initialisé, centré sur (2,-5)
+ WARN 15:55:05,038 [AWT-EventQueue-0] (bLo:112) - Impossible de trouver la texture jar:file:./contents/gui_jar/gui.jar!/miscellaneous/poi/58.tga key=hwBuidingIconRedPath
+ WARN 15:55:05,038 [AWT-EventQueue-0] (bLo:112) - Impossible de trouver la texture jar:file:./contents/gui_jar/gui.jar!/miscellaneous/poi/57.tga key=hwBuidingIconOrangePath
+ WARN 15:55:05,038 [AWT-EventQueue-0] (bLo:112) - Impossible de trouver la texture jar:file:./contents/gui_jar/gui.jar!/miscellaneous/poi/56.tga key=hwBuidingIconGreenPath
+ INFO 15:55:05,208 [AWT-EventQueue-0] (chJ:254) - Challenge courant : -1465 (dans 0s)
+ WARN 15:55:05,233 [AWT-EventQueue-0] (aPV:112) - Wrong function used for a bubble pipe, use pushChatMessage() instead
+ INFO 15:55:05,237 [AWT-EventQueue-0] (ber:341) - Achievement activated : 5259
+ INFO 15:55:05,238 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] La quête Theomak a démarré.
+ INFO 15:55:05,256 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] Vous avez vendu 683 objets pour un prix total de 184 158§ pendant votre absence.
+ INFO 15:55:05,256 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] Vous avez acheté 100 objets via vos offres d'achat pendant votre absence.
+ INFO 15:55:05,262 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] Vous avez des récompenses en attente, n'oubliez pas de les récupérer
+ INFO 15:55:07,568 [inter-chat-2-1] (io.netty.util.internal.logging.AbstractInternalLogger:148) - [id: 0x2147b224, L:/192.168.0.0:60232 ! R:zaap-chat.ankama.com/54.195.46.170:6337] INACTIVE
+ INFO 15:55:07,569 [inter-chat-2-2] (io.netty.util.internal.logging.AbstractInternalLogger:148) - [id: 0x04673abe] CONNECT: zaap-chat.ankama.com/54.195.46.170:6337
+ INFO 15:55:07,599 [inter-chat-2-2] (io.netty.util.internal.logging.AbstractInternalLogger:148) - [id: 0x04673abe, L:/192.168.0.0:39818 - R:zaap-chat.ankama.com/54.195.46.170:6337] ACTIVE
+ INFO 15:55:10,113 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] Vous invitez PJ3 à rejoindre votre groupe.
+ INFO 15:55:11,218 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] PJ3 a rejoint le groupe
+ INFO 15:55:11,219 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] PJ4 a rejoint le groupe
+ INFO 15:55:13,979 [AWT-EventQueue-0] (UP:73) - WakfuGameCalendar : adding periodic ClimateUpdateEvent event, period= 12 minutes 
+ INFO 15:55:13,997 [AWT-EventQueue-0] (ciD:117) - NetInFight Added
+ INFO 15:55:13,997 [AWT-EventQueue-0] (ciD:117) - NetInFight Added
+ INFO 15:55:14,099 [AWT-EventQueue-0] (aXI:47) - CREATION DU COMBAT
+ INFO 15:55:14,118 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584021160 Enutroffre-Fort breed : 3092 [ENTITE874] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (38, -67, 8)}
+ INFO 15:55:14,131 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584021160 PJ4 breed : 7 [ENTITE067] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (41, -71, 8)}
+ WARN 15:55:15,138 [AWT-EventQueue-0] (aXm:191) - Unable to find a valid RunningEffectManager to apply effect d'id -5
+ WARN 15:55:15,138 [AWT-EventQueue-0] (bvm:58) - Pas de cible sur laquelle appliquer les HMI pour l'effet 310
+ WARN 15:55:15,138 [AWT-EventQueue-0] (aXm:191) - Unable to find a valid RunningEffectManager to apply effect d'id 252845
+ WARN 15:55:15,138 [AWT-EventQueue-0] (aXm:191) - Unable to find a valid RunningEffectManager to apply effect d'id 329136
+ WARN 15:55:15,139 [AWT-EventQueue-0] (aXm:191) - Unable to find a valid RunningEffectManager to apply effect d'id 329137
+ INFO 15:55:15,321 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584021160 PJ3 breed : 3 [ENTITE227] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (42, -68, 8)}
+ INFO 15:55:21,418 [AWT-EventQueue-0] (cjr:53) - Unserializing effects for fighter ENTITE227, byte size : 3396
+ INFO 15:55:21,423 [AWT-EventQueue-0] (cjr:53) - Unserializing effects for fighter ENTITE067, byte size : 19253
+ INFO 15:55:21,535 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Contrecoup (Niv. 113)
+ INFO 15:55:22,202 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Invoque un(e) Phorreur Mature 
+ INFO 15:55:22,203 [AWT-EventQueue-0] (eXG:105) - Instanciation d'une nouvelle invocation avec un id de ENTITE340
+ INFO 15:55:22,203 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584021160 Phorreur Mature breed : 1383 [ENTITE340] isControlledByAI=true obstacleId : 3 join the fight at {Point3 : (41, -67, 8)}
+ INFO 15:55:23,811 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort lance le sort Corruption
+ INFO 15:55:24,918 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: -935 PV (Feu)
+ INFO 15:55:24,919 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort lance le sort Koudor
+ INFO 15:55:25,515 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: -1 168 PV (Feu)
+ INFO 15:55:26,009 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Phorreur Mature: est hors combat
+ INFO 15:55:26,922 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3 est KO !
+ INFO 15:55:26,931 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Phorreur Mature: -1 167 PV (Feu)
+ INFO 15:55:27,039 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: 1 PA (Force vitale)
+ INFO 15:55:27,040 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: 30 % Soins réalisés (Ponction)
+ INFO 15:55:27,314 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Phorreur Mature est hors-combat !
+ INFO 15:55:35,628 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: 0 PW (Grâce naturelle)
+ INFO 15:55:35,630 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: Bonus de grâce (+10 Niv.)
+ INFO 15:55:35,631 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] 61 secondes reportées pour le tour suivant.
+ INFO 15:55:37,328 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort lance le sort Corruption
+ INFO 15:55:38,333 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: -128 PV (Feu)
+ INFO 15:55:38,334 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort lance le sort Koudor
+ INFO 15:55:39,033 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: -160 PV (Feu)
+ INFO 15:55:39,433 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: Coffre Fort Blindé (+1 Niv.)
+ INFO 15:55:39,434 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: 400 Résistance Élémentaire
+ INFO 15:55:39,442 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: 1 PA (Force vitale)
+ INFO 15:55:45,037 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4 lance le sort Rénisurrection
+ INFO 15:55:46,336 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: est réanimé
+ INFO 15:55:46,942 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3 est ressuscité !
+ INFO 15:55:46,953 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: Propagateur (+46 Niv.)
+ INFO 15:55:46,956 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: -1 PV (Neutre) (Ponction)
+ INFO 15:55:46,957 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: +118 PV (Neutre) (Intégrité)
+ INFO 15:55:46,959 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: Propagateur (+92 Niv.)
+ INFO 15:55:46,961 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: -11 PV (Neutre) (Ponction)
+ INFO 15:55:46,962 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: 84 Armure (Distribution)
+ INFO 15:55:46,964 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: Propagateur (+138 Niv.)
+ INFO 15:55:46,966 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: -25 PV (Neutre) (Ponction)
+ INFO 15:55:46,967 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: 180 Armure (Distribution)
+ INFO 15:55:46,968 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Convalescent (Niv. 1)
+ INFO 15:55:48,440 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4 lance le sort Corro-soin
+ INFO 15:55:49,947 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -460 PV (Feu)
+ INFO 15:55:50,251 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -405 PV (Lumière) (Feu) (Propagateur)
+ INFO 15:55:50,254 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: Marque amil (+1 Niv.)
+ WARN 15:55:51,465 [AWT-EventQueue-0] (aVt:481) - Impossible de trouver l'icone d'URL jar:file:./contents/gui_jar/gui.jar!/miscellaneous/itemTypes/115.tga
+ INFO 15:55:55,948 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4 lance le sort Vivification
+ INFO 15:55:56,854 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -549 PV (Eau)
+ INFO 15:55:57,550 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4 lance le sort Vivification
+ INFO 15:55:58,454 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -550 PV (Eau)
+ INFO 15:55:59,148 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: 2 PW (Grâce naturelle)
+ INFO 15:55:59,149 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: Bonus de grâce (+20 Niv.)
+ INFO 15:55:59,151 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] 80 secondes reportées pour le tour suivant.
+ INFO 15:55:59,257 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: excave un Gisement de saphir
+ INFO 15:55:59,262 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: excave un Gisement de rubis
+ INFO 15:55:59,263 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: excave un Gisement de diamant
+ INFO 15:55:59,264 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: excave un Gisement d'or
+ INFO 15:56:00,052 [AWT-EventQueue-0] (Tc:407) - Invalid start cell for pathfind search : doesn't exist. HASHCODE : 2252770471936008
+ INFO 15:56:02,588 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3 lance le sort Braise
+ INFO 15:56:03,862 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -6 PV  (Feu)
+ INFO 15:56:04,576 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3 lance le sort Météore
+ INFO 15:56:05,589 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Déplace le Gisement
+ INFO 15:56:05,626 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: Gisement d'Enutrof (+1 Niv.)
+ INFO 15:56:05,626 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -100 Résistance Élémentaire (Gisement activé)
+ INFO 15:56:05,628 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Trésors (+1 Niv.) (Gisement consommé)
+ INFO 15:56:05,632 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -6 PV  (Feu) (Parade !)
+ INFO 15:56:06,499 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] 27 secondes reportées pour le tour suivant.
+ INFO 15:56:06,561 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: 1 PW (Chasseur de trésor)
+ INFO 15:56:06,562 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Pose le Glyphe Bourse (Chasseur de trésor)
+ INFO 15:56:06,562 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Pose le Glyphe Bourse (Chasseur de trésor)
+ INFO 15:56:06,563 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Pose le Glyphe Bourse (Chasseur de trésor)
+ WARN 15:56:06,626 [AWT-EventQueue-0] (arx:744) - Impossible de récupérer la duree de l'animation 7_AnimStatique dans jar:file:./contents/animations/interactives/interactives.jar!/7002 : la definition n'est pas chargee
+ WARN 15:56:06,626 [AWT-EventQueue-0] (arx:744) - Impossible de récupérer la duree de l'animation 7_AnimStatique dans jar:file:./contents/animations/interactives/interactives.jar!/7002 : la definition n'est pas chargee
+ WARN 15:56:06,626 [AWT-EventQueue-0] (arx:744) - Impossible de récupérer la duree de l'animation 7_AnimStatique dans jar:file:./contents/animations/interactives/interactives.jar!/7002 : la definition n'est pas chargee
+ INFO 15:56:06,704 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: Coffre Fort Blindé (+2 Niv.)
+ INFO 15:56:06,705 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: 5 PA
+ INFO 15:56:06,706 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: 4 PM
+ INFO 15:56:06,706 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: 25 % Dommages infligés
+ INFO 15:56:07,671 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort lance le sort Corruption (Critiques)
+ INFO 15:56:08,760 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: -219 PV (Feu)
+ INFO 15:56:08,761 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: n'est plus sous l'emprise de 'Coffre Fort Blindé'
+ INFO 15:56:08,763 [AWT-EventQueue-0] (aXi:35) - Resynchronisation de la position d'un fighter dans notre combat.  FightID = 1584021160, FighterID = ENTITE874 à la position {Point3 : (43, -71, 9)}
+ INFO 15:56:08,872 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: 1 PA (Force vitale)
+ INFO 15:56:14,169 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4 lance le sort Corro-soin
+ INFO 15:56:15,675 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -2 644 PV  (Feu)
+ INFO 15:56:15,972 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: n'est plus sous l'emprise de 'Marque amil'
+ INFO 15:56:15,973 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: Marque amil (+1 Niv.)
+ INFO 15:56:17,372 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4 lance le sort Vivification
+ INFO 15:56:18,273 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -2 029 PV  (Eau)
+ INFO 15:56:19,370 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4 lance le sort Vivification
+ INFO 15:56:19,374 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] Vous avez ramassé 1x Dorure de Cuivre .
+ INFO 15:56:20,277 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -2 030 PV  (Eau)
+ INFO 15:56:20,474 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] Le challenge "Contrecoup" a échoué.
+ INFO 15:56:20,775 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] Vous avez gagné 23 kamas.
+ INFO 15:56:20,776 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4 : +2 345 620 points d'XP.  Prochain niveau dans : 12 441 475 074.
+ INFO 15:56:20,782 [AWT-EventQueue-0] (aWF:91) - [FIGHT] End fight with id 1584021160
+ INFO 15:56:20,784 [AWT-EventQueue-0] (ciD:122) - NetInFight Removed
+ INFO 15:56:20,955 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Combat terminé, cliquez ici pour rouvrir l'écran de fin de combat. 
+N 15:54:51,726 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32134
+ WARN 15:54:51,726 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32135
+ WARN 15:54:51,726 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32136
+ WARN 15:54:51,726 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32137
+ WARN 15:54:51,726 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32138
+ WARN 15:54:51,726 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32139
+ WARN 15:54:51,726 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32140
+ WARN 15:54:51,726 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32141
+ WARN 15:54:51,726 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32142
+ WARN 15:54:51,726 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32143
+ WARN 15:54:51,726 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32144
+ WARN 15:54:51,726 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32145
+ WARN 15:54:51,726 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32146
+ WARN 15:54:51,726 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32147
+ WARN 15:54:51,727 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32148
+ WARN 15:54:51,727 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32149
+ WARN 15:54:51,727 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32150
+ WARN 15:54:51,727 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32151
+ WARN 15:54:51,727 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32152
+ WARN 15:54:51,727 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32154
+ WARN 15:54:51,727 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32155
+ WARN 15:54:51,727 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32156
+ WARN 15:54:51,727 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32157
+ WARN 15:54:51,727 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32158
+ WARN 15:54:51,727 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32159
+ WARN 15:54:51,727 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32160
+ WARN 15:54:51,727 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32161
+ WARN 15:54:51,727 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32162
+ WARN 15:54:51,727 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32163
+ WARN 15:54:51,730 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32260
+ WARN 15:54:51,730 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32262
+ WARN 15:54:51,730 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32263
+ WARN 15:54:51,730 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32265
+ WARN 15:54:51,740 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32659
+ WARN 15:54:51,740 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32660
+ WARN 15:54:51,740 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32664
+ WARN 15:54:51,740 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32665
+ WARN 15:54:51,742 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32899
+ WARN 15:54:51,743 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32937
+ WARN 15:54:51,743 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.32943
+ WARN 15:54:51,744 [Initialization-Tasks-0] (ME:157) - Unable to get value for key content.15.33000
+ WARN 15:54:52,124 [Initialization-Tasks-0] (aqJ:72) - Pas de aPl existant. id=8522
+java.lang.Exception
+	at aqJ.a(SourceFile:72)
+	at aqK.a(SourceFile:79)
+	at aqN.tQ(SourceFile:20)
+	at bQi.IJ(SourceFile:44)
+	at blP.dx(SourceFile:172)
+	at bbU.a(SourceFile:106)
+	at bbU.a(SourceFile:52)
+	at bbU.f(SourceFile:43)
+	at aqJ.a(SourceFile:100)
+	at aqK.a(SourceFile:73)
+	at bbU.a(SourceFile:42)
+	at WW.d(SourceFile:436)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+ WARN 15:54:52,126 [Initialization-Tasks-0] (aqJ:72) - Pas de aPl existant. id=8523
+java.lang.Exception
+	at aqJ.a(SourceFile:72)
+	at aqK.a(SourceFile:79)
+	at aqN.tQ(SourceFile:20)
+	at bQi.IJ(SourceFile:44)
+	at blP.dx(SourceFile:172)
+	at bbU.a(SourceFile:106)
+	at bbU.a(SourceFile:52)
+	at bbU.f(SourceFile:43)
+	at aqJ.a(SourceFile:100)
+	at aqK.a(SourceFile:73)
+	at bbU.a(SourceFile:42)
+	at WW.d(SourceFile:436)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+ WARN 15:54:52,127 [Initialization-Tasks-0] (aqJ:72) - Pas de aPl existant. id=8520
+java.lang.Exception
+	at aqJ.a(SourceFile:72)
+	at aqK.a(SourceFile:79)
+	at aqN.tQ(SourceFile:20)
+	at bQi.IJ(SourceFile:44)
+	at blP.dx(SourceFile:172)
+	at bbU.a(SourceFile:106)
+	at bbU.a(SourceFile:52)
+	at bbU.f(SourceFile:43)
+	at aqJ.a(SourceFile:100)
+	at aqK.a(SourceFile:73)
+	at bbU.a(SourceFile:42)
+	at WW.d(SourceFile:436)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+ WARN 15:54:52,127 [Initialization-Tasks-0] (aqJ:72) - Pas de aPl existant. id=8521
+java.lang.Exception
+	at aqJ.a(SourceFile:72)
+	at aqK.a(SourceFile:79)
+	at aqN.tQ(SourceFile:20)
+	at bQi.IJ(SourceFile:44)
+	at blP.dx(SourceFile:172)
+	at bbU.a(SourceFile:106)
+	at bbU.a(SourceFile:52)
+	at bbU.f(SourceFile:43)
+	at aqJ.a(SourceFile:100)
+	at aqK.a(SourceFile:73)
+	at bbU.a(SourceFile:42)
+	at WW.d(SourceFile:436)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+ WARN 15:54:52,127 [Initialization-Tasks-0] (aqJ:72) - Pas de aPl existant. id=8524
+java.lang.Exception
+	at aqJ.a(SourceFile:72)
+	at aqK.a(SourceFile:79)
+	at aqN.tQ(SourceFile:20)
+	at bQi.IJ(SourceFile:44)
+	at blP.dx(SourceFile:172)
+	at bbU.a(SourceFile:106)
+	at bbU.a(SourceFile:52)
+	at bbU.f(SourceFile:43)
+	at aqJ.a(SourceFile:100)
+	at aqK.a(SourceFile:73)
+	at bbU.a(SourceFile:42)
+	at WW.d(SourceFile:436)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+ WARN 15:54:52,128 [Initialization-Tasks-0] (aqJ:72) - Pas de aPl existant. id=8525
+java.lang.Exception
+	at aqJ.a(SourceFile:72)
+	at aqK.a(SourceFile:79)
+	at aqN.tQ(SourceFile:20)
+	at bQi.IJ(SourceFile:44)
+	at blP.dx(SourceFile:172)
+	at bbU.a(SourceFile:106)
+	at bbU.a(SourceFile:52)
+	at bbU.f(SourceFile:43)
+	at aqJ.a(SourceFile:100)
+	at aqK.a(SourceFile:73)
+	at bbU.a(SourceFile:42)
+	at WW.d(SourceFile:436)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Unknown Source)
+	at java.base/java.util.concurrent.FutureTask.run(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(Unknown Source)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.base/java.lang.Thread.run(Unknown Source)
+ERROR 15:54:52,695 [Initialization-Tasks-0] (cdU:43) - l'element 61792 n'a pas été exporté
+ERROR 15:54:52,695 [Initialization-Tasks-0] (cdU:43) - l'element 61791 n'a pas été exporté
+ERROR 15:54:52,696 [Initialization-Tasks-0] (cdU:43) - l'element 61792 n'a pas été exporté
+ERROR 15:54:52,696 [Initialization-Tasks-0] (cdU:43) - l'element 61789 n'a pas été exporté
+ERROR 15:54:52,696 [Initialization-Tasks-0] (cdU:43) - l'element 22077 n'a pas été exporté
+ERROR 15:54:52,696 [Initialization-Tasks-0] (cdU:43) - l'element 61790 n'a pas été exporté
+ERROR 15:54:52,696 [Initialization-Tasks-0] (cdU:43) - l'element 61788 n'a pas été exporté
+ERROR 15:54:52,696 [Initialization-Tasks-0] (cdU:43) - l'element 61790 n'a pas été exporté
+ERROR 15:54:52,715 [Initialization-Tasks-0] (cdU:43) - l'element 61792 n'a pas été exporté
+ERROR 15:54:52,715 [Initialization-Tasks-0] (cdU:43) - l'element 61791 n'a pas été exporté
+ERROR 15:54:52,715 [Initialization-Tasks-0] (cdU:43) - l'element 61792 n'a pas été exporté
+ERROR 15:54:52,715 [Initialization-Tasks-0] (cdU:43) - l'element 61789 n'a pas été exporté
+ERROR 15:54:52,716 [Initialization-Tasks-0] (cdU:43) - l'element 22077 n'a pas été exporté
+ERROR 15:54:52,716 [Initialization-Tasks-0] (cdU:43) - l'element 61790 n'a pas été exporté
+ERROR 15:54:52,716 [Initialization-Tasks-0] (cdU:43) - l'element 61788 n'a pas été exporté
+ERROR 15:54:52,716 [Initialization-Tasks-0] (cdU:43) - l'element 61790 n'a pas été exporté
+ INFO 15:54:52,743 [Initialization-Tasks-0] (bcs:43) - Default mode. Starting connection to Zaap
+ INFO 15:54:52,744 [pool-7-thread-1] (eBr:121) - connect(ENV_VARIABLES)
+ INFO 15:54:52,747 [pool-7-thread-1] (bct:48) - Connected to Zaap. Starting token fill
+ INFO 15:54:52,848 [pool-8-thread-1] (eBr:162) - Token received from Zaap
+ INFO 15:54:52,848 [pool-8-thread-1] (bcu:52) - Token obtained from Zaap. Starting autologin
+ INFO 15:54:54,762 [AWT-EventQueue-0] (cgd:71) - Raison de la déconnection de l'entité -1 : 39
+ INFO 15:54:54,764 [AWT-EventQueue-0] (aVj:62) - Connexion au proxy :wakfu-dispatcher.ankama-games.com:5558 / ssl : true
+ INFO 15:54:55,071 [Net-Cnx-wakfu-dispatcher.ankama-games.com:5558>0] (cgf:135) - onNewConnection ChannelHandlerContext(aVk#0, [id: 0x475df61e, L:/192.168.0.0:37944 - R:wakfu-dispatcher.ankama-games.com/52.208.195.184:5558])
+ INFO 15:54:57,246 [AWT-EventQueue-0] (cgp:375) - Authentication result 0
+ WARN 15:54:57,539 [AWT-EventQueue-0] (ME:157) - Unable to get value for key server.group.9
+ WARN 15:54:57,541 [AWT-EventQueue-0] (ME:157) - Unable to get value for key server.group.10
+ WARN 15:54:57,542 [AWT-EventQueue-0] (ME:157) - Unable to get value for key server.group.20
+ WARN 15:54:57,562 [AWT-EventQueue-0] (ME:157) - Unable to get value for key server.group.9
+ WARN 15:54:57,562 [AWT-EventQueue-0] (ME:157) - Unable to get value for key server.group.10
+ WARN 15:54:57,562 [AWT-EventQueue-0] (ME:157) - Unable to get value for key server.group.20
+ INFO 15:54:59,646 [AWT-EventQueue-0] (cgp:360) - Authentication token received from dispatch server : 3d09cec2-62bb-4950-8211-47a8494a5703 errorCode=0
+ INFO 15:54:59,649 [AWT-EventQueue-0] (aVv:664) - Sending DisconnectionMessage to Servers. Reason : {Dispatch}
+ INFO 15:54:59,649 [AWT-EventQueue-0] (cgd:71) - Raison de la déconnection de l'entité -1 : 39
+ INFO 15:54:59,650 [AWT-EventQueue-0] (aVj:62) - Connexion au proxy :wakfu-pandora.ankama-games.com:5556 / ssl : true
+ INFO 15:54:59,725 [Net-Cnx-wakfu-dispatcher.ankama-games.com:5558>0] (cgf:43) - Connexion avec le serveur perdue ChannelHandlerContext(aVk#0, [id: 0x475df61e, L:/192.168.0.0:37944 ! R:wakfu-dispatcher.ankama-games.com/52.208.195.184:5558])
+ INFO 15:54:59,750 [inter-chat-2-1] (io.netty.util.internal.logging.AbstractInternalLogger:148) - [id: 0x8cd19171] CONNECT: zaap-chat.ankama.com/54.155.183.142:6337
+ INFO 15:54:59,772 [Net-Cnx-wakfu-pandora.ankama-games.com:5556>0] (cgf:135) - onNewConnection ChannelHandlerContext(aVk#0, [id: 0x18a60aec, L:/192.168.0.0:34206 - R:wakfu-pandora.ankama-games.com/34.241.166.4:5556])
+ INFO 15:54:59,782 [inter-chat-2-1] (io.netty.util.internal.logging.AbstractInternalLogger:148) - [id: 0x8cd19171, L:/192.168.0.0:48426 - R:zaap-chat.ankama.com/54.155.183.142:6337] ACTIVE
+ERROR 15:55:00,011 [OkHttp https://haapi.ankama.com/...] (aZw:49) - [CHAT] Error 403 requesting Chat token : {"status":403,"message":"Unauthorized service '\\Ankama\\Account'"}
+ INFO 15:55:00,146 [AWT-EventQueue-0] (cgd:71) - Raison de la déconnection de l'entité -1 : 2
+ INFO 15:55:00,185 [AWT-EventQueue-0] (UP:73) - WakfuGameCalendar : adding periodic ClimateUpdateEvent event, period= 12 minutes 
+ INFO 15:55:00,478 [OkHttp https://haapi.ankama.com/...] (chq:353) - Device information sent
+ WARN 15:55:00,592 [AsyncLoader-5] (Gi:59) - Unable to read file:./contents/animations/equipments/equipments.jar!/210320101.anm : JAR entry 210320101.anm not found in ./contents/animations/equipments/equipments.jar
+ INFO 15:55:00,617 [AWT-EventQueue-0] (aZO:35) - Receiving companion list
+ INFO 15:55:00,620 [AWT-EventQueue-0] (aZO:58) - Companions received : 1
+ INFO 15:55:03,580 [AWT-EventQueue-0] (cgx:256) - Received FriendListMessage
+ INFO 15:55:03,600 [AWT-EventQueue-0] (chk:134) - [NATION] Reception d'un message de synchro de nation demandant l'ajout d'une nouvelle nation : 30
+ INFO 15:55:03,601 [AWT-EventQueue-0] (chk:134) - [NATION] Reception d'un message de synchro de nation demandant l'ajout d'une nouvelle nation : 33
+ INFO 15:55:03,601 [AWT-EventQueue-0] (chk:134) - [NATION] Reception d'un message de synchro de nation demandant l'ajout d'une nouvelle nation : 32
+ INFO 15:55:03,601 [AWT-EventQueue-0] (chk:134) - [NATION] Reception d'un message de synchro de nation demandant l'ajout d'une nouvelle nation : 31
+ INFO 15:55:03,694 [AWT-EventQueue-0] (ber:407) - Déserialisation des achievements : size=1084
+ WARN 15:55:03,694 [AWT-EventQueue-0] (ber:463) - Achievement inexistant : Id=2193
+ WARN 15:55:03,694 [AWT-EventQueue-0] (ber:463) - Achievement inexistant : Id=2194
+ WARN 15:55:03,694 [AWT-EventQueue-0] (ber:463) - Achievement inexistant : Id=5035
+ WARN 15:55:03,724 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:03,724 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:03,725 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:03,725 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:03,725 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:03,725 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:03,725 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:03,725 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:03,725 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:03,725 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:03,725 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ WARN 15:55:03,725 [AWT-EventQueue-0] (ME:157) - Unable to get value for key content.61.963
+ INFO 15:55:03,762 [AWT-EventQueue-0] (baz:89) - Loading chat file.
+ INFO 15:55:04,042 [AWT-EventQueue-0] (Wh:60) - cdt initialisé, centré sur (2,-4)
+ WARN 15:55:04,044 [AWT-EventQueue-0] (bLo:112) - Impossible de trouver la texture jar:file:./contents/gui_jar/gui.jar!/miscellaneous/poi/58.tga key=hwBuidingIconRedPath
+ WARN 15:55:04,044 [AWT-EventQueue-0] (bLo:112) - Impossible de trouver la texture jar:file:./contents/gui_jar/gui.jar!/miscellaneous/poi/57.tga key=hwBuidingIconOrangePath
+ WARN 15:55:04,044 [AWT-EventQueue-0] (bLo:112) - Impossible de trouver la texture jar:file:./contents/gui_jar/gui.jar!/miscellaneous/poi/56.tga key=hwBuidingIconGreenPath
+ INFO 15:55:04,355 [AWT-EventQueue-0] (chJ:254) - Challenge courant : -1465 (dans 0s)
+ INFO 15:55:04,584 [AWT-EventQueue-0] (ber:341) - Achievement activated : 5259
+ INFO 15:55:04,585 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] La quête Theomak a démarré.
+ WARN 15:55:04,672 [AWT-EventQueue-0] (aPV:112) - Wrong function used for a bubble pipe, use pushChatMessage() instead
+ INFO 15:55:04,684 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] PJ4 (COMPTE) a rejoint notre monde.
+ERROR 15:55:04,876 [inter-chat-2-1] (aZu:65) - [CHAT] Authentication failed error code=9
+ WARN 15:55:04,904 [inter-chat-2-1] (aZn:52) - [CHAT] Connection lost, reconnection in 1909ms
+ INFO 15:55:06,814 [inter-chat-2-1] (io.netty.util.internal.logging.AbstractInternalLogger:148) - [id: 0x8cd19171, L:/192.168.0.0:48426 ! R:zaap-chat.ankama.com/54.155.183.142:6337] INACTIVE
+ INFO 15:55:06,815 [inter-chat-2-2] (io.netty.util.internal.logging.AbstractInternalLogger:148) - [id: 0x0d3d6738] CONNECT: zaap-chat.ankama.com/54.155.183.142:6337
+ INFO 15:55:06,844 [inter-chat-2-2] (io.netty.util.internal.logging.AbstractInternalLogger:148) - [id: 0x0d3d6738, L:/192.168.0.0:54334 - R:zaap-chat.ankama.com/54.155.183.142:6337] ACTIVE
+ INFO 15:55:11,262 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] PJ3 a rejoint le groupe
+ INFO 15:55:11,262 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] PJ4 a rejoint le groupe
+ WARN 15:55:15,164 [AWT-EventQueue-0] (aXm:191) - Unable to find a valid RunningEffectManager to apply effect d'id -5
+ WARN 15:55:15,164 [AWT-EventQueue-0] (aXm:191) - Unable to find a valid RunningEffectManager to apply effect d'id 252845
+ WARN 15:55:15,165 [AWT-EventQueue-0] (aXm:191) - Unable to find a valid RunningEffectManager to apply effect d'id 329136
+ WARN 15:55:15,165 [AWT-EventQueue-0] (aXm:191) - Unable to find a valid RunningEffectManager to apply effect d'id 329137
+ INFO 15:55:15,165 [AWT-EventQueue-0] (UP:73) - WakfuGameCalendar : adding periodic ClimateUpdateEvent event, period= 12 minutes 
+ INFO 15:55:15,181 [AWT-EventQueue-0] (ciD:117) - NetInFight Added
+ INFO 15:55:15,182 [AWT-EventQueue-0] (ciD:117) - NetInFight Added
+ INFO 15:55:15,259 [AWT-EventQueue-0] (aXI:47) - CREATION DU COMBAT
+ INFO 15:55:15,267 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584021160 Enutroffre-Fort breed : 3092 [ENTITE874] isControlledByAI=true obstacleId : -1 join the fight at {Point3 : (38, -67, 8)}
+ INFO 15:55:15,271 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584021160 PJ4 breed : 7 [ENTITE067] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (41, -71, 8)}
+ INFO 15:55:15,275 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584021160 PJ3 breed : 3 [ENTITE227] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (42, -68, 8)}
+ INFO 15:55:21,479 [AWT-EventQueue-0] (cjr:53) - Unserializing effects for fighter ENTITE227, byte size : 3396
+ INFO 15:55:21,509 [AWT-EventQueue-0] (cjr:53) - Unserializing effects for fighter ENTITE067, byte size : 19253
+ INFO 15:55:21,543 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Contrecoup (Niv. 113)
+ INFO 15:55:22,185 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Invoque un(e) Phorreur Mature 
+ INFO 15:55:22,185 [AWT-EventQueue-0] (eXG:105) - Instanciation d'une nouvelle invocation avec un id de ENTITE340
+ INFO 15:55:22,187 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=1584021160 Phorreur Mature breed : 1383 [ENTITE340] isControlledByAI=true obstacleId : 3 join the fight at {Point3 : (41, -67, 8)}
+ INFO 15:55:23,817 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort lance le sort Corruption
+ INFO 15:55:24,910 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: -935 PV (Feu)
+ INFO 15:55:24,911 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort lance le sort Koudor
+ INFO 15:55:25,593 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: -1 168 PV (Feu)
+ INFO 15:55:25,991 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Phorreur Mature: est hors combat
+ INFO 15:55:26,919 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3 est KO !
+ INFO 15:55:26,930 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Phorreur Mature: -1 167 PV (Feu)
+ INFO 15:55:27,040 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: 1 PA (Force vitale)
+ INFO 15:55:27,040 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: 30 % Soins réalisés (Ponction)
+ INFO 15:55:27,289 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Phorreur Mature est hors-combat !
+ INFO 15:55:35,617 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: 0 PW (Grâce naturelle)
+ INFO 15:55:35,620 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: Bonus de grâce (+10 Niv.)
+ INFO 15:55:35,621 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] 61 secondes reportées pour le tour suivant.
+ INFO 15:55:37,221 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort lance le sort Corruption
+ INFO 15:55:38,333 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: -128 PV (Feu)
+ INFO 15:55:38,334 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort lance le sort Koudor
+ INFO 15:55:39,004 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: -160 PV (Feu)
+ INFO 15:55:39,399 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: Coffre Fort Blindé (+1 Niv.)
+ INFO 15:55:39,401 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: 400 Résistance Élémentaire
+ INFO 15:55:39,407 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: 1 PA (Force vitale)
+ INFO 15:55:44,998 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4 lance le sort Rénisurrection
+ INFO 15:55:46,237 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: est réanimé
+ INFO 15:55:46,907 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3 est ressuscité !
+ INFO 15:55:46,954 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: Propagateur (+46 Niv.)
+ INFO 15:55:46,956 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: -1 PV (Neutre) (Ponction)
+ INFO 15:55:46,958 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: +118 PV (Neutre) (Intégrité)
+ INFO 15:55:46,960 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: Propagateur (+92 Niv.)
+ INFO 15:55:46,961 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: -11 PV (Neutre) (Ponction)
+ INFO 15:55:46,962 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: 84 Armure (Distribution)
+ INFO 15:55:46,964 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: Propagateur (+138 Niv.)
+ INFO 15:55:46,966 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: -25 PV (Neutre) (Ponction)
+ INFO 15:55:46,967 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: 180 Armure (Distribution)
+ INFO 15:55:46,968 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Convalescent (Niv. 1)
+ INFO 15:55:48,419 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4 lance le sort Corro-soin
+ INFO 15:55:49,847 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -460 PV (Feu)
+ INFO 15:55:50,246 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -405 PV (Lumière) (Feu) (Propagateur)
+ INFO 15:55:50,254 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: Marque amil (+1 Niv.)
+ INFO 15:55:56,041 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4 lance le sort Vivification
+ INFO 15:55:56,947 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -549 PV (Eau)
+ INFO 15:55:57,516 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4 lance le sort Vivification
+ INFO 15:55:58,438 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -550 PV (Eau)
+ INFO 15:55:59,136 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: 2 PW (Grâce naturelle)
+ INFO 15:55:59,138 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: Bonus de grâce (+20 Niv.)
+ INFO 15:55:59,139 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] 81 secondes reportées pour le tour suivant.
+ INFO 15:55:59,272 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: excave un Gisement de saphir
+ INFO 15:55:59,274 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: excave un Gisement de rubis
+ INFO 15:55:59,275 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: excave un Gisement de diamant
+ INFO 15:55:59,276 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: excave un Gisement d'or
+ INFO 15:55:59,646 [AWT-EventQueue-0] (Tc:407) - Invalid start cell for pathfind search : doesn't exist. HASHCODE : 2252650212720648
+ INFO 15:56:02,612 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3 lance le sort Braise
+ INFO 15:56:03,912 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -6 PV  (Feu)
+ INFO 15:56:04,517 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3 lance le sort Météore
+ INFO 15:56:05,613 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Déplace le Gisement
+ INFO 15:56:05,625 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: Gisement d'Enutrof (+1 Niv.)
+ INFO 15:56:05,626 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -100 Résistance Élémentaire (Gisement activé)
+ INFO 15:56:05,628 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Trésors (+1 Niv.) (Gisement consommé)
+ INFO 15:56:05,632 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -6 PV  (Feu) (Parade !)
+ INFO 15:56:06,522 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] 27 secondes reportées pour le tour suivant.
+ INFO 15:56:06,620 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: 1 PW (Chasseur de trésor)
+ INFO 15:56:06,621 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Pose le Glyphe Bourse (Chasseur de trésor)
+ INFO 15:56:06,622 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Pose le Glyphe Bourse (Chasseur de trésor)
+ INFO 15:56:06,622 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3: Pose le Glyphe Bourse (Chasseur de trésor)
+ INFO 15:56:06,636 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: Coffre Fort Blindé (+2 Niv.)
+ INFO 15:56:06,637 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: 5 PA
+ INFO 15:56:06,638 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: 4 PM
+ INFO 15:56:06,638 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: 25 % Dommages infligés
+ WARN 15:56:06,642 [AWT-EventQueue-0] (arx:744) - Impossible de récupérer la duree de l'animation 7_AnimStatique dans jar:file:./contents/animations/interactives/interactives.jar!/7002 : la definition n'est pas chargee
+ WARN 15:56:06,642 [AWT-EventQueue-0] (arx:744) - Impossible de récupérer la duree de l'animation 7_AnimStatique dans jar:file:./contents/animations/interactives/interactives.jar!/7002 : la definition n'est pas chargee
+ WARN 15:56:06,642 [AWT-EventQueue-0] (arx:744) - Impossible de récupérer la duree de l'animation 7_AnimStatique dans jar:file:./contents/animations/interactives/interactives.jar!/7002 : la definition n'est pas chargee
+ INFO 15:56:07,621 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort lance le sort Corruption (Critiques)
+ INFO 15:56:08,659 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: -219 PV (Feu)
+ INFO 15:56:08,661 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: n'est plus sous l'emprise de 'Coffre Fort Blindé'
+ INFO 15:56:08,664 [AWT-EventQueue-0] (aXi:35) - Resynchronisation de la position d'un fighter dans notre combat.  FightID = 1584021160, FighterID = ENTITE874 à la position {Point3 : (43, -71, 9)}
+ INFO 15:56:08,844 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4: 1 PA (Force vitale)
+ INFO 15:56:14,166 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4 lance le sort Corro-soin
+ INFO 15:56:15,575 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -2 644 PV  (Feu)
+ INFO 15:56:15,971 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: n'est plus sous l'emprise de 'Marque amil'
+ INFO 15:56:15,972 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: Marque amil (+1 Niv.)
+ INFO 15:56:17,371 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4 lance le sort Vivification
+ INFO 15:56:18,269 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -2 029 PV  (Eau)
+ INFO 15:56:19,380 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ4 lance le sort Vivification
+ INFO 15:56:19,383 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] Vous avez 1 nouvel objet en attente : Dorure de Cuivre.
+ INFO 15:56:20,365 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Enutroffre-Fort: -2 030 PV  (Eau)
+ INFO 15:56:20,482 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] Le challenge "Contrecoup" a échoué.
+ INFO 15:56:20,787 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] Vous avez gagné 14 kamas.
+ INFO 15:56:20,788 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] PJ3 : +2 157 715 points d'XP.  Prochain niveau dans : 27 821 973.
+ INFO 15:56:20,790 [AWT-EventQueue-0] (aWF:91) - [FIGHT] End fight with id 1584021160
+ INFO 15:56:20,793 [AWT-EventQueue-0] (ciD:122) - NetInFight Removed
+ INFO 15:56:20,896 [AWT-EventQueue-0] (aPV:174) - [Information (combat)] Combat terminé, cliquez ici pour rouvrir l'écran de fin de combat. 
+ INFO 15:56:24,642 [AWT-EventQueue-0] (aPV:174) - [Information (jeu)] Vous avez détruit 1 objet et récupéré 0 ressource
