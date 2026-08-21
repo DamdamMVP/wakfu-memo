@@ -237,7 +237,7 @@
   .warnbox b { color:var(--warn); }
 
   /* ========================= C — LA FENETRE PRINCIPALE =================== */
-  .mainwin { position:absolute; width:520px; background:var(--panel);
+  .mainwin { position:absolute; width:580px; background:var(--panel);
     border:1px solid var(--line-2); border-radius:12px; box-shadow:0 20px 60px #000e;
     overflow:hidden; }
   .mainwin .tb { display:flex; align-items:center; gap:9px; padding:8px 12px;
@@ -249,13 +249,30 @@
   .mainwin h4 { margin:0 0 8px; font-size:11px; letter-spacing:1px;
     text-transform:uppercase; color:var(--dim); }
   .mainwin h4.sec { margin-top:15px; }
-  .askrow { display:flex; align-items:center; gap:9px; padding:7px 8px;
+  /* l'écran d'identification ne défile pas : la liste est courte (6 au pire)
+     et les listes flottantes doivent pouvoir en sortir. */
+  .mainwin .mb.identif { max-height:none; overflow:visible; }
+  .profpop { position:absolute; right:8px; top:calc(100% - 4px); z-index:20;
+    min-width:168px; background:#0c0e12; border:1px solid var(--line-2);
+    border-radius:10px; padding:4px; box-shadow:0 12px 30px #000d; }
+  .profpop .it { padding:6px 10px; border-radius:7px; cursor:pointer; font-size:12.5px; }
+  .profpop .it:hover { background:var(--raise); }
+  .profpop .it.neuf { color:var(--accent); border-top:1px solid var(--line); margin-top:3px;
+    padding-top:7px; border-radius:0 0 7px 7px; }
+  .newprof { position:absolute; right:8px; top:calc(100% - 4px); z-index:21;
+    display:flex; gap:5px; background:#0c0e12; border:1px solid var(--accent);
+    border-radius:10px; padding:5px; box-shadow:0 12px 30px #000d; }
+  .newprof input { background:#171a21; border:1px solid var(--line-2); color:var(--txt);
+    border-radius:7px; padding:5px 8px; font:inherit; font-size:12.5px; width:140px; }
+  .newprof button { padding:4px 9px; font-size:12px; }
+
+  .askrow { position:relative; display:flex; align-items:center; gap:9px; padding:7px 8px;
     border:1px solid var(--line); border-radius:10px; margin-bottom:6px;
     background:var(--panel-2); }
   .askrow .nm { font-weight:600; font-size:13.5px; }
   .askrow .sub { font-size:11.5px; color:var(--faint); }
   .askrow .acts { margin-left:auto; display:flex; gap:5px; }
-  .askrow .acts button { padding:4px 9px; font-size:12px; }
+  .askrow .acts button { padding:4px 9px; font-size:12px; white-space:nowrap; }
   .rosterline { display:flex; align-items:center; gap:8px; padding:4px 6px;
     font-size:12.5px; color:var(--dim); }
   .rosterline .nm { color:var(--txt); }
@@ -464,7 +481,8 @@ const TURNS = [
 ];
 
 const S = {
-  demande:'A', echange:'1',
+  demande:'C', echange:'2',   // retenues par Damien ; A/B et 1/3 restent visitables
+  purge:[],
   phase:'placement', scenario:'reel',
   turn:1, cursor:0,
   roster:JSON.parse(JSON.stringify(ROSTER0)),
@@ -474,7 +492,8 @@ const S = {
   clicks:0,
   inactif:{},          // rang -> true (Emplacement inactif, pour la densite)
   // etats d'interface, propres a chaque variante
-  held:null, chipMenu:null, ratMenu:null, swapMenu:null, hoverSrc:null, swapSrc:null,
+  held:null, chipMenu:null, ratMenu:null, swapMenu:null, hoverRow:null, swapSrc:null,
+  profil:'1', newProfil:null,
   dragSrc:null, warn:null, qIndex:0, folded:false, profMenu:null,
   ghost:{}, flash:{},
   fs:1, w:430, op:94,
@@ -557,6 +576,12 @@ function overlayHTML(){
   const dot = (S.demande==='C' && unknowns().length>0)
     ? `<span class="askdot" data-raise>● ${unknowns().length} à identifier</span>` : '';
 
+  // L'ancre du pre-eclairage : la ligne saisie si on est en mode echange,
+  // sinon la ligne survolee — et seulement si elle est permutable.
+  const ancre = (S.echange!=='2') ? null
+    : (S.swapSrc!==null ? S.swapSrc
+      : (S.hoverRow!==null && estPermutable(S.hoverRow) ? S.hoverRow : null));
+
   const head = `<header class="oh">
       <span class="tnum">T${S.turn}</span>
       <div class="glob">${t ? t.global : ''}</div>
@@ -571,8 +596,7 @@ function overlayHTML(){
       (perm && S.echange==='1') ? 'perm-1':'',
       (perm && S.echange==='2') ? 'perm-2':'',
       (perm && S.echange==='3') ? 'perm-3':'',
-      (S.echange==='2' && S.hoverSrc!==null && S.hoverSrc!==r && permutables(S.hoverSrc).some(p=>L[r]&&p.id===L[r].id)) ? 'lit':'',
-      (S.echange==='2' && S.swapSrc!==null && S.swapSrc!==r && permutables(S.swapSrc).some(p=>L[r]&&p.id===L[r].id)) ? 'lit':'',
+      (S.echange==='2' && ancre!==null && ancre!==r && permutables(ancre).some(p=>L[r]&&p.id===L[r].id)) ? 'lit':'',
       (S.echange==='2' && S.swapSrc===r) ? 'src':'',
       (S.echange==='3' && S.dragSrc===r) ? 'dragging':'',
       (S.echange==='3' && S.dragSrc!==null && S.dragSrc!==r && permutables(S.dragSrc).some(p=>L[r]&&p.id===L[r].id)) ? 'target':'',
@@ -580,9 +604,13 @@ function overlayHTML(){
       S.flash[r] ? 'flash':'',
     ].filter(Boolean).join(' ');
 
-    // Le pseudo n'apparait QUE pendant le geste, jamais au repos.
+    // Le pseudo n'apparait QUE pendant le geste, jamais au repos. En v2 le
+    // survol nomme la ligne survolee — n'IMPORTE laquelle, permutable ou non —
+    // et allume en plus ses partenaires quand il y en a. Apprendre qui est la
+    // ne coute donc rien, mais seul un doublon se clique.
+    const lit = ancre!==null && ancre!==r && permutables(ancre).some(p=>L[r]&&p.id===L[r].id);
     const showGhost = S.ghost[r] ||
-      (S.echange==='2' && (S.hoverSrc!==null || S.swapSrc!==null)) ||
+      (S.echange==='2' && (r===S.hoverRow || r===S.swapSrc || lit)) ||
       (S.echange==='3' && S.dragSrc!==null);
     const gname = (showGhost && L[r]) ? `<span class="ghost-name">${L[r].nom}</span>` : '';
 
@@ -777,49 +805,84 @@ function compagnonHTML(){
 }
 
 /* ------------------------------------- C — la fenetre principale -------- */
+/* L'identification et le Roster sont DEUX ECRANS, pas deux sections du meme.
+   Lister le Roster sous les questions ne sert a rien au moment de repondre :
+   la consultation du Roster est un autre geste, a un autre moment. */
 function mainwinHTML(){
   const inc = unknowns();
-  const profils = [...new Set(S.roster.map(p=>p.profil))];
   return `<div class="tb"><span class="t">Wakfu Mémo</span>
       <span class="dotsw"><i></i><i></i><i></i></span></div>
-    <div class="mb">
-      <h4>À identifier ${inc.length?`(${inc.length})`:''}</h4>
-      ${inc.length ? inc.map(c=>{
-        // meme regle qu'ailleurs : on ne propose en raccourci qu'un
-        // rattachement PLAUSIBLE, c'est-a-dire de la meme classe.
-        const first = ratCandidats(c).memes[0];
-        return `<div class="askrow">
-          ${clsHTML(c.cls,'')}
-          <div><div class="nm">${c.nom}</div>
-            <div class="sub">${CLASSES[c.cls]} · vu en combat</div></div>
-          <div class="acts">
-            ${first?`<button class="on" data-ans="${c.eid}:rattach:${first.id}">↳ « ${first.nom} »</button>`:''}
-            <button data-ans="${c.eid}:moi">moi</button>
-            <button data-ans="${c.eid}:profilmenu">profil…</button>
-            <button class="ghost" data-ans="${c.eid}:ignore">ignorer</button>
-          </div>
-        </div>
-        ${S.profMenu===c.eid ? `<div style="padding:0 0 8px 44px" class="rowbtn">
-            ${profils.filter(p=>p!=='moi').map(a=>`<button data-ans="${c.eid}:profil:${a}">${a}</button>`).join('')}
-            <button data-ans="${c.eid}:profil:*">＋ nouveau profil</button>
-          </div>`:''}
-        ${S.warn && S.warn.eid===c.eid ? `<div class="warnbox" style="margin:0 0 8px 44px">
-            « <b>${byId(S.warn.pid).nom}</b> » est enregistré comme
-            <b>${CLASSES[byId(S.warn.pid).cls]}</b>, le log dit <b>${CLASSES[c.cls]}</b>.
-            <div class="rowbtn" style="margin-top:7px">
-              <button class="on" data-ans="${c.eid}:rattachok:${S.warn.pid}">Oui, corriger</button>
-              <button class="ghost" data-warncancel>Non</button>
-            </div></div>`:''}`;
-      }).join('') : `<div class="empty">Rien à identifier. Tous les combattants
-        du dernier combat sont dans le Roster.</div>`}
+    <div class="mb${inc.length?' identif':''}">${inc.length ? identifHTML(inc) : rosterHTML()}</div>`;
+}
 
-      <h4 class="sec">Roster</h4>
-      ${profils.map(pr=>`<div class="prof">${pr}</div>
-        ${S.roster.filter(p=>p.profil===pr).map(p=>`<div class="rosterline">
-          ${clsHTML(p.cls,'','tiny')}<span class="nm">${p.nom}</span>
-          <span>${CLASSES[p.cls]}</span>
-          <span class="eid">${p.eid ? '#'+p.eid : 'sans ID'}</span></div>`).join('')}`).join('')}
-    </div>`;
+const profils = () => [...new Set(S.roster.map(p=>p.profil))];
+
+function identifHTML(inc){
+  return `<h4>À identifier (${inc.length})</h4>
+    ${inc.map(c=>`<div class="askrow">
+        ${clsHTML(c.cls,'')}
+        <div><div class="nm">${c.nom}</div>
+          <div class="sub">${CLASSES[c.cls]} · vu en combat</div></div>
+        <div class="acts">${actsHTML(c)}</div>
+        ${S.profMenu===c.eid ? profPopHTML(c) : ''}
+        ${S.newProfil===c.eid ? newProfilHTML(c) : ''}
+      </div>
+      ${S.warn && S.warn.eid===c.eid ? `<div class="warnbox" style="margin:0 0 8px 44px">
+          « <b>${byId(S.warn.pid).nom}</b> » est enregistré comme
+          <b>${CLASSES[byId(S.warn.pid).cls]}</b>, le log dit <b>${CLASSES[c.cls]}</b>.
+          <div class="rowbtn" style="margin-top:7px">
+            <button class="on" data-ans="${c.eid}:rattachok:${S.warn.pid}">Oui, corriger</button>
+            <button class="ghost" data-warncancel>Non</button>
+          </div></div>`:''}`).join('')}`;
+}
+
+/* L'ecran de consultation du Roster — ce que la fenetre montre quand il n'y a
+   rien a identifier. C'est ici que la liste des Personnages a sa place. */
+function rosterHTML(){
+  return `<h4>Roster</h4>
+    ${profils().map(pr=>`<div class="prof">${pr}</div>
+      ${S.roster.filter(p=>p.profil===pr).map(p=>`<div class="rosterline">
+        ${clsHTML(p.cls,'','tiny')}<span class="nm">${p.nom}</span>
+        <span>${CLASSES[p.cls]}</span>
+        <span class="eid">${p.eid ? '#'+p.eid : 'sans ID'}</span></div>`).join('')}`).join('')}
+    <div class="empty">Rien à identifier : tous les combattants du dernier
+      combat sont dans le Roster.</div>`;
+}
+
+/* --------------------------------------- trois idees pour le choix du profil */
+/* 1 — LES PROFILS EN CLAIR. « moi » n'est qu'un profil parmi les autres, et ils
+       sont deux ou trois dans une vraie vie : les cacher derriere « profil… »
+       ajoutait un clic a la question la plus frequente.
+   2 — UN SEUL MENU « Ajouter à ▾ », qui contient tout sauf le raccourci et
+       « ignorer ». Tient quel que soit le nombre de profils.
+   3 — LE MENU ANCRE : on garde « profil… », mais il ouvre une vraie liste
+       flottante au lieu d'une rangee de boutons qui pousse la mise en page. */
+function actsHTML(c){
+  const first = ratCandidats(c).memes[0];
+  const rat = first ? `<button class="on" data-ans="${c.eid}:rattach:${first.id}">↳ « ${first.nom} »</button>` : '';
+  const ign = `<button class="ghost" data-ans="${c.eid}:ignore">ignorer</button>`;
+  if (S.profil==='1')
+    return rat + profils().map(pr=>`<button data-ans="${c.eid}:profil:${pr}">${pr}</button>`).join('')
+      + `<button data-ans="${c.eid}:nouveau" title="nouveau profil">＋</button>` + ign;
+  if (S.profil==='2')
+    return rat + `<button class="${S.profMenu===c.eid?'on':''}" data-ans="${c.eid}:profilmenu">Ajouter à ▾</button>` + ign;
+  return rat + `<button data-ans="${c.eid}:profil:moi">moi</button>`
+    + `<button class="${S.profMenu===c.eid?'on':''}" data-ans="${c.eid}:profilmenu">profil… ▾</button>` + ign;
+}
+function profPopHTML(c){
+  if (S.profil==='1') return '';
+  const liste = S.profil==='2' ? profils() : profils().filter(p=>p!=='moi');
+  return `<div class="profpop">
+    ${liste.map(pr=>`<div class="it" data-ans="${c.eid}:profil:${pr}">${pr}</div>`).join('')}
+    <div class="it neuf" data-ans="${c.eid}:nouveau">＋ nouveau profil</div>
+  </div>`;
+}
+function newProfilHTML(c){
+  return `<div class="newprof">
+    <input id="npf" placeholder="nom du profil" value="">
+    <button class="on" data-newok="${c.eid}">Ajouter</button>
+    <button class="ghost" data-newcancel>Annuler</button>
+  </div>`;
 }
 
 /* ================================================================ render = */
@@ -828,6 +891,8 @@ const DEMANDES = {
   C:'Rien dans le combat' };
 const ECHANGES = {
   '1':'Le menu au clic', '2':'Deux clics, survol', '3':'Le glisser-déposer' };
+const PROFILS = {
+  '1':'Les profils en clair', '2':'Un seul menu', '3':'Le menu ancré' };
 
 function render(){
   const ov = document.getElementById('ov');
@@ -860,7 +925,10 @@ function renderSwitcher(){
       <span class="ar" data-cyc="demande:1">▶</span></div>
     <div class="grp"><span class="ar" data-cyc="echange:-1">◀</span>
       <span class="lb"><i>échange</i> <b>${S.echange}</b> — ${ECHANGES[S.echange]}</span>
-      <span class="ar" data-cyc="echange:1">▶</span></div>`;
+      <span class="ar" data-cyc="echange:1">▶</span></div>
+    <div class="grp"><span class="ar" data-cyc="profil:-1">◀</span>
+      <span class="lb"><i>profil</i> <b>${S.profil}</b> — ${PROFILS[S.profil]}</span>
+      <span class="ar" data-cyc="profil:1">▶</span></div>`;
 }
 
 const SC_HINT = {
@@ -893,7 +961,8 @@ function renderPanel(){
     `à identifier   ${unknowns().map(c=>c.nom).join(', ')||'aucun'}\n`+
     `conflits       ${conflits().map(c=>CLASSES[c.cls]+' ×'+c.personnages.length).join(', ')||'aucun'}\n`+
     `liaison        ${slots().map((s,r)=>`n°${r+1} ${COLOR_NAMES[s.color]} → ${L[r]?L[r].nom:'—'}`).join('\n               ')}\n`+
-    `permutable     ${perm.length?perm.map(r=>'n°'+(r+1)).join(', '):'rien'}` + warn18;
+    `permutable     ${perm.length?perm.map(r=>'n°'+(r+1)).join(', '):'rien'}\n`+
+    `purgé          ${(S.purge&&S.purge.length)?S.purge.join(', ')+'  (homonyme sans ID)':'rien'}` + warn18;
 }
 
 /* ============================================================== actions == */
@@ -904,25 +973,45 @@ function repondre(eid, kind, arg){
   clic();
   if (kind==='profilmenu'){ S.profMenu = S.profMenu===eid?null:eid; S.ratMenu=null; return render(); }
   if (kind==='ratmenu')   { S.ratMenu  = S.ratMenu ===eid?null:eid; S.profMenu=null; return render(); }
+  if (kind==='nouveau')   { S.newProfil = eid; S.profMenu=null; render();
+                            const f=document.getElementById('npf'); if (f) f.focus(); return; }
   if (kind==='rattach'){
     const p = byId(arg);
     if (p.cls !== c.cls){ S.warn = {eid, pid:arg}; return render(); }   // #11
     return rattacher(eid, arg);
   }
   if (kind==='rattachok') return rattacher(eid, arg);
-  if (kind==='moi')    { S.roster.push({id:'n'+eid, nom:c.nom, cls:c.cls, profil:'moi', eid}); }
-  if (kind==='profil') { const pr = arg==='*' ? 'Nozadah 2' : arg;
-                         S.roster.push({id:'n'+eid, nom:c.nom, cls:c.cls, profil:pr, eid}); }
+  if (kind==='moi')    { ajouter(c, 'moi'); }
+  if (kind==='profil') { ajouter(c, arg==='*' ? 'Nouveau profil' : arg); }
   if (kind==='ignore') { S.answers[eid] = {kind:'ignore'}; }
   S.answers[eid] = S.answers[eid] || {kind};
   S.chipMenu=null; S.profMenu=null; S.ratMenu=null; S.warn=null; S.held=null;
+  S.newProfil=null;
   render();
+}
+function ajouter(c, profil){
+  S.roster.push({id:'n'+c.eid, nom:c.nom, cls:c.cls, profil, eid:c.eid});
+  purgerHomonyme(c);
+}
+/* Un Personnage saisi a la main qui porte EXACTEMENT le nom d'un Personnage
+   que le log vient de confirmer est un doublon mort : le pseudo est pris
+   ailleurs, il ne s'attachera jamais a rien. On le retire.
+   La comparaison est EXACTE, exprès : « Nozaheal » ne fait pas disparaitre
+   « Nozaheal » avec l'accent — c'est precisement le cas que le rattachement
+   existe pour rattraper, et l'effacer d'office tuerait le filet a coquille. */
+function purgerHomonyme(c){
+  const morts = S.roster.filter(p=>!p.eid && p.nom===c.nom);
+  S.roster = S.roster.filter(p=>!morts.includes(p));
+  morts.forEach(p=>{ Object.keys(S.pref).forEach(r=>{ if (S.pref[r]===p.eid) delete S.pref[r]; }); });
+  if (morts.length) S.purge = (S.purge||[]).concat(morts.map(p=>p.nom+' ('+CLASSES[p.cls]+')'));
 }
 function rattacher(eid, pid){
   const c = combatantOf(eid), p = byId(pid);
   p.eid = eid; p.nom = c.nom; p.cls = c.cls;   // le log fait foi (ADR 0002)
+  purgerHomonyme(c);
   S.answers[eid] = {kind:'rattach'};
   S.chipMenu=null; S.profMenu=null; S.ratMenu=null; S.warn=null; S.held=null;
+  S.newProfil=null;
   render();
 }
 // Trancher un Conflit : c'est une Preference de liaison, elle se retient.
@@ -943,7 +1032,7 @@ function echanger(rangA, personnage){
   const avant = L[rangA];
   S.pref[rangA] = personnage.eid;
   if (rangB!==undefined && avant) S.pref[rangB] = avant.eid;
-  S.swapMenu=null; S.swapSrc=null; S.hoverSrc=null; S.dragSrc=null;
+  S.swapMenu=null; S.swapSrc=null; S.hoverRow=null; S.dragSrc=null;
   // La seule confirmation possible : les deux lignes clignotent et disent leur
   // pseudo une seconde. Sans ca l'echange est litteralement invisible.
   S.flash[rangA]=1; S.ghost[rangA]=1;
@@ -963,6 +1052,11 @@ stage.addEventListener('click', e=>{
   if (ans){ const [eid,kind,arg] = ans.dataset.ans.split(':');
     return repondre(+eid, kind, arg); }
   if (t.closest('[data-warncancel]')){ clic(); S.warn=null; return render(); }
+  const nok = t.closest('[data-newok]');
+  if (nok){ const f=document.getElementById('npf');
+    const nom = (f && f.value.trim()) || 'Nouveau profil';
+    return repondre(+nok.dataset.newok, 'profil', nom); }
+  if (t.closest('[data-newcancel]')){ S.newProfil=null; return render(); }
   if (t.closest('[data-fold]')){ S.folded=true; return render(); }
   if (t.closest('[data-raise]')){ const mw=document.getElementById('mainwin');
     mw.style.left='500px'; mw.style.top='96px'; return render(); }
@@ -1012,10 +1106,9 @@ stage.addEventListener('click', e=>{
 // prototype a « montrer ce qui est permutable sans expliquer la regle ».
 stage.addEventListener('pointerover', e=>{
   if (S.echange!=='2' || S.swapSrc!==null) return;
-  const c = e.target.closest('.cls'); const row = e.target.closest('.row');
-  const r = (c && row) ? +row.dataset.rang : null;
-  const next = (r!==null && estPermutable(r)) ? r : null;
-  if (next!==S.hoverSrc){ S.hoverSrc=next; render(); }
+  const row = e.target.closest('.row');
+  const next = (row && e.target.closest('.cls')) ? +row.dataset.rang : null;
+  if (next!==S.hoverRow){ S.hoverRow=next; render(); }
 });
 
 // v3 : le glisser-deposer. Le curseur `grab` est le seul indice avant le geste.
@@ -1081,7 +1174,8 @@ function rosterPour(sc){
 function hardReset(all){
   S.roster = rosterPour(S.scenario);
   S.answers={}; S.pref={}; S.held=null; S.chipMenu=null; S.profMenu=null; S.ratMenu=null;
-  S.warn=null; S.swapMenu=null; S.swapSrc=null; S.hoverSrc=null; S.dragSrc=null;
+  S.newProfil=null; S.purge=[];
+  S.warn=null; S.swapMenu=null; S.swapSrc=null; S.hoverRow=null; S.dragSrc=null;
   S.folded=false; S.qIndex=0; S.ghost={}; S.flash={};
   if (all){ S.clicks=0; S.phase='placement'; S.turn=1; S.cursor=0; S.chaud=false; }
 }
@@ -1093,17 +1187,19 @@ sl('w','wv',v=>v+'',v=>S.w=v);
 sl('op','opv',v=>v+'%',v=>S.op=v);
 
 /* ============================================== la barre de variantes ==== */
+const AXES = {demande:DEMANDES, echange:ECHANGES, profil:PROFILS};
 function cycle(axis, dir){
-  const keys = axis==='demande' ? Object.keys(DEMANDES) : Object.keys(ECHANGES);
+  const keys = Object.keys(AXES[axis]);
   const i = keys.indexOf(S[axis]);
   S[axis] = keys[(i+dir+keys.length)%keys.length];
-  S.folded=false; S.swapMenu=null; S.swapSrc=null; S.hoverSrc=null; S.dragSrc=null;
+  S.folded=false; S.swapMenu=null; S.swapSrc=null; S.hoverRow=null; S.dragSrc=null;
   syncURL(); render();
 }
 function syncURL(){
   const u = new URL(location);
   u.searchParams.set('demande', S.demande);
   u.searchParams.set('echange', S.echange);
+  u.searchParams.set('profil',  S.profil);
   history.replaceState(null,'',u);
 }
 document.getElementById('switcher').addEventListener('click', e=>{
@@ -1116,6 +1212,7 @@ addEventListener('keydown', e=>{
   if (e.key==='ArrowRight') { e.preventDefault(); cycle('demande', 1); }
   if (e.key==='ArrowUp')    { e.preventDefault(); cycle('echange',-1); }
   if (e.key==='ArrowDown')  { e.preventDefault(); cycle('echange', 1); }
+  if (e.key==='p')          { cycle('profil', 1); }
   if (e.key===' ')          { e.preventDefault(); document.getElementById('tick').click(); }
   if (e.key==='Escape')     { S.swapSrc=null; S.swapMenu=null; S.chipMenu=null; render(); }
 });
@@ -1134,6 +1231,7 @@ stage.addEventListener('drop', e=>{
   const q = new URLSearchParams(location.search);
   if (DEMANDES[q.get('demande')]) S.demande = q.get('demande');
   if (ECHANGES[q.get('echange')]) S.echange = q.get('echange');
+  if (PROFILS[q.get('profil')])   S.profil  = q.get('profil');
 }
 render();
 </script>
