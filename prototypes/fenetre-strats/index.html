@@ -4,23 +4,27 @@
 <meta charset="utf-8">
 <title>PROTOTYPE — La coque de la Fenêtre principale et l'écran des Strats (#21)</title>
 <!--
-  PROTOTYPE JETABLE — ticket #21.
+  PROTOTYPE JETABLE — ticket #21, resolu.
 
-  DEUX AXES, combinables librement :
-    ?coque=A|B|C    la coque de la Fenetre principale — comment on passe d'un
-                    ecran a l'autre, et ou vivent l'interrupteur d'Affichage
-                    demande et l'onboarding.
-      A  onglets en haut
-      B  colonne laterale, avec un socle d'etat en pied
-      C  ecran d'accueil : aucune navigation permanente
-    ?strats=1|2|3   l'ecran des Strats — le rapport entre la LISTE et
-                    l'EDITEUR de #5.
-      1  liste plein ecran, puis descente dans la strat
-      2  deux volets : la liste a gauche, l'editeur a droite
-      3  la liste EST la relecture : chaque strat est un bloc qu'on deplie
+  Ce fichier ne porte plus que la forme RETENUE. Les variantes ecartees — deux
+  autres coques (onglets en haut, ecran d'accueil), deux autres ecrans de Strats
+  (deux volets, blocs depliables), deux autres formes de composition (la colonne
+  large de #5, la composition en ligne) et deux autres jeux de Couleurs — ont ete
+  supprimees. Elles restent lisibles dans l'HISTORIQUE de cette branche, au
+  commit `52714c5` et avant.
 
-  La barre du bas change les deux ; le clavier aussi (gauche/droite = la coque,
-  haut/bas = l'ecran des Strats). Rien n'est persiste.
+  LA FORME RETENUE :
+    - une COLONNE LATERALE, avec un socle d'etat en pied qui nomme les trois
+      conditions d'affichage de l'Overlay ;
+    - l'ecran des Strats en LISTE PLEIN ECRAN, puis descente dans la strat ;
+    - la composition en COLONNE SERREE, Rang dans l'angle de l'icone ;
+    - les fiches de Tour en GRILLE : largeur minimale 400 px, le nombre de
+      colonnes en decoule et elles s'etirent pour remplir la largeur ;
+    - six Couleurs : rouge, jaune, vert, bleu, rose, gris.
+
+  La barre du bas reste la telecommande — scenarios, taille des fiches, « Wakfu
+  lance » — et n'est pas l'interface. La fenetre se redimensionne a sa poignee
+  d'angle. Rien n'est persiste.
 
   CE QUI EST FIGE AILLEURS, ET QU'ON NE REDISCUTE PAS ICI :
     - #5  l'INTERIEUR d'une Strat : une fiche par Tour, en-tete « T1 » plus
@@ -107,17 +111,6 @@
   .closed h2 { margin:0 0 8px; font-size:17px; }
   .closed p { color:var(--dim); font-size:13px; }
 
-  /* ------------------------------------------------- coque A : onglets --- */
-  .shell-a { flex:1; min-width:0; display:flex; flex-direction:column; }
-  .tabsbar { flex:none; display:flex; align-items:center; gap:14px;
-    padding:0 14px; background:var(--panel); border-bottom:1px solid var(--line); }
-  .tabs { display:flex; gap:3px; }
-  .tabs button { border:0; background:transparent; border-radius:0; padding:11px 14px;
-    color:var(--dim); font-size:13.5px; border-bottom:2px solid transparent; }
-  .tabs button:hover { background:#1c202a; color:var(--txt); }
-  .tabs button.cur { color:var(--txt); border-bottom-color:var(--accent); background:transparent; }
-  .tabsbar .grow { flex:1; }
-
   /* ------------------------------------------ coque B : colonne laterale - */
   .shell-b { flex:1; min-width:0; display:flex; }
   .rail { width:206px; flex:none; background:var(--panel); border-right:1px solid var(--line);
@@ -134,35 +127,6 @@
     width:3px; background:var(--accent); }
   .rail .items .cnt { margin-left:auto; font:11px ui-monospace,monospace; color:var(--faint); }
   .rail .grow { flex:1; }
-
-  /* ---------------------------------------------- coque C : accueil ------- */
-  .shell-c { flex:1; min-width:0; display:flex; flex-direction:column; }
-  .cbar { flex:none; display:flex; align-items:center; gap:10px; padding:9px 14px;
-    background:var(--panel); border-bottom:1px solid var(--line); font-size:13px; }
-  .hub { flex:1; min-height:0; overflow:auto; padding:34px 26px 40px;
-    display:flex; flex-direction:column; align-items:center; gap:22px; }
-  .hero { width:min(660px,100%); background:var(--panel); border:1px solid var(--line);
-    border-radius:16px; padding:20px 22px; }
-  .hero .lbl { font-size:11.5px; letter-spacing:1px; text-transform:uppercase;
-    color:var(--faint); }
-  .hero .big { font-size:23px; font-weight:600; margin:2px 0 3px; }
-  .hero .sub { color:var(--dim); font-size:13px; }
-  /* la liste plate de #7, servie a l'accueil : le pendant, dans la fenetre, du
-     chip de l'Overlay retenu en #6. Le choix se fait donc a deux endroits. */
-  .hublist { margin-top:13px; border-top:1px solid var(--line); padding-top:10px;
-    display:flex; flex-direction:column; gap:2px; }
-  .hublist button { display:flex; align-items:center; gap:9px; border:0;
-    background:transparent; border-radius:8px; padding:6px 8px; font-size:13.5px; }
-  .hublist button:hover { background:var(--raise); }
-  .hublist button.cur { background:var(--panel-2); }
-  .hublist .grow { flex:1; min-width:0; }
-  .hublist .n { font:11px ui-monospace,monospace; color:var(--faint); }
-  .doors { width:min(660px,100%); display:grid; grid-template-columns:repeat(3,1fr); gap:11px; }
-  .door { background:var(--panel); border:1px solid var(--line); border-radius:13px;
-    padding:15px 16px; }
-  .door:hover { border-color:var(--accent); background:var(--panel-2); }
-  .door b { display:block; font-size:14.5px; font-weight:600; color:var(--txt); }
-  .door span { font-size:12px; color:var(--faint); }
 
   /* -------------------------------------------- l'interrupteur d'Affichage */
   .sw { display:inline-flex; align-items:center; gap:9px; cursor:pointer;
@@ -240,7 +204,6 @@
 
   /* --------------------------------------------------------------- l'editeur */
   .ed { flex:1; min-height:0; display:flex; }
-  .ed.hcol { flex-direction:column; }
   .compo { width:150px; flex:none; border-right:1px solid var(--line);
     background:var(--panel); display:flex; flex-direction:column; }
   .compo h2 { margin:0; padding:13px 14px 10px; font-size:11.5px; letter-spacing:1px;
@@ -257,8 +220,6 @@
   .plus { display:grid; place-items:center; cursor:pointer; color:var(--dim);
     border:1px dashed var(--line-2); border-radius:0; font-size:15px; }
   .compo .plus { height:44px; margin-bottom:6px; }
-  .compo:not(.tight) .plus { height:40px; }
-  .hcompo .plus { width:47px; height:47px; border-radius:10px; }
   .plus:hover { border-color:var(--accent); color:var(--txt); background:var(--raise); }
 
   /* Le panneau d'un Emplacement. La colonne serrée n'a la place ni du bouton de
@@ -292,15 +253,13 @@
   .palette { display:grid; gap:3px; margin-top:2px; }
   .compo .palette { padding:9px 8px 10px; border-top:1px solid var(--line);
     grid-template-columns:repeat(2,1fr); }
-  .compo:not(.tight) .palette { padding:9px 12px 10px; grid-template-columns:repeat(4,1fr); }
-  .hcompo .palette { display:flex; gap:3px; margin:0; }
-  .hcompo .palette .swatch { width:19px; height:19px; }
   .swatch { aspect-ratio:1; cursor:pointer; border:1px solid #ffffff1a; border-radius:0; }
   .swatch:hover { outline:2px solid var(--accent); outline-offset:-2px; }
   .swatch.clear { background:repeating-linear-gradient(45deg,#0c0e12 0 3px,#3a4150 3px 6px); }
 
-  /* compo 2 — colonne serree : le Rang passe en pastille sur l'icone, la colonne
-     se reduit a son contenu. Les ~76 px rendus vont aux fiches. */
+  /* La colonne : reduite a son contenu, le Rang en pastille dans l'angle de
+     l'icone. Le selecteur « tight » est reste de la comparaison des trois
+     formes ; c'est desormais la seule. */
   .compo.tight { width:64px; }
   .compo.tight > h2 { padding:13px 0 10px; justify-content:center; font-size:10px;
     letter-spacing:.6px; text-align:center; display:block; }
@@ -316,28 +275,13 @@
     padding:1px 3px; line-height:1.1; }
   .compo.tight .frozen { display:none; }
 
-  /* compo 3 — en ligne, le Rang AU-DESSUS. La colonne de gauche disparait :
-     les fiches gagnent 150 px. Ceci ROUVRE #5, qui avait figé la colonne. */
-  .hcompo { flex:none; border-bottom:1px solid var(--line); background:var(--panel);
-    display:flex; align-items:center; gap:16px; padding:9px 18px; }
-  .hcompo > h2 { margin:0; font-size:11.5px; letter-spacing:1px; text-transform:uppercase;
-    color:var(--dim); flex:none; }
-  .hcompo > h2 span { color:var(--faint); letter-spacing:0; }
-  .hcompo .hslots { display:flex; gap:7px; flex-wrap:wrap; }
-  .hslot { display:flex; flex-direction:column; align-items:center; gap:2px;
-    padding:3px 5px 4px; background:var(--panel-2); border:1px solid var(--line);
-    border-radius:10px; cursor:grab; }
-  .hslot .rank { color:var(--faint); font:700 10px/1 ui-monospace,monospace; }
-  .hcompo .frozen { font-size:11px; color:var(--faint); margin:0; max-width:230px; }
-
-  .slot.drag, .hslot.drag { opacity:.3; }
-  .slot.over, .hslot.over { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+  .slot.drag { opacity:.3; }
   .cls.lg img { width:44px; height:44px; }
   .cls { display:flex; align-items:stretch; flex:none; }
   /* Le lisere garde ses 3 px de couleur (#5) et gagne un FILET SOMBRE d'1 px a
-     sa droite : sans lui, le blanc se noie dans les portraits pales. Mesure sur
-     les 18 : quatorze ont des pixels a plus de 210 de luminance sur leur bord
-     gauche, contre 242 pour le blanc — le Huppermage a une moyenne de 207. */
+     sa droite. Mesure sur les 18 portraits : quatorze ont des pixels au-dela de
+     210 de luminance sur leur bord gauche. Le gris (168) n'en souffre pas, mais
+     le jaune (216) si — le filet garantit la frontiere pour les six. */
   .cls .edge { width:3px; flex:none; background:var(--c,transparent);
     box-shadow:1px 0 0 #0a0c10; }
   .cls img { width:32px; height:32px; display:block; background:#0c0e12;
@@ -382,53 +326,6 @@
   .ro-flag { display:inline-flex; align-items:center; gap:6px; font-size:11.5px;
     color:var(--faint); border:1px solid var(--line); border-radius:6px; padding:1px 7px; }
 
-  /* ----------------------------------------------- variante 2 : deux volets */
-  .twopane { flex:1; min-height:0; display:flex; }
-  .pane-l { width:216px; flex:none; border-right:1px solid var(--line);
-    background:var(--panel); display:flex; flex-direction:column; }
-  .pane-l .hd { padding:11px 12px 8px; font-size:11.5px; letter-spacing:1px;
-    text-transform:uppercase; color:var(--faint); display:flex; align-items:center; gap:6px; }
-  .pane-l .hd .grow { flex:1; }
-  .pane-l .lst { overflow:auto; padding:0 7px 8px; }
-  .pane-l .it { display:flex; align-items:center; gap:8px; padding:7px 9px; border-radius:9px;
-    cursor:pointer; }
-  .pane-l .it:hover { background:var(--raise); }
-  .pane-l .it { position:relative; }
-  .pane-l .it.cur { background:var(--panel-2); }
-  .pane-l .it.cur:before { content:''; position:absolute; left:0; top:0; bottom:0;
-    width:3px; background:var(--accent); }
-  .pane-l .it .nm { flex:1; min-width:0; font-size:13.5px; overflow:hidden;
-    text-overflow:ellipsis; white-space:nowrap; }
-  .pane-l .it .n { font:11px ui-monospace,monospace; color:var(--faint); }
-  .pane-r { flex:1; min-width:0; display:flex; flex-direction:column; }
-  .pane-r .hd { flex:none; display:flex; align-items:center; gap:10px;
-    padding:9px 14px; border-bottom:1px solid var(--line); background:var(--panel); }
-  .pane-r .hd .grow { flex:1; }
-  #edname { font-size:16px; font-weight:600; width:220px; background:transparent;
-    border:0; border-bottom:1px solid var(--line-2); border-radius:0; padding:2px; }
-  #edname:focus { border-bottom-color:var(--accent); }
-
-  /* ------------------------------------------- variante 3 : blocs depliables */
-  .blocks { padding:12px 14px 34px; }
-  .blk { border:1px solid var(--line); border-radius:13px; background:var(--panel);
-    margin-bottom:9px; overflow:hidden; }
-  .blk.open { border-color:var(--line-2); }
-  .blk > .bh { display:flex; align-items:center; gap:11px; padding:10px 13px; cursor:pointer; }
-  .blk > .bh:hover { background:var(--panel-2); }
-  .blk > .bh .chev { color:var(--dim); font-size:13px; width:13px; flex:none; }
-  .blk > .bh .grow { flex:1; min-width:0; }
-  .blk > .bh .acts { display:flex; gap:4px; opacity:0; }
-  .blk:hover > .bh .acts, .blk.open > .bh .acts { opacity:1; }
-  .blk .body { border-top:1px solid var(--line); background:#13161c; }
-  .blk .rdbar { display:flex; align-items:center; gap:10px; padding:8px 14px;
-    border-bottom:1px solid var(--line); font-size:12px; color:var(--faint); }
-  .blk .rdbar .grow { flex:1; }
-  .blk .fiches { padding:13px 14px 16px; display:grid; gap:11px; align-content:start;
-    grid-auto-rows:max-content;
-    grid-template-columns:repeat(auto-fill,minmax(var(--fichemin,400px),1fr)); }
-  .blk .fiches .card .cons { font-size:13px; }
-  .blk .ednested { display:flex; min-height:340px; }
-
   /* ------------------------------------------------------------ onboarding */
   .ob { flex:1; min-height:0; display:flex; flex-direction:column;
     align-items:center; justify-content:center; gap:20px; padding:30px; }
@@ -465,8 +362,6 @@
     text-transform:uppercase; margin-right:2px; }
   .dock button { padding:3px 9px; font-size:12px; }
   .dock button.on { border-color:var(--accent); background:#22304d; }
-  .dock .cyc { display:flex; align-items:center; gap:3px; }
-  .dock .cyc .lab { min-width:236px; color:var(--txt); font-size:12px; }
   .dock .sep { width:1px; height:22px; background:var(--line); }
   .dock .grow { flex:1; }
   .dock .st { color:var(--faint); font:11.5px ui-monospace,monospace; }
@@ -506,16 +401,19 @@ const KEYS = ['feca','osamodas','enutrof','sram','xelor','ecaflip','eniripsa','i
 // la question « lequel est le n° 2, le rouge ? » — donc deux joueurs au telephone
 // ne doivent confondre ni la teinte, ni le mot.
 //
-// Cinq teintes, plus un BLANC qui sort de la roue. C'est ce qui debloque le jeu :
+// Cinq teintes, plus un GRIS qui sort de la roue. C'est ce qui debloque le jeu :
 // la region vert–cyan–bleu ne peut pas porter deux couleurs distinctes a six, et
-// le blanc s'en passe — il se distingue par la CLARTE (saturation 3 %), pas par
-// la teinte, et « blanc » ne se confond avec aucun autre mot.
+// le gris s'en passe — il se distingue par la CLARTE (saturation 7 %), pas par la
+// teinte, et « gris » ne se confond avec aucun autre mot.
 //   teintes  [0, 50, 122, 180, 313]  ecarts [50, 72, 58, 133, 47]  mini 47°
 // Le « bleu » est le cyan : c'est celui qui tient le mieux a 3 px, et comme il
 // n'y a plus qu'un seul bleu, il n'a pas besoin d'un autre nom.
+// Le gris est a MI-CHEMIN (luminance 168) : plus clair qu'un portrait sombre,
+// plus sombre qu'un portrait pale. C'est le seul des six qui contraste dans les
+// deux sens — un blanc a 242 se noyait dans les portraits pales.
 const COULEURS = [
   ['rouge','#ff5252'], ['jaune','#ffdd33'], ['vert','#4ade50'],
-  ['bleu','#22d3d3'], ['rose','#ff4fd8'], ['blanc','#f0f2f8'],
+  ['bleu','#22d3d3'], ['rose','#ff4fd8'], ['gris','#a3a8b0'],
 ];
 const SLOT_COLORS = COULEURS.map(c => c[1]);
 // Icones de classe EMBARQUEES en base64 (source : icons/<cle>.png, redim. 64 px) :
@@ -601,24 +499,19 @@ const JEU_COMPLET = () => [
 ];
 
 const S = {
-  coque:'B', variante:'1',   // B + 1 retenues par Damien ; le reste reste visitable
-  compo:'2',                 // 2 retenue par Damien ; 1 = la colonne de #5, 3 = en ligne
   ficheMini:400,             // px : largeur MINIMALE d'une fiche. Le nombre de
                              // colonnes en decoule, il ne se regle pas.
   winW:null, winH:null,      // taille de la Fenetre principale, en px
   appOpen:true, wakfuLance:true, affichageDemande:true,
-  ecran:'strats',                 // strats | roster | reglages | onboarding | accueil
+  ecran:'strats',                 // strats | roster | reglages | onboarding
   strats:JEU_COMPLET(),
   choisieId:null,
-  ouverteId:null,                 // v1 : la descente. v2 : le volet droit.
-  deplies:new Set(),              // v3
-  editionId:null,                 // v3 : le bloc passe en edition
+  ouverteId:null,                 // la strat dans laquelle on est descendu
   renommeId:null,
   menuId:null, menuXY:null,
   slotPop:null,                   // { sid, i } — le panneau d'un Emplacement
   aSupprimer:null,
   ob:null,                        // index d'ecran d'onboarding, ou null
-  hubPick:false,                  // coque C : la liste plate depliee sur l'accueil
 };
 S.choisieId = S.strats[0].id;
 S.ouverteId = S.strats[0].id;
@@ -700,28 +593,16 @@ const paletteHTML = () => `<div class="palette">${
 // La composition : l'ordre EST le Rang, et il se corrige au glisser-deposer —
 // ce que #14 avait tranché et #5 figé « en colonne verticale à gauche ». Les
 // formes 2 et 3 ROUVRENT cette dernière décision, la 1 la garde telle quelle.
-const RANGHINT = `L'ordre est le <b>Rang</b> : glisser pour le corriger.`;
+const RANGHINT = "L'ordre est le Rang : glisser pour le corriger.";
 function compoHTML(st, editable) {
-  const slot = (e, i) => {
+  const items = st.emplacements.map((e, i) => {
     const d = editable
       ? `draggable="true" data-slot="${i}" data-sid="${st.id}" data-act="slotpop:${i}"` : '';
-    if (S.compo === '3')
-      return `<div class="hslot" ${d}><span class="rank">${i+1}</span>${clsHTML(e,'lg')}</div>`;
-    if (S.compo === '2')
-      return `<div class="slot tight" ${d}><span class="rank">${i+1}</span>${clsHTML(e,'lg')}</div>`;
-    return `<div class="slot" ${d}><span class="rank">${i+1}</span>${clsHTML(e)}</div>`;
-  };
-  const items = st.emplacements.map(slot).join('');
-  if (S.compo === '3') return `<div class="hcompo">
+    return `<div class="slot tight" ${d}><span class="rank">${i+1}</span>${clsHTML(e,'lg')}</div>`;
+  }).join('');
+  return `<aside class="compo tight" title="${RANGHINT}">
     <h2>Compo</h2>
-    <div class="hslots">${items}${plusHTML(st, editable)}</div>
-    ${editable ? paletteHTML() : ''}
-    <p class="frozen">${RANGHINT}</p></div>`;
-  return `<aside class="compo ${S.compo==='2'?'tight':''}" title="${
-      S.compo==='2' ? "L'ordre est le Rang : glisser pour le corriger." : ''}">
-    <h2>${S.compo==='2' ? 'Compo' : 'Composition'}</h2>
     <div class="slots">${items}${plusHTML(st, editable)}</div>
-    <p class="frozen">${RANGHINT}</p>
     ${editable ? paletteHTML() : ''}</aside>`;
 }
 
@@ -735,9 +616,7 @@ function editeurHTML(st, editable) {
              dessinerait quand même la fiche <b>T1</b> et ses lignes vides (#18).</p>`}
       ${editable ? `<button class="addturn">＋ Ajouter un tour</button>` : ''}
     </section>`;
-  return S.compo === '3'
-    ? `<div class="ed hcol ${editable?'':'ro'}">${compo}${turns}</div>`
-    : `<div class="ed ${editable?'':'ro'}">${compo}${turns}</div>`;
+  return `<div class="ed ${editable?'':'ro'}">${compo}${turns}</div>`;
 }
 
 const swHTML = (cap) => `<button class="sw ${S.affichageDemande?'on':''}" data-act="switch">
@@ -745,27 +624,6 @@ const swHTML = (cap) => `<button class="sw ${S.affichageDemande?'on':''}" data-a
 
 /* ====================================================== les trois coques == */
 const ECRANS = [['strats','Strats'],['roster','Roster'],['reglages','Réglages']];
-
-/* ---- A : des onglets en haut. La coque la moins chere, et celle qui n'a
-     AUCUNE place pour expliquer pourquoi l'overlay ne se dessine pas : la barre
-     porte deja la navigation. L'onboarding y est donc un MUR : il masque les
-     onglets, parce qu'il n'a nulle part ailleurs ou vivre. */
-function coqueA() {
-  if (S.ecran === 'onboarding') return `<div class="shell-a">${onboardingHTML()}</div>`;
-  const d = overlayDessine();
-  return `<div class="shell-a">
-    <div class="tabsbar">
-      <div class="tabs">${ECRANS.map(([k,l]) =>
-        `<button data-act="nav:${k}" class="${S.ecran===k?'cur':''}">${l}</button>`).join('')}</div>
-      <div class="grow"></div>
-      <span class="why">${d ? '' : (S.affichageDemande ? 'il manque : '+manque() : '')}</span>
-      ${swHTML()}
-      <span class="dot ${d?'on':''}" title="${d?'l\'overlay est dessiné':'l\'overlay n\'est pas dessiné'}"></span>
-      <button class="ghost" data-act="nav:onboarding" title="Revoir la prise en main">?</button>
-    </div>
-    ${ecranHTML()}
-  </div>`;
-}
 
 /* ---- B : une colonne laterale, et un SOCLE D'ETAT en pied. La colonne rend
      une place permanente que les onglets n'ont pas : l'interrupteur y tient
@@ -797,58 +655,6 @@ function coqueB() {
   </div>`;
 }
 
-/* ---- C : aucune navigation permanente. On ouvre cette app pour basculer un
-     interrupteur ou changer de strat, puis on alt-tab. L'accueil est donc
-     l'ETAT, et tout le reste est une porte. Le pari : ce qu'on vient chercher
-     est sur l'accueil, et le prix est un niveau de plus pour le reste. */
-function coqueC() {
-  if (S.ecran === 'onboarding' && !S.strats.length)
-    return `<div class="shell-c">${onboardingHTML()}</div>`;
-  if (S.ecran !== 'accueil') {
-    const lbl = { strats:'Strats', roster:'Roster', reglages:'Réglages',
-                  onboarding:'Prise en main' }[S.ecran];
-    return `<div class="shell-c">
-      <div class="cbar"><button class="ghost" data-act="nav:accueil">‹ Accueil</button>
-        <span style="color:var(--dim)">${lbl}</span></div>
-      ${ecranHTML()}
-    </div>`;
-  }
-  const d = overlayDessine(), st = choisie();
-  return `<div class="shell-c"><div class="hub">
-    <div class="hero">
-      <div class="lbl">Strat choisie</div>
-      <div class="big">${st ? esc(st.nom) : 'aucune'}</div>
-      <div class="sub" style="display:flex;align-items:center;gap:10px">${st
-        ? `${metaHTML(st)} ${compostripHTML(st)}
-           <button class="ghost" data-act="hubpick" style="font-size:12px">changer ▾</button>`
-        : `L'overlay ne se dessinera pas tant qu'aucune Strat n'est choisie.`}</div>
-      ${S.hubPick ? `<div class="hublist">${S.strats.map(o =>
-        `<button data-act="choose:${o.id}" class="${o.id===S.choisieId?'cur':''}">
-          <span class="pick ${o.id===S.choisieId?'on':''}"></span>
-          <span class="grow">${esc(o.nom)}</span>
-          ${compostripHTML(o)}
-          <span class="n">${o.tours.length}</span></button>`).join('')}</div>` : ''}
-      <div style="display:flex;align-items:center;gap:14px;margin-top:17px;
-                  padding-top:15px;border-top:1px solid var(--line)">
-        ${swHTML('Afficher l\'overlay par-dessus le jeu')}
-        <div class="grow" style="flex:1"></div>
-        <span class="dot ${d?'on':''}"></span>
-        <span class="why">${d ? "l'overlay est dessiné"
-          : (S.affichageDemande ? 'il manque : '+manque() : 'overlay masqué')}</span>
-      </div>
-    </div>
-    <div class="doors">
-      <button class="door" data-act="nav:strats"><b>Strats</b>
-        <span>${plur(S.strats.length,'strat')} · créer, relire, dupliquer</span></button>
-      <button class="door" data-act="nav:roster"><b>Roster</b>
-        <span>mes personnages, et les demandes d'ajout</span></button>
-      <button class="door" data-act="nav:reglages"><b>Réglages</b>
-        <span>opacité, raccourci, taille du texte</span></button>
-    </div>
-    <button class="ghost" data-act="nav:onboarding" style="font-size:12.5px">Revoir la prise en main</button>
-  </div></div>`;
-}
-
 /* ============================================================== ecrans ==== */
 function ecranHTML() {
   if (S.ecran === 'onboarding') return `<main class="scr">${onboardingHTML()}</main>`;
@@ -870,7 +676,7 @@ function stratsHTML() {
   if (!S.strats.length) return `<main class="scr">
     <div class="scrhead"><h1>Strats</h1></div>
     <div class="scrbody">${aucuneStratHTML()}</div></main>`;
-  return { '1':strats1, '2':strats2, '3':strats3 }[S.variante]();
+  return ecranStrats();
 }
 
 /* ---- l'etat « aucune Strat » : premier lancement, rien a afficher. C'est le
@@ -891,7 +697,7 @@ function aucuneStratHTML() {
      liste ; dupliquer et supprimer sont dans le menu de la ligne ; choisir est
      une pastille a gauche, donc choisir n'oblige pas a ouvrir. Relire = ouvrir
      et derouler l'editeur, avec le risque d'editer par megarde. */
-function strats1() {
+function ecranStrats() {
   if (S.ouverteId && strat(S.ouverteId)) {
     const st = strat(S.ouverteId);
     return `<main class="scr">
@@ -927,91 +733,6 @@ function strats1() {
           <button class="ghost" data-act="menu:${st.id}">⋯</button>
         </div>
       </div>`).join('')}
-    </div></div></main>`;
-}
-
-/* ---- 2 : DEUX VOLETS. Un clic change de strat, sans retour en arriere — c'est
-     la variante qui rend la comparaison la moins chere. En echange, « la strat
-     selectionnee » et « la Strat choisie » deviennent deux choses differentes,
-     et un seul clic ne peut pas dire les deux : d'ou le bouton explicite.
-     Note : l'editeur de #5 possede DEJA une colonne a gauche, donc cette
-     variante en aligne deux — trois avec la coque B. */
-function strats2() {
-  const st = strat(S.ouverteId) || S.strats[0];
-  S.ouverteId = st.id;
-  return `<main class="scr"><div class="twopane">
-    <aside class="pane-l">
-      <div class="hd"><span>Mes strats</span><div class="grow"></div>
-        <button class="ghost" data-act="create" title="nouvelle strat">＋</button></div>
-      <div class="lst">${S.strats.map(o => `<div class="it ${o.id===st.id?'cur':''}"
-        data-act="open:${o.id}">
-        <span class="pick ${S.choisieId===o.id?'on':''}" data-act="choose:${o.id}"
-          title="utiliser cette strat"></span>
-        <span class="nm">${esc(o.nom)}</span><span class="n">${o.tours.length}</span></div>`).join('')}
-      </div>
-    </aside>
-    <section class="pane-r">
-      <div class="hd">
-        <input id="edname" class="ren" data-id="${st.id}" value="${esc(st.nom)}" spellcheck="false">
-        ${S.choisieId===st.id ? '<span class="badge">choisie</span>'
-          : `<button class="ghost" data-act="choose:${st.id}">Utiliser cette strat</button>`}
-        <div class="grow"></div>
-        <button class="ghost" data-act="dup:${st.id}">Dupliquer</button>
-        <button class="ghost danger" data-act="del:${st.id}">Supprimer</button>
-      </div>
-      ${editeurHTML(st,true)}
-    </section>
-  </div></main>`;
-}
-
-/* ---- 3 : la liste EST la relecture. Chaque strat est un bloc ; deplie, il
-     montre ses Tours en LECTURE SEULE, cote a cote — c'est la reponse la plus
-     directe a #18 (« relire une strat se fait dans l'application »), et la
-     seule variante ou lire n'est pas editer. « Modifier » bascule le bloc en
-     editeur sur place. Deux blocs peuvent etre ouverts en meme temps. */
-function strats3() {
-  return `<main class="scr">
-    <div class="scrhead"><h1>Strats</h1>
-      <span class="why">déplier une strat la relit ; « modifier » l'ouvre</span>
-      <div class="grow"></div>
-      <button data-act="create">＋ Nouvelle strat</button></div>
-    <div class="scrbody"><div class="blocks">
-    ${S.strats.map(st => {
-      const open = S.deplies.has(st.id), edit = S.editionId === st.id;
-      return `<div class="blk ${open?'open':''}">
-        <div class="bh" data-act="open:${st.id}">
-          <span class="pick ${S.choisieId===st.id?'on':''}" data-act="choose:${st.id}"
-            title="utiliser cette strat"></span>
-          <span class="chev">${open?'▾':'▸'}</span>
-          <div class="grow">
-            ${S.renommeId===st.id
-              ? `<input class="ren" data-id="${st.id}" value="${esc(st.nom)}" autofocus>`
-              : `<div class="nm" style="font-size:14.5px;font-weight:500">${esc(st.nom)}</div>`}
-            <div class="meta" style="font-size:11.5px;color:var(--faint)">${metaHTML(st)}</div>
-          </div>
-          ${compostripHTML(st)}
-          <div class="acts">
-            <button class="ghost" data-act="rename:${st.id}">Renommer</button>
-            <button class="ghost" data-act="dup:${st.id}">Dupliquer</button>
-            <button class="ghost danger" data-act="del:${st.id}">Supprimer</button>
-          </div>
-        </div>
-        ${open ? `<div class="body">
-          <div class="rdbar">
-            ${edit ? '<span class="ro-flag">édition</span>'
-                   : '<span class="ro-flag">lecture seule</span>'}
-            <div class="grow"></div>
-            <button class="ghost" data-act="${edit?'read':'edit'}:${st.id}">${
-              edit ? 'Terminer' : 'Modifier'}</button>
-          </div>
-          ${edit ? `<div class="ednested">${editeurHTML(st,true)}</div>`
-                 : (st.tours.length
-                    ? `<div class="fiches">${st.tours.map((_,i)=>ficheHTML(st,i,false)).join('')}</div>`
-                    : `<div class="todo">Aucun tour. L'Overlay dessinerait
-                        quand même la fiche <b>T1</b> et ses lignes vides (#18).</div>`)}
-        </div>` : ''}
-      </div>`;
-    }).join('')}
     </div></div></main>`;
 }
 
@@ -1124,7 +845,7 @@ function render() {
          (#16, #17). Le ✕ n'existe que sur la Fenêtre principale.</p>
       <button data-act="relaunch" style="margin-top:10px">Relancer l'application</button></div>`;
   } else {
-    const body = { A:coqueA, B:coqueB, C:coqueC }[S.coque]();
+    const body = coqueB();
     stage.innerHTML = `<div class="win">
       <div class="titlebar"><span class="nm">Wakfu Mémo</span>
         <span>${choisie() ? '— '+esc(choisie().nom) : ''}</span>
@@ -1147,29 +868,9 @@ function render() {
   if (ren) { ren.focus(); ren.select(); }
 }
 
-const COQUES = { A:'A — onglets en haut', B:'B — colonne latérale + socle d\'état',
-                 C:'C — écran d\'accueil, aucune nav permanente' };
-const VARS = { '1':'1 — liste, puis descente', '2':'2 — deux volets',
-               '3':'3 — la liste est la relecture' };
-
 function renderDock() {
   const d = overlayDessine();
   document.getElementById('dock').innerHTML = `
-    <div class="grp cyc"><label>coque</label>
-      <button data-act="cyc:coque:-1">←</button>
-      <span class="lab">${COQUES[S.coque]}</span>
-      <button data-act="cyc:coque:1">→</button></div>
-    <div class="sep"></div>
-    <div class="grp cyc"><label>strats</label>
-      <button data-act="cyc:var:-1">↑</button>
-      <span class="lab">${VARS[S.variante]}</span>
-      <button data-act="cyc:var:1">↓</button></div>
-    <div class="sep"></div>
-    <div class="grp"><label>compo</label>
-      ${[['1','colonne (#5)'],['2','colonne serrée'],['3','en ligne']].map(([k,l]) =>
-        `<button data-act="compo:${k}" class="${S.compo===k?'on':''}">${l}</button>`).join('')}</div>
-
-    <div class="sep"></div>
     <div class="grp"><label>fiches</label>
       <button data-act="fiche:-60">−</button><button data-act="fiche:60">＋</button>
       <span class="st" id="mesures"></span></div>
@@ -1239,9 +940,8 @@ function dupliquer(id) {
   // Le nom de la copie part en édition : on duplique pour ajuster, jamais pour
   // garder « (copie) ». En variante 1 on RESTE dans la liste — c'est le seul
   // endroit ou elle sait renommer.
+  // On RESTE dans la liste : c'est le seul endroit qui sait renommer.
   S.renommeId = copie.id;
-  if (S.variante !== '1') S.ouverteId = copie.id;
-  if (S.variante === '3') S.deplies.add(copie.id);
   return copie;
 }
 function creer() {
@@ -1251,8 +951,6 @@ function creer() {
   // vient de tout saisir et l'overlay ne dessine toujours rien (ADR 0006).
   if (!S.choisieId) S.choisieId = st.id;
   S.renommeId = st.id;
-  if (S.variante !== '1') S.ouverteId = st.id;
-  if (S.variante === '3') S.deplies.add(st.id);
   return st;
 }
 function supprimer(id) {
@@ -1261,13 +959,8 @@ function supprimer(id) {
   S.strats.splice(i, 1);
   if (S.choisieId === id) S.choisieId = S.strats.length ? S.strats[0].id : null;
   if (S.ouverteId === id) S.ouverteId = S.strats.length ? S.strats[0].id : null;
-  S.deplies.delete(id);
-  if (S.editionId === id) S.editionId = null;
 }
 
-function apresScenario() {
-  if (S.variante === '3' && S.choisieId) S.deplies.add(S.choisieId);
-}
 // Une Couleur est unique dans une Strat (ADR 0003) : en choisir une deja prise
 // l'ECHANGE avec l'Emplacement qui la portait, plutot que d'accepter un doublon.
 function poserCouleur(sid, i, c) {
@@ -1299,27 +992,26 @@ function bougerEmplacement(sid, de, vers) {
   const [e] = st.emplacements.splice(de, 1);
   st.emplacements.splice(vers, 0, e);
 }
+
 const SCEN = {
   plein: () => { S.strats = JEU_COMPLET(); S.choisieId = S.strats[0].id;
-                 S.ouverteId = null; S.deplies.clear(); S.ob = null;
-                 S.ecran = S.coque === 'C' ? 'accueil' : 'strats'; },
+                 S.ouverteId = null; S.ob = null; S.ecran = 'strats'; },
   une:   () => { S.strats = [JEU_COMPLET()[0]]; S.choisieId = S.strats[0].id;
-                 S.ouverteId = null; S.deplies.clear(); S.ob = null;
-                 S.ecran = S.coque === 'C' ? 'accueil' : 'strats'; },
+                 S.ouverteId = null; S.ob = null; S.ecran = 'strats'; },
   // Premier lancement : aucune strat, aucun choix, et l'onboarding s'ouvre —
   // c'est le seul moment de la vie de l'installation ou les deux coexistent.
   vide:  () => { S.strats = []; S.choisieId = null; S.ouverteId = null;
-                 S.deplies.clear(); S.ecran = 'onboarding'; S.ob = 0; },
+                 S.ecran = 'onboarding'; S.ob = 0; },
 };
 
 function goEcran(k) {
   S.ecran = k; S.menuId = null;
   if (k === 'onboarding') S.ob = 0;
-  if (k === 'strats' && S.variante === '1') S.ouverteId = null;
+  if (k === 'strats') S.ouverteId = null;
 }
 function sortieOnboarding() {
   S.ob = null;
-  S.ecran = S.coque === 'C' ? 'accueil' : 'strats';
+  S.ecran = 'strats';
 }
 
 document.addEventListener('click', ev => {
@@ -1333,26 +1025,9 @@ document.addEventListener('click', ev => {
   }
   const [act, a, b] = el.dataset.act.split(':');
   ev.stopPropagation();
-  if (act === 'cyc') {
-    const dir = +b;
-    if (a === 'coque') {
-      const ks = ['A','B','C'];
-      S.coque = ks[(ks.indexOf(S.coque) + dir + 3) % 3];
-      if (S.coque === 'C' && S.ecran === 'strats' && !S.ouverteId) S.ecran = 'accueil';
-      if (S.coque !== 'C' && S.ecran === 'accueil') S.ecran = 'strats';
-    } else {
-      const ks = ['1','2','3'];
-      S.variante = ks[(ks.indexOf(S.variante) + dir + 3) % 3];
-      S.ouverteId = S.variante === '1' ? null : (S.ouverteId || (S.strats[0]||{}).id);
-      S.editionId = null;
-      if (S.variante === '3' && !S.deplies.size && S.choisieId) S.deplies.add(S.choisieId);
-    }
-    syncURL();
-  }
-  else if (act === 'nav') goEcran(a);
+  if (act === 'nav') goEcran(a);
   else if (act === 'back') { S.ouverteId = null; }
   else if (act === 'switch') S.affichageDemande = !S.affichageDemande;
-  else if (act === 'compo') S.compo = a;
   else if (act === 'slotpop') {
     const sid = el.dataset.sid || el.closest('[data-sid]').dataset.sid;
     if (S.slotPop && S.slotPop.i === +a && S.slotPop.sid === sid) S.slotPop = null;
@@ -1377,18 +1052,9 @@ document.addEventListener('click', ev => {
   else if (act === 'wakfu') S.wakfuLance = !S.wakfuLance;
   else if (act === 'quit') S.appOpen = false;
   else if (act === 'relaunch') S.appOpen = true;
-  else if (act === 'sc') { SCEN[a](); apresScenario(); }
-  else if (act === 'choose') { S.choisieId = a; S.menuId = null; S.hubPick = false; }
-  else if (act === 'hubpick') S.hubPick = !S.hubPick;
-  else if (act === 'open') {
-    S.menuId = null;
-    if (S.variante === '3') {
-      if (S.deplies.has(a)) { S.deplies.delete(a); if (S.editionId === a) S.editionId = null; }
-      else S.deplies.add(a);
-    } else S.ouverteId = a;
-  }
-  else if (act === 'edit') S.editionId = a;
-  else if (act === 'read') S.editionId = null;
+  else if (act === 'sc') SCEN[a]();
+  else if (act === 'choose') { S.choisieId = a; S.menuId = null; }
+  else if (act === 'open') { S.menuId = null; S.ouverteId = a; }
   else if (act === 'rename') { S.renommeId = a; S.menuId = null; }
   else if (act === 'dup') { dupliquer(a); S.menuId = null; }
   else if (act === 'del') { S.aSupprimer = a; S.menuId = null; }
@@ -1418,12 +1084,6 @@ document.addEventListener('keydown', ev => {
     if (ev.key === 'Escape') { S.renommeId = null; render(); }
     return;
   }
-  if (/^(INPUT|TEXTAREA)$/.test(ev.target.tagName) || ev.target.isContentEditable) return;
-  const k = { ArrowLeft:['coque',-1], ArrowRight:['coque',1],
-              ArrowUp:['var',-1], ArrowDown:['var',1] }[ev.key];
-  if (!k) return;
-  ev.preventDefault();
-  document.querySelector(`[data-act="cyc:${k[0]}:${k[1]}"]`).click();
 });
 document.addEventListener('blur', ev => {
   const inp = ev.target.closest && ev.target.closest('input.ren');
@@ -1532,23 +1192,10 @@ function nbColonnes(win) {
   return getComputedStyle(t).gridTemplateColumns.split(' ').filter(Boolean).length;
 }
 
-function syncURL() {
-  const u = new URL(location);
-  u.searchParams.set('coque', S.coque);
-  u.searchParams.set('strats', S.variante);
-  u.searchParams.set('compo', S.compo);
-  history.replaceState(null, '', u);
-}
-const q = new URLSearchParams(location.search);
-if (['A','B','C'].includes((q.get('coque')||'').toUpperCase())) S.coque = q.get('coque').toUpperCase();
-if (['1','2','3'].includes(q.get('strats'))) S.variante = q.get('strats');
 // ?sc= sert a partager un etat de depart (premier lancement, une seule strat).
-if (['1','2','3'].includes(q.get('compo'))) S.compo = q.get('compo');
+const q = new URLSearchParams(location.search);
 if (SCEN[q.get('sc')]) SCEN[q.get('sc')]();
-if (S.coque === 'C') S.ecran = 'accueil';
-if (S.variante !== '1') S.ouverteId = (S.strats[0]||{}).id; else S.ouverteId = null;
-if (S.variante === '3' && S.choisieId) S.deplies.add(S.choisieId);
-syncURL();
+S.ouverteId = null;
 render();
 </script>
 </body>
