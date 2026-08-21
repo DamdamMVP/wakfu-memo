@@ -71,18 +71,49 @@ Les autres (`wakfu_lua`, `wakfu_theme`, `wakfu_camera`, `wakfu_animation`,
 installation : les deux modes peuvent coexister sur la même machine, et c'est
 le cas chez l'auteur. Il faut donc chercher les deux, et savoir départager.
 
-- **Launcher Ankama** — chercher `gamesLogs/wakfu/logs/` sous les données de
-  Zaap (`%AppData%\zaap\` sous Windows, `~/.config/zaap/` sous Linux).
+- **Launcher Ankama** — déterministe aussi, contrairement à ce que disait la
+  version précédente de cette section. Tout dérive de la **racine userData de
+  Zaap**, sous deux branches :
+
+  | ce qu'on cherche | où ça se trouve |
+  |---|---|
+  | les logs | `<racine>/gamesLogs/<gameUid>/logs/` |
+  | le dossier d'installation | la clé `location` de `<racine>/repositories/production/<gameUid>/<canal>/release.json` |
+
+  Zaap **déclare** donc lui-même où il a installé le jeu : pas de registre
+  Windows, pas de pari sur `Program Files`. Vérifié à
+  `~/.config/zaap/repositories/production/wakfu/main/release.json`, qui porte
+  `"location":"/home/damdam/.config/Ankama/Wakfu"` — le dossier qui contient
+  `contents/i18n/` et `zaapi.yml`. Le fichier porte aussi `version`,
+  `installedFragments` et les drapeaux `isInstalling` / `isUpdating` /
+  `isRepairing` / `isDirty` (notés, pas utilisés).
+
+  ⚠️ Le **canal** fait partie de la clé : `main` et `beta` coexistent comme deux
+  dossiers frères, chacun son `release.json` et son `location`. Une installation
+  beta est donc une **seconde installation launcher**, pas une variante à
+  ignorer — le départage ci-dessous s'en occupe comme du reste.
+
+  La racine vaut `~/.config/zaap` sous Linux, **mesuré**. Sous Windows,
+  `%AppData%\zaap` est **attendu** par la règle Electron
+  (`app.getPath('userData')` = `<appData>/<nom>`, et `appData` = `%AppData%`
+  Roaming sur win32) mais **jamais mesuré** : c'est la seule inconnue de toute
+  cette section.
 - **Steam** — déterministe. L'`appId` est `215080` (lu dans `zaapi.yml`).
   Parcourir `libraryfolders.vdf` pour trouver la bibliothèque qui déclare cet
   `appId`, puis lire `installdir` dans
   `<bibliothèque>/steamapps/appmanifest_215080.acf`, et concaténer
   `preferences/logs`. Vérifié de bout en bout.
-- **Départage** — prendre le `wakfu_chat.log` dont la date de modification est
-  la plus récente : c'est l'installation réellement jouée. Et le
-  reconsidérer à chaud, parce que le joueur peut changer de mode entre deux
-  sessions.
-- **Repli** — laisser l'utilisateur désigner le dossier. Le launcher expose
+- **Départage** — prendre le **`wakfu.log`** dont la date de modification est la
+  plus récente : c'est l'installation réellement jouée. Et le reconsidérer à
+  chaud, parce que le joueur peut changer de mode entre deux sessions.
+  ⚠️ La version précédente départageait sur `wakfu_chat.log`, écrite avant que
+  l'ADR `0008` ne fasse de `wakfu.log` le seul fichier lu. Deux raisons de
+  corriger : c'est le fichier qu'on ouvre vraiment, et le chat log n'est **pas
+  purgé entre sessions**, donc sa date de modification est un moins bon témoin
+  de l'installation active.
+- **Dossier désigné** — le repli, et il passe devant tout le reste : un dossier
+  choisi à la main par l'utilisateur est persisté, réversible, et **suspend le
+  départage** ci-dessus (ADR `0014`). Pour l'y aider, le launcher expose
   « ouvrir le dossier de logs » dans Paramètres → Assistance.
 
 Un client en cours d'exécution est la source la plus fiable, mais elle n'est
