@@ -275,18 +275,14 @@
     box-shadow:0 0 0 1px #ffffff14 inset; }
   .clsgrid img:hover { outline:2px solid var(--accent); outline-offset:-2px; }
   .clsgrid img.cur { outline:2px solid var(--accent); outline-offset:-2px; }
-  /* Les Couleurs sont NOMMEES : le mot est ce qu'on dira a l'oral (#16 pose la
-     question « lequel est le n° 2, le rouge ? »), donc il doit etre sous l'oeil
-     au moment de choisir. */
-  .colrow { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; margin-top:2px; }
-  .colrow div { cursor:pointer; border:1px solid #ffffff1a; padding:3px 4px 4px;
-    display:flex; flex-direction:column; align-items:center; gap:3px; }
-  .colrow div:hover { border-color:var(--txt); }
+  /* Les six sur une ligne. Le nom reste en infobulle : le mot compte pour
+     l'oral, il n'a pas besoin d'etre imprime. */
+  .colrow { display:flex; gap:4px; margin-top:2px; }
+  .colrow div { flex:1; height:21px; cursor:pointer; border:1px solid #ffffff26; }
+  .colrow div:hover { outline:2px solid var(--dim); outline-offset:-2px; }
   .colrow div.cur { outline:2px solid var(--txt); outline-offset:-2px; }
-  .colrow i { display:block; width:100%; height:13px; }
-  .colrow b { font:600 10px/1 ui-sans-serif,system-ui; color:var(--dim); }
-  .colrow div.cur b { color:var(--txt); }
-  .colrow div.taken b:after { content:' ·'; }
+  .colrow div.taken:after { content:'·'; display:block; text-align:center;
+    color:#0009; font:700 14px/19px ui-sans-serif,system-ui; }
   .slotpop .del { width:100%; margin-top:9px; text-align:center; font-size:12.5px;
     border-color:transparent; background:transparent; color:var(--dim); }
   .slotpop .del:hover { border-color:var(--bad); background:#3a1f1f; color:var(--txt); }
@@ -338,7 +334,12 @@
   .slot.over, .hslot.over { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
   .cls.lg img { width:44px; height:44px; }
   .cls { display:flex; align-items:stretch; flex:none; }
-  .cls .edge { width:3px; flex:none; background:var(--c,transparent); }
+  /* Le lisere garde ses 3 px de couleur (#5) et gagne un FILET SOMBRE d'1 px a
+     sa droite : sans lui, le blanc se noie dans les portraits pales. Mesure sur
+     les 18 : quatorze ont des pixels a plus de 210 de luminance sur leur bord
+     gauche, contre 242 pour le blanc — le Huppermage a une moyenne de 207. */
+  .cls .edge { width:3px; flex:none; background:var(--c,transparent);
+    box-shadow:1px 0 0 #0a0c10; }
   .cls img { width:32px; height:32px; display:block; background:#0c0e12;
     box-shadow:0 0 0 1px #ffffff14 inset; }
   .cls.sm img { width:24px; height:24px; }
@@ -503,39 +504,20 @@ const KEYS = ['feca','osamodas','enutrof','sram','xelor','ecaflip','eniripsa','i
 // Les six Couleurs d'Emplacement de l'ADR 0003. Le critere n'est pas seulement
 // « se distinguer sur fond sombre » (#5) : la Couleur se DIT a l'oral — #16 pose
 // la question « lequel est le n° 2, le rouge ? » — donc deux joueurs au telephone
-// ne doivent pouvoir confondre ni la teinte ni le mot.
+// ne doivent confondre ni la teinte, ni le mot.
 //
-// Ecarts de teinte mesures, en degres sur la roue :
-//   jeu d'origine   [3, 37, 145, 187, 222, 283]  ecart mini 34°  (cyan→bleu : 35°)
-//   jeu 1           [0, 50, 122, 180, 238, 313]  ecart mini 47°  (turquoise→bleu : 58°)
-//   jeu 2           [0, 30, 50, 122, 238, 313]   ecart mini 20°  (orange→jaune)
-//
-// Deux jeux, `?couleurs=1|2`, parce que les deux buts se battent dans la region
-// vert–cyan–bleu :
-//   1 — le mieux espace qu'on puisse faire a six. Prix : pas d'orange, et il
-//       faut dire « turquoise ».
-//   2 — six mots que personne ne confond au telephone. Prix : rouge, orange et
-//       jaune tiennent dans 50° de roue, et le lisere ne fait que 3 px.
-const JEUX_COULEURS = {
-  '1': [['rouge','#ff5252'], ['jaune','#ffdd33'], ['vert','#4ade50'],
-        ['turquoise','#22d3d3'], ['bleu','#6a70ff'], ['rose','#ff4fd8']],
-  '2': [['rouge','#ff5252'], ['orange','#ff9426'], ['jaune','#ffdd33'],
-        ['vert','#4ade50'], ['bleu','#6a70ff'], ['rose','#ff4fd8']],
-};
-let SLOT_COLORS = JEUX_COULEURS['1'].map(c => c[1]);
-const nomCouleur = hex => (JEUX_COULEURS[S ? S.couleurs : '1']
-  .find(c => c[1] === hex) || ['', hex])[0];
-// Changer de jeu remappe les Emplacements par POSITION : la Couleur est une
-// identite, on ne la perd pas en comparant les jeux.
-function poserJeuCouleurs(k) {
-  const avant = SLOT_COLORS, apres = JEUX_COULEURS[k].map(c => c[1]);
-  S.couleurs = k;
-  SLOT_COLORS = apres;
-  S.strats.forEach(st => st.emplacements.forEach(e => {
-    const i = avant.indexOf(e.couleur);
-    if (i >= 0) e.couleur = apres[i];
-  }));
-}
+// Cinq teintes, plus un BLANC qui sort de la roue. C'est ce qui debloque le jeu :
+// la region vert–cyan–bleu ne peut pas porter deux couleurs distinctes a six, et
+// le blanc s'en passe — il se distingue par la CLARTE (saturation 3 %), pas par
+// la teinte, et « blanc » ne se confond avec aucun autre mot.
+//   teintes  [0, 50, 122, 180, 313]  ecarts [50, 72, 58, 133, 47]  mini 47°
+// Le « bleu » est le cyan : c'est celui qui tient le mieux a 3 px, et comme il
+// n'y a plus qu'un seul bleu, il n'a pas besoin d'un autre nom.
+const COULEURS = [
+  ['rouge','#ff5252'], ['jaune','#ffdd33'], ['vert','#4ade50'],
+  ['bleu','#22d3d3'], ['rose','#ff4fd8'], ['blanc','#f0f2f8'],
+];
+const SLOT_COLORS = COULEURS.map(c => c[1]);
 // Icones de classe EMBARQUEES en base64 (source : icons/<cle>.png, redim. 64 px) :
 // le fichier doit s'ouvrir par double-clic depuis n'importe ou, y compris via le
 // document portal d'un Firefox Flatpak, qui casse tout chemin relatif.
@@ -621,7 +603,6 @@ const JEU_COMPLET = () => [
 const S = {
   coque:'B', variante:'1',   // B + 1 retenues par Damien ; le reste reste visitable
   compo:'2',                 // 2 retenue par Damien ; 1 = la colonne de #5, 3 = en ligne
-  couleurs:'1',              // jeu de six Couleurs d'Emplacement
   ficheMini:400,             // px : largeur MINIMALE d'une fiche. Le nombre de
                              // colonnes en decoule, il ne se regle pas.
   winW:null, winH:null,      // taille de la Fenetre principale, en px
@@ -641,7 +622,6 @@ const S = {
 };
 S.choisieId = S.strats[0].id;
 S.ouverteId = S.strats[0].id;
-poserJeuCouleurs('1');
 
 /* ================================================================ etat ==== */
 const strat = id => S.strats.find(s => s.id === id);
@@ -1111,13 +1091,12 @@ function slotPopHTML() {
       `<img src="${ICONS[ci]}" alt="${esc(n)}" title="${esc(n)}"
         class="${!ajout && e.cls===ci ? 'cur':''}"
         data-act="${ajout?'addcls':'setcls'}:${sp.i}:${ci}">`).join('')}</div>
-    ${ajout ? '' : `<h5 style="margin-top:11px">Couleur — ${esc(nomCouleur(e.couleur))}</h5>
-      <div class="colrow">${JEUX_COULEURS[S.couleurs].map(([nom,c],k) => {
+    ${ajout ? '' : `<h5 style="margin-top:11px">Couleur</h5>
+      <div class="colrow">${COULEURS.map(([nom,c],k) => {
         const pris = st.emplacements.some(o => o !== e && o.couleur === c);
-        return `<div data-act="setcol:${sp.i}:${k}"
+        return `<div style="background:${c}" data-act="setcol:${sp.i}:${k}"
           class="${e.couleur===c?'cur':''} ${pris?'taken':''}"
-          title="${esc(nom)}${pris?' — déjà prise, elle sera échangée':''}">
-          <i style="background:${c}"></i><b>${esc(nom)}</b></div>`;
+          title="${esc(nom)}${pris?' — déjà prise, elle sera échangée':''}"></div>`;
       }).join('')}</div>
       <button class="del" data-act="delslot:${sp.i}">Supprimer cet emplacement</button>`}
   </div>`;
@@ -1189,10 +1168,7 @@ function renderDock() {
     <div class="grp"><label>compo</label>
       ${[['1','colonne (#5)'],['2','colonne serrée'],['3','en ligne']].map(([k,l]) =>
         `<button data-act="compo:${k}" class="${S.compo===k?'on':''}">${l}</button>`).join('')}</div>
-    <div class="sep"></div>
-    <div class="grp"><label>couleurs</label>
-      ${[['1','6 teintes à 60°'],['2','6 mots courants']].map(([k,l]) =>
-        `<button data-act="couleurs:${k}" class="${S.couleurs===k?'on':''}">${l}</button>`).join('')}</div>
+
     <div class="sep"></div>
     <div class="grp"><label>fiches</label>
       <button data-act="fiche:-60">−</button><button data-act="fiche:60">＋</button>
@@ -1377,7 +1353,6 @@ document.addEventListener('click', ev => {
   else if (act === 'back') { S.ouverteId = null; }
   else if (act === 'switch') S.affichageDemande = !S.affichageDemande;
   else if (act === 'compo') S.compo = a;
-  else if (act === 'couleurs') poserJeuCouleurs(a);
   else if (act === 'slotpop') {
     const sid = el.dataset.sid || el.closest('[data-sid]').dataset.sid;
     if (S.slotPop && S.slotPop.i === +a && S.slotPop.sid === sid) S.slotPop = null;
@@ -1562,7 +1537,6 @@ function syncURL() {
   u.searchParams.set('coque', S.coque);
   u.searchParams.set('strats', S.variante);
   u.searchParams.set('compo', S.compo);
-  u.searchParams.set('couleurs', S.couleurs);
   history.replaceState(null, '', u);
 }
 const q = new URLSearchParams(location.search);
@@ -1570,7 +1544,6 @@ if (['A','B','C'].includes((q.get('coque')||'').toUpperCase())) S.coque = q.get(
 if (['1','2','3'].includes(q.get('strats'))) S.variante = q.get('strats');
 // ?sc= sert a partager un etat de depart (premier lancement, une seule strat).
 if (['1','2','3'].includes(q.get('compo'))) S.compo = q.get('compo');
-if (JEUX_COULEURS[q.get('couleurs')]) poserJeuCouleurs(q.get('couleurs'));
 if (SCEN[q.get('sc')]) SCEN[q.get('sc')]();
 if (S.coque === 'C') S.ecran = 'accueil';
 if (S.variante !== '1') S.ouverteId = (S.strats[0]||{}).id; else S.ouverteId = null;
