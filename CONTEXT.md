@@ -60,9 +60,12 @@ même classe.
 _Avoid_: slot, rôle, poste, libellé
 
 **Couleur** :
-La teinte d'un Emplacement, choisie parmi six. Obligatoire, et unique dans une
-Strat : elle sert d'identité visuelle, en liseré collé au bord gauche de l'icône
-de classe. À ne pas confondre avec la coloration libre du texte d'une Consigne.
+La teinte d'un Emplacement, choisie parmi six — `rouge`, `jaune`, `vert`,
+`bleu`, `rose`, `gris`. Obligatoire, et unique dans une Strat : elle sert
+d'identité visuelle **et orale**, celle qu'on prononce pour désigner un
+Emplacement, en liseré de 3 px collé au bord gauche de l'icône de classe. À ne
+pas confondre avec la coloration libre du texte d'une Consigne, qui dispose de
+dix couleurs.
 _Avoid_: teinte, code couleur
 
 **Tour** :
@@ -121,9 +124,17 @@ _Avoid_: exception, composition, assignation
 
 **Fenêtre principale** :
 La fenêtre native de l'application : le Roster, les Strats, les Réglages,
-l'onboarding, et l'interrupteur d'Affichage demandé. La fermer ferme tout, les
-Overlays compris.
+l'onboarding, et l'interrupteur d'Affichage demandé, atteints depuis une colonne
+latérale. La fermer ferme tout, les Overlays compris. C'est le seul endroit où
+l'app s'explique — elle y porte le Socle d'état.
 _Avoid_: application, app, fenêtre de l'app
+
+**Socle d'état** :
+Le pied de la colonne latérale de la Fenêtre principale : l'interrupteur
+d'Affichage demandé, les trois conditions d'affichage de l'Overlay cochées ou
+non, et la phrase qui conclut. Contrepartie nommée du silence que l'ADR `0006`
+impose à l'Overlay.
+_Avoid_: statut, indicateur, barre d'état
 
 **Overlay** :
 Une surface dessinée par-dessus le jeu, sans barre de titre ni bouton de
