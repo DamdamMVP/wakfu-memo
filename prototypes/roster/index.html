@@ -43,7 +43,13 @@
            du profil est un SEUL MENU ancre (« Ajouter a ▾ ») ; « rattacher »
            ne passe devant qu'a CLASSE EGALE.
     - ADR 0011 : identifier un Personnage PURGE SILENCIEUSEMENT l'homonyme sans
-           ID, comparaison EXACTE A LA LETTRE (`Nozahéal` survit a `Nozaheal`).
+           ID, comparaison EXACTE A LA LETTRE. ⚠️ La regle tient, son EXEMPLE est
+           mort : un nom Wakfu n'a qu'UNE orthographe possible (lettres, tiret,
+           apostrophe ; majuscule en tete et apres chaque separateur, forcee par
+           le jeu ; pas d'accent), donc `Nozahéal` n'est plus saisissable et ne
+           peut plus coexister avec `Nozaheal`. La maquette canonise A LA SAISIE :
+           les deux cotes de la comparaison sont canoniques, donc l'exactitude de
+           l'ADR est CONSERVEE, et gratuite.
     - ADR 0003 : un Personnage n'a PAS de Couleur. La Couleur appartient a
            l'Emplacement. Aucun lisere sur cet ecran, donc.
 
@@ -437,8 +443,11 @@ function JEU() {
     { id:'c3', profilId:'p1', nom:'Damdamnesique', cls:K('enutrof'),  ent:'10910227' },
     // Saisie manuelle jamais confirmee : il attend son premier combat.
     { id:'c4', profilId:'p1', nom:'Damdamiop',     cls:K('iop'),      ent:null },
-    // L'accentue de l'ADR 0011 : il doit SURVIVRE a l'arrivee de « Nozaheal ».
-    { id:'c5', profilId:'p2', nom:'Nozahéal',      cls:K('eniripsa'), ent:null },
+    // LA VRAIE FAUTE DE FRAPPE : deux lettres inversees, que la forme canonique
+    // ne repare pas. Le log dira « Nozaheal », et seul le RATTACHEMENT les
+    // reunit. (Ce Personnage s'appelait « Nozahéal » : c'etait l'exemple de
+    // l'ADR 0011, mort avec la regle canonique — un accent n'est plus saisissable.)
+    { id:'c5', profilId:'p2', nom:'Nozahael',      cls:K('eniripsa'), ent:null },
     { id:'c6', profilId:'p2', nom:'Nozaxel',       cls:K('xelor'),    ent:'5512' },
     // L'HOMONYME EXACT, pour que l'ADR 0011 soit observable : identifier le
     // « Nozadah » du log purge silencieusement celui-ci. Avec « Nozahéal »
@@ -453,8 +462,8 @@ function JEU() {
     inconnus: [
       // Le doublon de classe : l'ajouter FABRIQUE le Conflit du Roster (#16).
       { ent:'5513', nom:'Nozadah',     cls:K('ecaflip') },
-      // La coquille : meme classe que « Nozahéal », donc le rattachement passe
-      // devant (#16). ADR 0011 : l'accentue survit, la comparaison est exacte.
+      // La coquille : meme classe que « Nozahael », donc le rattachement passe
+      // devant (#16). Deux lettres les separent — la canonisation n'y peut rien.
       { ent:'5514', nom:'Nozaheal',    cls:K('eniripsa') },
       // Le passant : personne ne veut de lui, il finira ignore.
       { ent:'5515', nom:'Pandacoucou', cls:K('pandawa') },
@@ -513,6 +522,37 @@ const persosDe = id => S.d.persos.filter(p => p.profilId === id);
 const strat = id => S.d.strats.find(s => s.id === id);
 const nomCls = p => CLASSES[p.cls];
 const sansId = p => !p.ent;
+
+/* LA FORME CANONIQUE D'UN NOM WAKFU. Fait etabli en jeu (captures a l'appui) :
+   le jeu n'autorise QUE les lettres alphabetiques, le tiret et l'apostrophe, et
+   il FORCE la majuscule en tete, apres chaque tiret et apres chaque apostrophe
+   (« Salut-Mec-Ca-Va », « S'Alu-Ca'Va »). Un nom Wakfu a donc UNE SEULE
+   orthographe possible pour une suite de lettres donnee.
+   Consequences, et elles simplifient tout :
+   - les accents n'existent pas dans un nom, donc le log n'en porte jamais : les
+     replier ne peut rien confondre, ça ne pardonne que la frappe de l'utilisateur ;
+   - la casse n'est pas une information, elle est DERIVEE — donc deux personnages
+     distincts ne peuvent pas differer par la seule casse. Ce n'est plus une
+     supposition, c'est une consequence de la regle du jeu ;
+   - du coup on ne « replie » aucune clef de comparaison : on canonise a la
+     SAISIE, l'utilisateur VOIT ce qui sera compare, et la comparaison reste
+     exacte, caractere pour caractere. L'ADR 0011 garde sa regle telle quelle.
+   Les trois vrais pseudos du doc de grammaire sont REPRODUITS par cette regle —
+   `Thor'Rompiche`, `Jt'Invok`, `Anusky-Bail` — ce n'etaient donc pas des
+   exceptions a la majuscule initiale, mais la regle complete. */
+function canon(saisi) {
+  const sansAccent = String(saisi).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const lettres = sansAccent.replace(/[^A-Za-z'-]/g, '').toLowerCase();
+  return lettres.replace(/(^|['-])([a-z])/g, (_, sep, c) => sep + c.toUpperCase());
+}
+// Un nom canonique appartient a UN personnage du serveur. Deux Personnages sans
+// ID portant le meme nom canonique sont donc forcement le meme, et le doublon se
+// voit A LA SAISIE — plus besoin d'arbitrer une ambiguite au moment du combat.
+// La « lecture tolerante » de #11 s'applique ici : le stock est canonique
+// DESORMAIS, mais un fichier ecrit avant cette regle ne l'est pas. On canonise
+// les deux cotes — c'est gratuit, et ça evite une migration.
+const doublonSansId = (nom, sauf) =>
+  S.d.persos.find(p => p.id !== sauf && !p.ent && canon(p.nom) === canon(nom));
 // Le badge « moi » ne s'affiche que si le profil a ete RENOMME : « moi [moi] »
 // ne dit rien. Son autre information — non supprimable — est portee par
 // l'ABSENCE du bouton Supprimer, pas par une etiquette.
@@ -964,8 +1004,9 @@ function formHTML() {
   return `<div class="form" style="left:${f.x}px;top:${f.y}px">
     <h5>${edit ? 'Corriger' : 'Saisir à la main'}${pr ? ' — ' + esc(pr.nom) : ''}</h5>
     <input id="fnom" value="${esc(f.nom)}" placeholder="nom en jeu" autofocus>
-    <p class="warn">Pas besoin de soigner les majuscules ni les accents.
-      Et si le nom est vraiment faux, tu le rattraperas au premier combat.</p>
+    <p class="warn" id="fdup"></p>
+    <p class="warn">Les majuscules se mettent toutes seules, comme en jeu.
+      Si tu te trompes de lettre, tu le rattraperas au premier combat.</p>
     <div class="clsgrid">${CLASSES.map((n,ci) =>
       `<img src="${ICONS[ci]}" alt="${esc(n)}" title="${esc(n)}"
         class="${f.cls===ci?'cur':''}" data-act="formcls:${ci}">`).join('')}</div>
@@ -1060,7 +1101,7 @@ function render() {
   renderDock();
   dump();
   const f = document.getElementById('fnom');
-  if (f) { f.focus(); f.select(); }
+  if (f) { f.focus(); f.select(); majDoublon(); }
   const r = document.querySelector('input.ren[autofocus]');
   if (r) { r.focus(); r.select(); }
 }
@@ -1252,8 +1293,8 @@ document.addEventListener('click', ev => {
   }
   else if (act === 'formcls') { if (S.form) S.form.cls = +a; }
   else if (act === 'formok') {
-    const f = S.form, nom = (document.getElementById('fnom').value || '').trim();
-    if (f && nom) {
+    const f = S.form, nom = canon(document.getElementById('fnom').value || '');
+    if (f && nom && !doublonSansId(nom, f.persoId)) {
       if (f.persoId) { const p = perso(f.persoId); p.nom = nom; p.cls = f.cls; }
       else S.d.persos.push({ id:nid(), profilId:f.profilId, nom, cls:f.cls, ent:null });
       S.form = null;
@@ -1267,6 +1308,34 @@ document.addEventListener('click', ev => {
     supprimerPerso(a); S.dlg = null;
   }
   render();
+});
+
+/* On canonise PENDANT la frappe : l'utilisateur tape « salut-mec-ca-va » et lit
+   « Salut-Mec-Ca-Va ». Rien n'est cache dans une comparaison, le champ montre ce
+   qui sera compare. Pas de re-rendu — le caret sauterait. */
+function majDoublon() {
+  const inp = document.getElementById('fnom'), avis = document.getElementById('fdup');
+  if (!inp || !avis || !S.form) return;
+  const d = doublonSansId(inp.value, S.form.persoId);
+  const pr = d && profil(d.profilId);
+  avis.innerHTML = d
+    ? `« ${esc(d.nom)} » est déjà dans ton Roster${pr ? ', profil <b>' + esc(pr.nom) + '</b>' : ''},
+       et attend son premier combat. Un nom appartient à un seul personnage.`
+    : '';
+  const ok = document.querySelector('[data-act="formok"]');
+  if (ok) { ok.disabled = !!d || !canon(inp.value); ok.style.opacity = ok.disabled ? .45 : 1; }
+}
+document.addEventListener('input', ev => {
+  const inp = ev.target.closest && ev.target.closest('#fnom');
+  if (!inp) return;
+  const pos = inp.selectionStart, avant = inp.value, apres = canon(avant);
+  if (apres !== avant) {
+    inp.value = apres;
+    const p = Math.min(pos, apres.length);
+    inp.setSelectionRange(p, p);
+  }
+  if (S.form) S.form.nom = inp.value;
+  majDoublon();
 });
 
 document.addEventListener('keydown', ev => {
