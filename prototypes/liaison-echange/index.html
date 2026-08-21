@@ -96,6 +96,9 @@
 
   /* la pastille « il y a des questions » de la variante C : un compte, pas un
      doute. Elle ne dit jamais que l'overlay n'est pas sur de lui (ADR 0006). */
+  /* le coin droit de l'en-tête est une colonne : le sélecteur de strat, et
+     sous lui la pastille. Elle ne se met plus en travers du titre du Tour. */
+  .hright { flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
   .askdot { flex:none; display:flex; align-items:center; gap:5px; font-size:.8em;
     color:var(--accent); background:#0c0e12; border:1px solid var(--accent);
     border-radius:7px; padding:2px 7px; cursor:pointer; white-space:nowrap; }
@@ -243,8 +246,9 @@
   .mainwin .tb { display:flex; align-items:center; gap:9px; padding:8px 12px;
     background:#12151c; border-bottom:1px solid var(--line); cursor:grab; }
   .mainwin .tb .t { font-size:12.5px; color:var(--dim); }
-  .mainwin .tb .dotsw { margin-left:auto; display:flex; gap:6px; }
-  .mainwin .tb .dotsw i { width:10px; height:10px; border-radius:50%; background:var(--line-2); }
+  .mainwin .tb .ferme { margin-left:auto; width:22px; height:22px; line-height:22px;
+    text-align:center; border-radius:6px; color:var(--dim); cursor:pointer; font-size:13px; }
+  .mainwin .tb .ferme:hover { background:#3a2226; color:#ff8a80; }
   .mainwin .mb { padding:12px 13px 14px; max-height:430px; overflow:auto; }
   .mainwin h4 { margin:0 0 8px; font-size:11px; letter-spacing:1px;
     text-transform:uppercase; color:var(--dim); }
@@ -363,6 +367,12 @@
        Liaison est <b>provisoire</b>, le Conflit tranché par le <b>Rang le plus
        bas</b>, et l'échange par clic est le <b>seul</b> correctif. Aucune
        modale au milieu d'un combat.</p>
+
+    <h3>La fenêtre principale</h3>
+    <button class="big-btn" id="rouvrir">Rouvrir la fenêtre</button>
+    <p class="hint">La pastille de l'overlay ne s'affiche que s'il reste des
+       inconnus. Fenêtre fermée <b>et</b> rien à identifier, il n'existe plus
+       aucun chemin de retour — ce bouton est la télécommande, pas une réponse.</p>
 
     <h3>Le combat avance</h3>
     <div class="rowbtn">
@@ -487,6 +497,7 @@ const TURNS = [
 
 const S = {
   demande:'C', echange:'2',   // retenues par Damien ; A/B et 1/3 restent visitables
+  mainOpen:true,
   purge:[],
   phase:'placement', scenario:'reel',
   turn:1, cursor:0,
@@ -590,7 +601,7 @@ function overlayHTML(){
   const head = `<header class="oh">
       <span class="tnum">T${S.turn}</span>
       <div class="glob">${t ? t.global : ''}</div>
-      ${dot}<span class="chip">Nozadah ▾</span>
+      <div class="hright"><span class="chip">Nozadah ▾</span>${dot}</div>
     </header>`;
 
   const rows = slots().map((s,r)=>{
@@ -816,7 +827,7 @@ function compagnonHTML(){
 function mainwinHTML(){
   const inc = unknowns();
   return `<div class="tb"><span class="t">Wakfu Mémo</span>
-      <span class="dotsw"><i></i><i></i><i></i></span></div>
+      <span class="ferme" data-ferme title="Fermer">✕</span></div>
     <div class="mb${inc.length?' identif':''}">${inc.length ? identifHTML(inc) : rosterHTML()}</div>`;
 }
 
@@ -913,8 +924,9 @@ function render(){
     if (!cg.dataset.placed){ cg.style.left=(34+S.w+18)+'px'; cg.style.top='30px'; cg.dataset.placed='1'; } }
 
   const mw = document.getElementById('mainwin');
-  mw.style.display = S.demande==='C' ? '' : 'none';
-  if (S.demande==='C'){ mw.innerHTML = mainwinHTML();
+  const showMw = S.demande==='C' && S.mainOpen;
+  mw.style.display = showMw ? '' : 'none';
+  if (showMw){ mw.innerHTML = mainwinHTML();
     if (!mw.dataset.placed){ mw.style.left='500px'; mw.style.top='96px'; mw.dataset.placed='1'; } }
 
   mountPop();
@@ -1000,6 +1012,7 @@ function renderPanel(){
   document.querySelectorAll('[data-sc]').forEach(b=>
     b.classList.toggle('on', b.dataset.sc===S.scenario));
   document.getElementById('chaud').classList.toggle('on', S.chaud);
+  document.getElementById('rouvrir').disabled = S.mainOpen || S.demande!=='C';
 
   const L = liaison();
   const perm = slots().map((_,r)=>r).filter(estPermutable);
@@ -1008,6 +1021,7 @@ function renderPanel(){
       `  y survit pourtant. A et B se cognent ici ; C non.` : '';
   document.getElementById('dump').textContent =
     `moment         ${S.phase}${S.chaud?'  (rattrapé à froid)':''}\n`+
+    `fenêtre        ${S.demande==='C' ? (S.mainOpen?'ouverte':'FERMÉE') : '—'}\n`+
     `à identifier   ${unknowns().map(c=>c.nom).join(', ')||'aucun'}\n`+
     `conflits       ${conflits().map(c=>CLASSES[c.cls]+' ×'+c.personnages.length).join(', ')||'aucun'}\n`+
     `liaison        ${slots().map((s,r)=>`n°${r+1} ${COLOR_NAMES[s.color]} → ${L[r]?L[r].nom:'—'}`).join('\n               ')}\n`+
@@ -1108,8 +1122,16 @@ stage.addEventListener('click', e=>{
     return repondre(+nok.dataset.newok, 'profil', nom); }
   if (t.closest('[data-newcancel]')){ S.newProfil=null; return render(); }
   if (t.closest('[data-fold]')){ S.folded=true; return render(); }
-  if (t.closest('[data-raise]')){ const mw=document.getElementById('mainwin');
-    mw.style.left='500px'; mw.style.top='96px'; return render(); }
+  // la pastille rouvre la fenêtre — et la ramène en vue si elle a été traînée
+  // hors de l'écran entre-temps.
+  if (t.closest('[data-raise]')){
+    const mw=document.getElementById('mainwin');
+    if (!S.mainOpen){ S.mainOpen=true; mw.dataset.placed=''; }
+    return render();
+  }
+  if (t.closest('[data-ferme]')){
+    S.mainOpen=false; S.profMenu=null; S.newProfil=null; return render();
+  }
 
   // --- A : prendre un pseudo en main, puis cliquer sa ligne ---
   const chip = t.closest('[data-chip]');
@@ -1217,6 +1239,8 @@ document.getElementById('tick').onclick = ()=>{
   render();
 };
 document.getElementById('reset').onclick = ()=>{ hardReset(true); render(); };
+document.getElementById('rouvrir').onclick = ()=>{
+  S.mainOpen=true; document.getElementById('mainwin').dataset.placed=''; render(); };
 // « le cas réel » part du Roster de départ ; les deux autres scénarios partent
 // d'un Roster qui connaît déjà tout le monde — c'est le deuxième farm de la
 // soirée, et c'est là que le Conflit et l'échange existent tout seuls.
@@ -1233,7 +1257,7 @@ function hardReset(all){
   S.newProfil=null; S.purge=[];
   S.warn=null; S.swapMenu=null; S.swapSrc=null; S.hoverRow=null; S.dragSrc=null;
   S.folded=false; S.qIndex=0; S.ghost={}; S.flash={};
-  if (all){ S.clicks=0; S.phase='placement'; S.turn=1; S.cursor=0; S.chaud=false; }
+  if (all){ S.clicks=0; S.phase='placement'; S.turn=1; S.cursor=0; S.chaud=false; S.mainOpen=true; }
 }
 const sl=(id,vid,fmt,set)=>{ const r=document.getElementById(id);
   r.oninput=()=>{ set(+r.value); document.getElementById(vid).textContent=fmt(+r.value); render(); };
