@@ -4,67 +4,63 @@
 <meta charset="utf-8">
 <title>PROTOTYPE — L'écran Roster (#22)</title>
 <!--
-  PROTOTYPE JETABLE — ticket #22 « Prototype : l'écran Roster ».
+  PROTOTYPE JETABLE — ticket #22 « Prototype : l'ecran Roster », resolu.
 
-  TROIS FORMES de l'ecran Roster, dans la COQUE DEJA RETENUE par #21 (colonne
-  laterale + socle d'etat). On bascule a la barre du bas, ou aux fleches ← →.
+  Ce fichier ne porte plus que la FORME RETENUE : le MUR DE PORTRAITS. Une bande
+  par Profil de joueur, des vignettes de 64 px, le portrait devant le pseudo. Les
+  deux formes ecartees — « liste groupee » (un defilement, une ligne par
+  Personnage) et « deux volets » (les Profils en sous-colonne) — sont supprimees ;
+  elles restent lisibles dans l'HISTORIQUE de la branche `prototype/roster`, avec
+  leurs mesures.
 
-    ?v=A   LISTE GROUPEE   — un seul defilement, une section par Profil de
-                             joueur, une ligne par Personnage. Le bandeau
-                             « a identifier » est en tete du defilement.
-    ?v=B   DEUX VOLETS     — les Profils en sous-colonne, les Personnages du
-                             profil choisi a droite. « A identifier » est une
-                             entree de la sous-colonne : une boite de reception.
-    ?v=C   MUR DE PORTRAITS— pas de liste : une bande par Profil, des vignettes
-                             de 64 px. Le portrait passe devant le pseudo.
+  Ce qui a emporte la decision, mesure sur la maquette : a 15 Personnages, le mur
+  tient en 814 px de defilement contre 1568 pour la liste, et la « liste groupee »
+  laissait son bandeau « a identifier » (178 px, 34 % du visible) partir hors de
+  vue des le second profil. Les « deux volets » ne montraient jamais le Roster en
+  entier et coutaient 196 px de largeur en permanence.
+  Le prix du mur, assume : le pseudo passe DERRIERE le portrait alors que c'est
+  lui la clef de jointure, et une etiquette sur neuf se casse deja a 74 px de
+  vignette (`Damdamnesique` en demande 93 ; un pseudo de 20 caracteres, 133).
+  Le compte de gestes est aussi le moins bon des trois — 7 contre 5 pour la liste
+  — parce qu'une vignette n'a pas la place de trois boutons et que tout passe par
+  un menu.
 
-  DEUXIEME AXE, et c'est le CONFLIT QUE #22 DOIT TRANCHER :
-    ?ig=roster    la liste des Personnages ignores vit sur CET ecran
-    ?ig=reglages  elle vit dans les Reglages (#17 le disait, #11 le supposait)
-  Basculer montre les deux ecrans changer en meme temps.
+  L'AXE DES IGNORES A DISPARU AUSSI : #23 l'a tranche pendant que cette maquette
+  vivait — « ils se gerent dans le Roster, pas ici, et pas meme en renvoi ». Ils
+  sont donc ici, et l'ecran des Reglages le dit.
 
   CE QUI EST GELE AILLEURS, ET QU'ON NE REDISCUTE PAS ICI :
     - #21  la coque : colonne laterale, socle d'etat, ✕ = quitter. Reproduite
            telle quelle — c'est le decor contre lequel l'ecran se juge.
-    - #8   Roster GLOBAL, groupe par Profil de joueur. « moi » existe par
-           defaut et n'est pas supprimable. Decouverte automatique depuis
-           `[_FL_]`. Le profil ne participe PAS a la liaison.
+    - #8   Roster GLOBAL, groupe par Profil de joueur. « moi » existe par defaut
+           et n'est pas supprimable. Decouverte automatique depuis `[_FL_]`.
     - ADR 0002 : des qu'un ID d'entite est attache, LE LOG FAIT FOI — nom et
-           Classe ne sont plus editables. C'est la contrainte structurante :
-           deux sortes de Personnages sur le meme ecran.
-    - #17  saisie manuelle = nom + Classe, sans ID. ⚠️ L'AVERTISSEMENT DE #17
-           (« le nom doit etre exactement celui en jeu ») EST RETIRE : le champ
-           canonise pendant la frappe, donc il n'y a plus rien a avertir. Une
-           majuscule ne peut se trouver qu'en tete, apres un tiret ou apres une
-           apostrophe — le champ la met, l'utilisateur la voit, et c'est tout ce
-           que le libelle disait. Personnage ignore : retenu par ID d'entite,
-           jamais repropose, reversible.
-    - #11  suppression en CASCADE AU GESTE ; la confirmation DIT OU le
-           Personnage est engage ; supprimer n'est pas ignorer, donc la
-           confirmation offre les deux. Profil supprime → ses Personnages
-           partent avec lui, avec le compte. Le modele est `roster.json`.
-    - #16  une Demande d'ajout SURVIT au combat et se rattrape ici ; le choix
-           du profil est un SEUL MENU ancre (« Ajouter a ▾ ») ; « rattacher »
-           ne passe devant qu'a CLASSE EGALE.
-    - ADR 0011 : identifier un Personnage PURGE SILENCIEUSEMENT l'homonyme sans
-           ID, comparaison EXACTE A LA LETTRE. ⚠️ La regle tient, son EXEMPLE est
-           mort : un nom Wakfu n'a qu'UNE orthographe possible (lettres, tiret,
-           apostrophe ; majuscule en tete et apres chaque separateur, forcee par
-           le jeu ; pas d'accent), donc `Nozahéal` n'est plus saisissable et ne
-           peut plus coexister avec `Nozaheal`. La maquette canonise A LA SAISIE :
-           les deux cotes de la comparaison sont canoniques, donc l'exactitude de
-           l'ADR est CONSERVEE, et gratuite.
-    - ADR 0003 : un Personnage n'a PAS de Couleur. La Couleur appartient a
-           l'Emplacement. Aucun lisere sur cet ecran, donc.
-
-  CE QUI ETAIT DEJA REPONDU, ET QUE LE TICKET CROYAIT OUVERT : « que devient un
-  profil supprime qui contient des Personnages ? » — #11 l'a gele (cascade, avec
-  le compte). Restent ouverts : CREER et RENOMMER un profil.
-
-  L'ecran des Strats est reduit a une liste en lecture seule : il n'existe ici
-  que pour que la phrase d'engagement de #11 (« le rouge dans Ombre Épaisse »)
-  designe de vraies Strats. Les Reglages ne portent que la liste des ignores,
-  et seulement sous ?ig=reglages — tout le reste appartient a #23.
+           Classe ne sont plus editables. D'ou deux sortes de Personnages sur le
+           meme ecran : le confirme est MUET, celui qui attend son premier combat
+           porte « jamais vu en combat » en gris et son pseudo en italique. Ni
+           rouge ni alerte : c'est un etat normal et transitoire.
+    - #17  saisie manuelle = nom + Classe, sans ID. L'avertissement de #17 (« le
+           nom doit etre exactement celui en jeu ») EST RETIRE : le champ canonise
+           pendant la frappe.
+    - #11  suppression en CASCADE AU GESTE ; la confirmation DIT OU le Personnage
+           est engage ; supprimer n'est pas ignorer, donc elle offre les deux.
+           ⚠️ Mais « ignorer » retient un ID d'entite, et un Personnage saisi a la
+           main n'en a pas : sa confirmation n'a donc que DEUX boutons, et elle NE
+           L'EXPLIQUE PAS — decision de Damien, on se tait plutot que de mettre du
+           vocabulaire d'implementation devant le joueur.
+    - #16  une Demande d'ajout survit au combat et se rattrape ici ; le choix du
+           profil est un SEUL MENU ancre ; « rattacher » ne passe devant qu'a
+           CLASSE EGALE. ⚠️ Elle ne survit PAS a l'app : `roster.json` n'a aucune
+           cle pour une question sans reponse, et on l'assume — l'inconnu sera
+           repropose au prochain combat ou il joue.
+    - ADR 0011 : identifier un Personnage purge silencieusement l'homonyme sans
+           ID, comparaison exacte. La regle tient, son EXEMPLE est mort : un nom
+           Wakfu n'a qu'UNE orthographe possible (lettres, tiret, apostrophe ;
+           majuscule en tete et apres chaque separateur, forcee par le jeu ; pas
+           d'accent), donc `Nozahéal` n'est plus saisissable. La maquette canonise
+           A LA SAISIE, donc les deux cotes de la comparaison sont canoniques et
+           l'exactitude de l'ADR est conservee, gratuitement.
+    - ADR 0003 : un Personnage n'a PAS de Couleur. Aucun lisere sur cet ecran.
 
   Rien n'est persiste. La barre du bas est la telecommande, pas l'interface.
 -->
@@ -199,16 +195,6 @@
 
   /* ================================================== A — la liste groupee */
   .rlist { padding:8px 14px 34px; }
-  .ghead { display:flex; align-items:center; gap:10px; padding:16px 4px 7px; }
-  .ghead h3 { margin:0; font-size:12px; letter-spacing:.9px; text-transform:uppercase;
-    color:var(--dim); }
-  .ghead .me { font-size:10px; letter-spacing:.5px; text-transform:uppercase;
-    color:var(--faint); border:1px solid var(--line); border-radius:5px; padding:0 5px; }
-  .ghead .n { font:11px ui-monospace,monospace; color:var(--faint); }
-  .ghead .grow { flex:1; }
-  .ghead .acts { display:flex; gap:3px; opacity:0; transition:opacity .1s; }
-  .ghead:hover .acts { opacity:1; }
-
   .prow { display:flex; align-items:center; gap:12px; padding:7px 11px;
     border:1px solid var(--line); border-radius:11px; background:var(--panel);
     margin-bottom:6px; }
@@ -229,30 +215,6 @@
     text-align:center; font-size:12.5px; background:transparent; }
   .addline:hover { color:var(--txt); }
   .newprof { margin-top:20px; }
-
-  /* ================================================== B — les deux volets */
-  .two { flex:1; min-height:0; display:flex; }
-  .plist { width:196px; flex:none; border-right:1px solid var(--line);
-    background:var(--panel); display:flex; flex-direction:column; min-height:0; }
-  .plist h2 { margin:0; padding:13px 14px 8px; font-size:11px; letter-spacing:1px;
-    text-transform:uppercase; color:var(--faint); }
-  .plist .items { padding:0 7px; overflow:auto; display:flex; flex-direction:column; gap:2px; }
-  .plist .items button { border:0; background:transparent; border-radius:8px;
-    padding:7px 10px; color:var(--dim); display:flex; align-items:center; gap:8px;
-    font-size:13px; }
-  .plist .items button:hover { background:var(--raise); color:var(--txt); }
-  .plist .items button.cur { background:var(--panel-2); color:var(--txt); }
-  .plist .items .n { margin-left:auto; font:11px ui-monospace,monospace; color:var(--faint); }
-  .plist .items button.inbox { color:#e0b070; }
-  .plist .items button.inbox .n { color:#2a1f08; background:var(--note);
-    border-radius:9px; padding:2px 6px; font-weight:600; font-size:10.5px; }
-  .plist .foot { margin-top:auto; padding:9px 8px 10px; border-top:1px solid var(--line); }
-  .pane { flex:1; min-width:0; display:flex; flex-direction:column; min-height:0; }
-  .panehead { flex:none; display:flex; align-items:center; gap:10px;
-    padding:12px 18px 10px; border-bottom:1px solid var(--line); }
-  .panehead h2 { margin:0; font-size:15px; font-weight:600; }
-  .panehead .grow { flex:1; }
-  .panebody { flex:1; min-height:0; overflow:auto; padding:10px 16px 30px; }
 
   /* ================================================== C — le mur de portraits */
   .wall { padding:6px 16px 34px; }
@@ -369,7 +331,7 @@
 </style>
 </head>
 <body spellcheck="false">
-<div class="ribbon">PROTOTYPE JETABLE — #22 « l'écran Roster » · trois formes, ← → pour changer · la barre du bas est la télécommande, pas l'interface · rien n'est sauvegardé</div>
+<div class="ribbon">PROTOTYPE JETABLE — #22 « l'écran Roster », résolu · la forme retenue, les écartées sont dans l'historique de la branche · la barre du bas est la télécommande, pas l'interface</div>
 
 <div class="stage" id="stage"></div>
 
@@ -502,12 +464,10 @@ function JEU_FOULE() {
 }
 
 const S = {
-  v:'A', ig:'roster',            // les deux axes qu'on compare
   winW:null, winH:null,
   appOpen:true, wakfuLance:true, affichageDemande:true, stratChoisie:null,
   ecran:'roster',                // roster | strats | reglages
   d:JEU(),
-  paneProfil:'p1',               // forme B : le volet ouvert ('todo' = a identifier)
   pop:null,                      // { kind, x, y, ... } menu ancre
   form:null,                     // { profilId, nom, cls, x, y } saisie manuelle
   dlg:null,                      // { kind:'perso'|'profil', id }
@@ -588,21 +548,10 @@ function phraseEngagement(p) {
   return `${esc(p.nom)} est ` +
     (bouts.length === 1 ? bouts[0] : bouts.slice(0,-1).join(', ') + ' et ' + bouts.slice(-1));
 }
-const resumeEngagement = p => {
-  const g = engagements(p.id);
-  return g.length ? g.map(x => `${x.coul} · ${x.strat}`).join('  ·  ') : '';
-};
-
 /* ============================================================ fragments === */
 const imgHTML = (cls, size) =>
   `<span class="cls ${size}"><img src="${ICONS[cls]}" alt="${esc(CLASSES[cls])}"
     title="${esc(CLASSES[cls])}"></span>`;
-
-// L'etat d'un Personnage, en un mot. Le cas NORMAL est muet : un Personnage
-// confirme par le log n'a rien a dire de lui-meme. Seul le transitoire parle.
-const etatHTML = p => sansId(p)
-  ? `<span class="etat" title="Son ID d'entité s'y collera au premier combat où ce nom apparaît (#17).">jamais vu en combat</span>`
-  : '';
 
 /* ============================================================ les ecrans == */
 const ECRANS = [['roster','Roster'],['strats','Strats'],['reglages','Réglages']];
@@ -666,33 +615,25 @@ function stratsHTML() {
    Personnages ignores, et seulement sous ?ig=reglages — c'est la moitie de
    l'axe qu'on compare. */
 function reglagesHTML() {
-  const ici = S.ig === 'reglages';
   return `<main class="scr">
     <div class="scrhead"><h1>Réglages</h1>
-      <span class="why">appartient à #23 — seule la liste des ignorés est en jeu ici</span></div>
-    <div class="scrbody">
-      ${ici ? ignoresHTML(true) : ''}
-      <div class="todo">
-        Écran <b>volontairement vide</b> : il appartient au ticket <b>#23</b>.<br>
-        ${ici
-          ? `La liste des <b>Personnages ignorés</b> est <b>ici</b> — c'est l'option
-             <b>?ig=reglages</b>. Basculer à la barre la déplace sur le Roster.`
-          : `La liste des <b>Personnages ignorés</b> est <b>sur le Roster</b> — c'est
-             l'option <b>?ig=roster</b>. Basculer à la barre la ramène ici.`}
-      </div>
-    </div></main>`;
+      <span class="why">tranché par #23, résolu</span></div>
+    <div class="scrbody"><div class="todo">
+      Écran <b>volontairement vide</b> : il appartient à <b>#23</b>, résolu depuis.<br>
+      La liste des <b>Personnages ignorés</b> <b>n'est pas ici</b> : #23 l'a tranché,
+      « ils se gèrent dans le Roster, pas ici, et pas même en renvoi ».
+    </div></div></main>`;
 }
 
 /* ================================================== l'ecran Roster ======== */
 function rosterHTML() {
   const vide = !S.d.persos.length && !S.d.inconnus.length;
-  const titre = { A:'liste groupée', B:'deux volets', C:'mur de portraits' }[S.v];
   return `<main class="scr">
     <div class="scrhead"><h1>Roster</h1>
-      <span class="why">${S.v} — ${titre}${vide ? '' :
-        ` · ${plur(S.d.persos.length,'personnage')} · ${plur(S.d.profils.length,'profil')}`}</span>
+      <span class="why">${vide ? '' :
+        `${plur(S.d.persos.length,'personnage')} · ${plur(S.d.profils.length,'profil')}`}</span>
       <div class="grow"></div>
-      ${S.v === 'B' || vide ? '' : `<button data-act="newprof">＋ Nouveau profil</button>`}
+      ${vide ? '' : `<button data-act="newprof">＋ Nouveau profil</button>`}
     </div>
     ${vide ? `<div class="scrbody">${videHTML()}</div>` : corpsHTML()}
   </main>`;
@@ -714,8 +655,7 @@ function videHTML() {
 }
 
 function corpsHTML() {
-  if (S.v === 'B') return `<div class="scrbody" style="display:flex;padding:0">${formeB()}</div>`;
-  return `<div class="scrbody">${S.v === 'C' ? formeC() : formeA()}</div>`;
+  return `<div class="scrbody">${mur()}</div>`;
 }
 
 /* ---------------------------------------------------------- a identifier -- */
@@ -741,114 +681,11 @@ function idblockHTML() {
   </div>`;
 }
 
-/* ---------------------------------------------- A : une seule colonne ----- */
-/* Un defilement, une section par Profil, une ligne par Personnage. Le bandeau
-   « a identifier » est EN TETE DU DEFILEMENT : il descend avec le reste, donc il
-   se perd de vue des que le Roster est long. C'est le prix a mesurer. */
-function formeA() {
-  return `<div class="rlist">
-    ${idblockHTML()}
-    ${S.d.profils.map(pr => {
-      const l = persosDe(pr.id);
-      return `<div class="ghead">
-        ${S.renomme === pr.id
-          ? `<input class="ren" data-id="${pr.id}" value="${esc(pr.nom)}" autofocus>`
-          : `<h3>${esc(pr.nom)}</h3>`}
-        ${badgeMoi(pr) ? '<span class="me">moi</span>' : ''}
-        <span class="n">${l.length}</span>
-        <div class="grow"></div>
-        <div class="acts">
-          <button class="ghost" data-act="renprof:${pr.id}">Renommer</button>
-          ${pr.estMoi ? '' : `<button class="ghost danger" data-act="delprof:${pr.id}">Supprimer…</button>`}
-        </div>
-      </div>
-      ${l.map(p => `<div class="prow ${sansId(p)?'sansid':''}">
-        ${imgHTML(p.cls,'md')}
-        <div class="grow"><div class="nm">${esc(p.nom)}</div>
-          <div class="etat">${sansId(p) ? etatHTML(p) : esc(nomCls(p))}${
-            resumeEngagement(p) ? ` <span class="eng">· ${esc(resumeEngagement(p))}</span>` : ''}</div>
-        </div>
-        <div class="acts">
-          ${sansId(p) ? `<button class="ghost" data-act="editperso:${p.id}">Corriger</button>` : ''}
-          <button class="ghost danger" data-act="delperso:${p.id}">Supprimer…</button>
-        </div>
-      </div>`).join('')}
-      <button class="addline" data-act="addperso:${pr.id}">＋ saisir un personnage à la main</button>`;
-    }).join('')}
-    ${S.ig === 'roster' ? ignoresHTML(false) : ''}
-  </div>`;
-}
-
-/* ---------------------------------------------- B : profils | personnages - */
-/* Les Profils deviennent une sous-colonne, et « a identifier » y prend une
-   entree : une boite de reception, toujours visible, jamais emportee par le
-   defilement. En echange, la vue d'ensemble du Roster disparait — on ne voit
-   plus qu'un profil a la fois. C'est aussi la seule forme qui realise
-   litteralement « l'identification et le Roster sont deux ecrans » (#16). */
-function formeB() {
-  const nInc = S.d.inconnus.length;
-  const special = S.paneProfil === 'todo' || S.paneProfil === 'ignores';
-  const cur = special ? null : (profil(S.paneProfil) || S.d.profils[0]);
-  return `<div class="two">
-    <aside class="plist">
-      <h2>Profils</h2>
-      <div class="items">
-        ${nInc ? `<button class="inbox ${S.paneProfil==='todo'?'cur':''}" data-act="pane:todo">
-          À identifier<span class="n">${nInc}</span></button>
-          <div class="sepline" style="height:1px;background:var(--line);margin:5px 3px"></div>` : ''}
-        ${S.d.profils.map(pr => `<button class="${cur && cur.id===pr.id?'cur':''}"
-          data-act="pane:${pr.id}">${esc(pr.nom)}<span class="n">${persosDe(pr.id).length}</span></button>`).join('')}
-        ${S.ig === 'roster' ? `<div style="height:1px;background:var(--line);margin:5px 3px"></div>
-          <button class="${S.paneProfil==='ignores'?'cur':''}" data-act="pane:ignores">Ignorés<span class="n">${S.d.ignores.length}</span></button>` : ''}
-      </div>
-      <div class="foot"><button class="ghost" data-act="newprof">＋ Nouveau profil</button></div>
-    </aside>
-    <section class="pane">
-      ${S.paneProfil === 'ignores' && S.ig === 'roster'
-        ? `<div class="panehead"><h2>Personnages ignorés</h2>
-             <span class="why">refusés une fois, jamais reproposés — et réversible</span></div>
-           <div class="panebody">${ignoresHTML(true)}</div>`
-        : S.paneProfil === 'todo' && nInc
-        ? `<div class="panehead"><h2>À identifier</h2>
-             <span class="why">la même liste que l'Overlay de la Demande d'ajout</span></div>
-           <div class="panebody" style="padding:0">${idblockHTML()}</div>`
-        : paneProfilHTML(cur || S.d.profils[0])}
-    </section>
-  </div>`;
-}
-function paneProfilHTML(pr) {
-  if (!pr) return `<div class="panebody"><p class="why">Aucun profil.</p></div>`;
-  const l = persosDe(pr.id);
-  return `<div class="panehead">
-      ${S.renomme === pr.id
-        ? `<input class="ren" data-id="${pr.id}" value="${esc(pr.nom)}" autofocus>`
-        : `<h2>${esc(pr.nom)}</h2>`}
-      ${badgeMoi(pr) ? '<span class="me" style="font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--faint);border:1px solid var(--line);border-radius:5px;padding:0 5px">moi</span>' : ''}
-      <span class="why">${plur(l.length,'personnage')}</span>
-      <div class="grow"></div>
-      <button class="ghost" data-act="renprof:${pr.id}">Renommer</button>
-      ${pr.estMoi ? '' : `<button class="ghost danger" data-act="delprof:${pr.id}">Supprimer le profil…</button>`}
-    </div>
-    <div class="panebody">
-      ${l.length ? l.map(p => `<div class="prow ${sansId(p)?'sansid':''}">
-        ${imgHTML(p.cls,'md')}
-        <div class="grow"><div class="nm">${esc(p.nom)}</div>
-          <div class="etat">${sansId(p) ? etatHTML(p) : esc(nomCls(p))}${
-            resumeEngagement(p) ? ` <span class="eng">· ${esc(resumeEngagement(p))}</span>` : ''}</div></div>
-        <div class="acts">
-          ${sansId(p) ? `<button class="ghost" data-act="editperso:${p.id}">Corriger</button>` : ''}
-          <button class="ghost danger" data-act="delperso:${p.id}">Supprimer…</button>
-        </div></div>`).join('')
-        : `<p class="why" style="padding:6px 2px 14px">Aucun personnage dans ce profil.</p>`}
-      <button class="addline" data-act="addperso:${pr.id}">＋ saisir un personnage à la main</button>
-    </div>`;
-}
-
 /* ---------------------------------------------- C : le mur de portraits --- */
 /* Pas de liste : une bande par Profil, des vignettes de 64 px. Le portrait passe
    devant le pseudo — a tester justement parce que c'est le PSEUDO qui porte
    toute la jointure quand l'ID n'est pas encore la (#8, #17). */
-function formeC() {
+function mur() {
   const nInc = S.d.inconnus.length;
   return `<div class="wall">
     ${nInc ? `<div class="band">
@@ -882,7 +719,7 @@ function formeC() {
             <div class="frame">＋</div><div class="lab why">à la main</div></div>
         </div></div>`;
     }).join('')}
-    ${S.ig === 'roster' ? ignoresHTML(false) : ''}
+    ${ignoresHTML()}
   </div>`;
 }
 
@@ -890,10 +727,9 @@ function formeC() {
 /* #17 les met « dans les reglages », le brouillard de la carte les met ici, et
    #11 les stocke dans `roster.json` en supposant les reglages. Un seul endroit,
    a choisir : c'est l'axe ?ig. */
-function ignoresHTML(dansReglages) {
+function ignoresHTML() {
   const l = S.d.ignores;
-  return `<details class="ignores" ${dansReglages ? 'open' : ''}
-      style="${dansReglages ? 'margin:14px 18px 0' : ''}">
+  return `<details class="ignores">
     <summary>Personnages ignorés (${l.length})</summary>
     ${l.length ? l.map((g,i) => `<div class="igrow">
         ${imgHTML(g.cls,'sm')}
@@ -903,12 +739,9 @@ function ignoresHTML(dansReglages) {
       </div>`).join('')
       : `<p class="ignotes">Aucun. Ignorer un combattant, c'est dire « ne me le
           propose plus » — c'est réversible, et ça se défait d'ici.</p>`}
-    <p class="ignotes">Retenus par leur ID d'entité, jamais reproposés (#17).
-      ${dansReglages
-        ? `Ils sont dans les <b>Réglages</b> : un geste qu'on fait une fois, rangé
-           avec les autres.`
-        : `Ils sont sur le <b>Roster</b> : c'est une donnée du Roster, et le
-           « proposer à nouveau » remet un Personnage dans cette liste-ci.`}</p>
+    <p class="ignotes">Jamais reproposés, et réversible (#17). Ils vivent
+      <b>ici</b> et non dans les Réglages (#23) : c'est une donnée du Roster, et
+      « proposer à nouveau » remet le Personnage dans la liste au-dessus.</p>
   </details>`;
 }
 
@@ -928,9 +761,9 @@ function popHTML() {
         `<button data-act="doadd:${p.i}:${pr.id}">${esc(pr.nom)}</button>`).join('')}
       <div class="sepline"></div>
       <button data-act="addnewprof:${p.i}">＋ nouveau profil</button>
-      ${S.v === 'C' ? `<div class="sepline"></div>
-        <button data-act="poplink:${p.i}">Rattacher à un personnage saisi…</button>
-        <button data-act="ignorer:${p.i}">Ignorer</button>` : ''}`);
+      <div class="sepline"></div>
+      <button data-act="poplink:${p.i}">Rattacher à un personnage saisi…</button>
+      <button data-act="ignorer:${p.i}">Ignorer</button>`);
   }
 
   // « Rattacher a ▾ » — meme classe DEVANT, les autres replies. #16 : propose
@@ -1038,13 +871,9 @@ function dlgHTML() {
            part${nPrefs>1?'ent':''} avec lui. Les Strats, elles, ne bougent pas :
            elles sont écrites contre des Classes.</p>`
         : `<p>Il n'est engagé dans aucune Strat : rien ne part avec lui.</p>`}
-      ${p.ent
-        ? `<p class="warn">Le supprimer ne l'empêche pas de revenir : il sera
+      ${p.ent ? `<p class="warn">Le supprimer ne l'empêche pas de revenir : il sera
              <b>reproposé</b> au prochain combat où il joue. Pour ne plus qu'on te
-             le propose, c'est <b>ignorer</b>.</p>`
-        : `<p class="warn">Il n'a pas d'ID d'entité, donc il ne peut pas être
-             ignoré : il n'y a rien à retenir de lui. S'il joue un jour, il sera
-             proposé comme un inconnu.</p>`}
+             le propose, c'est <b>ignorer</b>.</p>` : ''}
       <div class="acts">
         <button class="ghost" data-act="closedlg">Annuler</button>
         ${p.ent ? `<button class="danger" data-act="delthenignore:${p.id}">Supprimer et ignorer</button>` : ''}
@@ -1109,18 +938,8 @@ function render() {
   if (r) { r.focus(); r.select(); }
 }
 
-const VNOMS = { A:'liste groupée', B:'deux volets', C:'mur de portraits' };
 function renderDock() {
   document.getElementById('dock').innerHTML = `
-    <div class="grp"><label>forme</label>
-      <button data-act="vprev">←</button>
-      <span class="st"><span class="vname">${S.v} — ${VNOMS[S.v]}</span></span>
-      <button data-act="vnext">→</button></div>
-    <div class="sep"></div>
-    <div class="grp"><label>ignorés</label>
-      <button data-act="ig:roster" class="${S.ig==='roster'?'on':''}">sur le Roster</button>
-      <button data-act="ig:reglages" class="${S.ig==='reglages'?'on':''}">dans les Réglages</button></div>
-    <div class="sep"></div>
     <div class="grp"><label>scénario</label>
       <button data-act="sc:plein" class="${S.sc==='plein'?'on':''}">2 profils · 3 à identifier</button>
       <button data-act="sc:calme" class="${S.sc==='calme'?'on':''}">rien à identifier</button>
@@ -1171,7 +990,6 @@ function creerProfil() {
   const pr = { id:nid(), nom:nomLibreProfil(), estMoi:false };
   S.d.profils.push(pr);
   S.renomme = pr.id;          // il naît en édition : un profil sans nom ne sert à rien
-  S.paneProfil = pr.id;
   return pr;
 }
 
@@ -1216,7 +1034,6 @@ function supprimerProfil(id) {
   const l = persosDe(id);
   l.forEach(p => supprimerPerso(p.id));
   S.d.profils = S.d.profils.filter(p => p.id !== id);
-  if (S.paneProfil === id) S.paneProfil = S.d.profils[0] ? S.d.profils[0].id : 'todo';
 }
 
 const SCEN = {
@@ -1230,18 +1047,11 @@ const SCEN = {
 };
 function scenario(k) {
   SCEN[k]();
-  S.sc = k; S.paneProfil = S.d.profils[0] ? S.d.profils[0].id : 'todo';
+  S.sc = k;
   S.pop = S.form = S.dlg = null; S.renomme = null; S.journal = [];
   S.stratChoisie = S.d.strats[0].id;
 }
 
-const VS = ['A','B','C'];
-const cycle = d => { S.v = VS[(VS.indexOf(S.v) + d + VS.length) % VS.length]; majURL(); };
-function majURL() {
-  const q = new URLSearchParams(location.search);
-  q.set('v', S.v); q.set('ig', S.ig);
-  history.replaceState(null, '', location.pathname + '?' + q.toString());
-}
 
 document.addEventListener('click', ev => {
   if (ev.target.closest('input')) return;
@@ -1258,11 +1068,7 @@ document.addEventListener('click', ev => {
   else if (act === 'switch') S.affichageDemande = !S.affichageDemande;
   else if (act === 'quit') S.appOpen = false;
   else if (act === 'relaunch') S.appOpen = true;
-  else if (act === 'vprev') cycle(-1);
-  else if (act === 'vnext') cycle(1);
-  else if (act === 'ig') { S.ig = a; majURL(); }
   else if (act === 'sc') scenario(a);
-  else if (act === 'pane') { S.paneProfil = a; fermerPop(); }
   else if (act === 'closepop') fermerPop();
   else if (act === 'closedlg') S.dlg = null;
   else if (act === 'closeform') S.form = null;
@@ -1355,8 +1161,6 @@ document.addEventListener('keydown', ev => {
     return;
   }
   if (ev.target.closest && ev.target.closest('input, textarea, [contenteditable]')) return;
-  if (ev.key === 'ArrowLeft') { cycle(-1); render(); }
-  if (ev.key === 'ArrowRight') { cycle(1); render(); }
   if (ev.key === 'Escape') { S.pop = S.form = S.dlg = null; render(); }
 });
 document.addEventListener('blur', ev => {
@@ -1386,10 +1190,8 @@ document.addEventListener('mousedown', ev => {
   document.addEventListener('mouseup', up);
 });
 
-/* ?v= et ?ig= rendent une forme partageable et stable au rechargement. */
+/* ?sc= sert a partager un etat de depart (premier lancement, densite). */
 const q = new URLSearchParams(location.search);
-if (VS.includes((q.get('v') || '').toUpperCase())) S.v = q.get('v').toUpperCase();
-if (['roster','reglages'].includes(q.get('ig'))) S.ig = q.get('ig');
 scenario(SCEN[q.get('sc')] ? q.get('sc') : 'plein');
 render();
 </script>

@@ -648,6 +648,37 @@ frontière porte tout, et la dédup est un comptage.
   `Wingardium Nozadah (COMPTE) vient de quitter notre monde` — mais sur le canal
   `Information (jeu)`.
 
+### La forme d'un nom de personnage
+
+Établi **en jeu**, pas sur les logs : à la création d'un personnage, Wakfu
+n'accepte que les **lettres de l'alphabet**, le **tiret** `-` et l'**apostrophe**
+`'`. Pas de chiffre, pas d'espace, **pas d'accent**. Et il **force** la majuscule
+à trois endroits, sans laisser le choix : en **tête**, après **chaque tiret**, et
+après **chaque apostrophe**. Vérifié sur deux personnages créés pour l'occasion,
+`Salut-Mec-Ca-Va` et `S'Alu-Ca'Va`.
+
+Trois conséquences, dans l'ordre où elles servent :
+
+1. **Un nom a une seule orthographe possible** pour une suite de lettres donnée.
+   La casse n'est donc pas une information, elle est **dérivée** — deux
+   personnages distincts d'un même serveur ne peuvent pas différer par la seule
+   casse, et c'est une conséquence de la règle du jeu, pas une supposition.
+2. **Le log ne porte jamais d'accent dans un nom.** Replier les accents d'un nom
+   *tapé par l'utilisateur* ne peut donc rien confondre : ça ne pardonne que sa
+   frappe. C'est ce qui autorise la canonisation à la saisie décidée en #22, et
+   ce qui tue l'exemple de l'ADR `0011` sans toucher à sa règle — les deux côtés
+   de la comparaison étant canoniques, « même chaîne exactement » reste vrai.
+3. Les trois pseudos relevés au-dessus sont **reproduits** par la règle
+   (`thor'rompiche` → `Thor'Rompiche`). Ce n'étaient donc pas des exceptions à la
+   majuscule initiale, mais la règle complète. Et **`Wingardium Nozadah` ne peut
+   pas être un nom de personnage** : l'espace n'y est pas autorisé — ce que cette
+   section confirme, là où la réserve ci-dessus ne pouvait que le supposer.
+
+La forme canonique se calcule donc : retirer les accents, ne garder que
+`[A-Za-z'-]`, tout en minuscules, puis remettre la majuscule en tête et après
+chaque séparateur. ⚠️ On canonise ce que l'**utilisateur tape**, jamais ce que le
+log dit — le log est canonique par construction.
+
 ### Points de rupture connus
 
 - Deux monstres homonymes sont indistinguables dans les lignes de chat, qui ne
