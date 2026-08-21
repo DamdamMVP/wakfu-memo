@@ -83,7 +83,7 @@
      La telecommande est donc en bas, hors du cadre, et pas dans un panneau
      lateral qui volerait de la largeur a l'ecran qu'on juge. */
   .stage { flex:1; min-height:0; display:grid; place-items:center; padding:14px; }
-  .win { width:min(1180px,97vw); height:100%; max-height:760px;
+  .win { width:var(--winw,min(1180px,97vw)); height:var(--winh,100%); max-height:100%;
     background:var(--bg); border:1px solid var(--line-2); border-radius:10px;
     box-shadow:0 24px 60px #000a; display:flex; flex-direction:column;
     overflow:hidden; position:relative; }
@@ -95,6 +95,12 @@
   .titlebar .wb { width:34px; height:24px; display:grid; place-items:center;
     border-radius:6px; cursor:default; color:var(--dim); font-size:13px; }
   .titlebar .wb.x:hover { background:#c0392b; color:#fff; cursor:pointer; }
+  /* Poignee de la FENETRE : la coque ne se juge pas a une taille imposee. */
+  .wingrip { position:absolute; right:0; bottom:0; width:18px; height:18px; z-index:70;
+    cursor:nwse-resize; }
+  .wingrip:after { content:''; position:absolute; right:3px; bottom:3px; width:9px; height:9px;
+    border-right:2px solid var(--line-2); border-bottom:2px solid var(--line-2); }
+  .wingrip:hover:after { border-color:var(--accent); }
   .winbody { flex:1; min-height:0; display:flex; }
 
   .closed { text-align:center; max-width:420px; }
@@ -232,8 +238,9 @@
   .nostrat .cta:hover { background:#2b3d62; }
   .nostrat .adr { font-size:11.5px; color:var(--faint); max-width:430px; }
 
-  /* ------------------------------------------- l'editeur, tel que #5 le fige */
+  /* --------------------------------------------------------------- l'editeur */
   .ed { flex:1; min-height:0; display:flex; }
+  .ed.hcol { flex-direction:column; }
   .compo { width:150px; flex:none; border-right:1px solid var(--line);
     background:var(--panel); display:flex; flex-direction:column; }
   .compo h2 { margin:0; padding:13px 14px 10px; font-size:11.5px; letter-spacing:1px;
@@ -245,6 +252,36 @@
   .slot .rank { width:16px; flex:none; color:var(--faint);
     font:700 11px/1 ui-monospace,monospace; text-align:center; }
   .compo .frozen { padding:0 14px 14px; font-size:11px; color:var(--faint); line-height:1.45; }
+
+  /* compo 2 — colonne serree : le Rang passe en pastille sur l'icone, la colonne
+     se reduit a son contenu. Les ~76 px rendus vont aux fiches. */
+  .compo.tight { width:74px; }
+  .compo.tight > h2 { padding:13px 0 10px; justify-content:center; font-size:10px;
+    letter-spacing:.6px; text-align:center; }
+  .compo.tight .slots { padding:0 7px 10px; }
+  .slot.tight { position:relative; padding:4px; justify-content:center; }
+  .slot.tight .rank { position:absolute; left:4px; top:3px; width:auto; z-index:1;
+    font-size:9.5px; color:var(--txt); background:#0c0e12d9; border-radius:4px;
+    padding:1px 3px; line-height:1.1; }
+  .compo.tight .frozen { display:none; }
+
+  /* compo 3 — en ligne, le Rang AU-DESSUS. La colonne de gauche disparait :
+     les fiches gagnent 150 px. Ceci ROUVRE #5, qui avait figé la colonne. */
+  .hcompo { flex:none; border-bottom:1px solid var(--line); background:var(--panel);
+    display:flex; align-items:center; gap:16px; padding:9px 18px; }
+  .hcompo > h2 { margin:0; font-size:11.5px; letter-spacing:1px; text-transform:uppercase;
+    color:var(--dim); flex:none; }
+  .hcompo > h2 span { color:var(--faint); letter-spacing:0; }
+  .hcompo .hslots { display:flex; gap:7px; flex-wrap:wrap; }
+  .hslot { display:flex; flex-direction:column; align-items:center; gap:2px;
+    padding:3px 5px 4px; background:var(--panel-2); border:1px solid var(--line);
+    border-radius:10px; cursor:grab; }
+  .hslot .rank { color:var(--faint); font:700 10px/1 ui-monospace,monospace; }
+  .hcompo .frozen { font-size:11px; color:var(--faint); margin:0; max-width:230px; }
+
+  .slot.drag, .hslot.drag { opacity:.3; }
+  .slot.over, .hslot.over { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+  .cls.lg img { width:40px; height:40px; }
   .cls { display:flex; align-items:stretch; flex:none; }
   .cls .edge { width:3px; flex:none; background:var(--c,transparent); }
   .cls img { width:32px; height:32px; display:block; background:#0c0e12;
@@ -253,9 +290,27 @@
   .cls.xs .edge { width:3px; }
   .cls.xs img { width:26px; height:26px; }
 
-  .turns { flex:1; min-width:0; overflow:auto; padding:16px 18px 40px; }
-  .card { background:var(--panel); border:1px solid var(--line); border-radius:14px;
-    margin-bottom:12px; overflow:hidden; width:var(--cardw,auto); max-width:620px; }
+  /* Les fiches sont une GRILLE qui deborde en ligne : leur largeur decide
+     combien en tiennent par rangee, et « toute la largeur » n'est que le cas
+     ou il n'en tient qu'une. Un seul reglage, deux comportements. */
+  .turns { flex:1; min-width:0; overflow:auto; padding:16px 18px 40px;
+    display:flex; flex-wrap:wrap; gap:12px; align-content:flex-start; }
+  .card { position:relative; background:var(--panel); border:1px solid var(--line);
+    border-radius:14px; overflow:hidden; width:var(--cardw,420px); flex:none; }
+  .turns.full .card { width:100%; }
+  /* La poignee est le BORD DROIT de la fiche sur toute sa hauteur, comme #5 l'a
+     figé : cible large, pas un coin de 16 px. Double-clic = toute la largeur. */
+  .grip { position:absolute; right:0; top:0; bottom:0; width:10px; z-index:2;
+    cursor:ew-resize; display:grid; place-items:center; }
+  .grip:before { content:''; width:3px; height:100%; border-radius:3px;
+    background:var(--accent); opacity:0; transition:opacity .12s; }
+  .grip:hover:before, .grip.on:before { opacity:.85; }
+  .grip:after { content:''; position:absolute; width:2px; height:22px; border-radius:2px;
+    background:var(--line-2); }
+  .grip:hover:after, .grip.on:after { background:transparent; }
+  #sizetag { position:fixed; z-index:99; padding:3px 8px; border-radius:7px;
+    background:#0c0e12; border:1px solid var(--accent); color:var(--txt);
+    font:600 12px/1 ui-monospace,monospace; pointer-events:none; display:none; }
   .card > header { display:flex; align-items:center; gap:12px; padding:10px 14px;
     background:linear-gradient(#1e2330,#1a1e28); border-bottom:1px solid var(--line); }
   .tnum { flex:none; min-width:34px; height:30px; padding:0 7px; border-radius:9px;
@@ -320,7 +375,7 @@
   .blk .rdbar .grow { flex:1; }
   .blk .fiches { padding:13px 14px 16px; display:flex; flex-wrap:wrap; gap:11px;
     align-items:flex-start; }
-  .blk .fiches .card { margin:0; width:330px; max-width:none; }
+  .blk .fiches .card { width:330px; }
   .blk .fiches .card .cons { font-size:13px; }
   .blk .ednested { display:flex; min-height:340px; }
 
@@ -377,6 +432,7 @@
 <div class="ribbon">PROTOTYPE JETABLE — #21 « la coque de la Fenêtre principale et l'écran des Strats » · la barre du bas est la télécommande, pas l'interface · rien n'est sauvegardé</div>
 
 <div class="stage" id="stage"></div>
+<div id="sizetag"></div>
 
 <div class="dock" id="dock"></div>
 
@@ -480,7 +536,10 @@ const JEU_COMPLET = () => [
 ];
 
 const S = {
-  coque:'B', variante:'1',   // B retenue par Damien ; A et C restent visitables
+  coque:'B', variante:'1',   // B + 1 retenues par Damien ; le reste reste visitable
+  compo:'1',                 // 1 colonne (#5) · 2 colonne serree · 3 en ligne
+  largeurFiche:380,          // px, ou 'full' — GLOBAL, jamais par tour (#5)
+  winW:null, winH:null,      // taille de la Fenetre principale, en px
   appOpen:true, wakfuLance:true, affichageDemande:true,
   ecran:'strats',                 // strats | roster | reglages | onboarding | accueil
   strats:JEU_COMPLET(),
@@ -531,7 +590,7 @@ const metaHTML = st => `${plur(st.tours.length,'tour')} · ${plur(st.emplacement
 // La fiche de Tour, telle que #5 la fige. Reproduite, pas proposee.
 function ficheHTML(st, i, editable) {
   const t = st.tours[i];
-  return `<div class="card">
+  return `<div class="card">${editable ? '<div class="grip" title="glisser : largeur des fiches · double-clic : toute la largeur"></div>' : ''}
     <header><span class="tnum">T${i+1}</span>
       <span class="glob" ${editable?'contenteditable data-ph="description du tour…"':''}
         >${esc(t.global)}</span></header>
@@ -547,25 +606,44 @@ function ficheHTML(st, i, editable) {
   </div>`;
 }
 
-// L'editeur de #5 : colonne de composition a gauche (son ordre EST le Rang),
-// fiches de Tour a droite.
+// La composition : l'ordre EST le Rang, et il se corrige au glisser-deposer —
+// ce que #14 avait tranché et #5 figé « en colonne verticale à gauche ». Les
+// formes 2 et 3 ROUVRENT cette dernière décision, la 1 la garde telle quelle.
+const RANGHINT = `L'ordre est le <b>Rang</b> : glisser pour le corriger.`;
+function compoHTML(st, editable) {
+  const slot = (e, i) => {
+    const d = editable ? `draggable="true" data-slot="${i}" data-sid="${st.id}"` : '';
+    if (S.compo === '3')
+      return `<div class="hslot" ${d}><span class="rank">${i+1}</span>${clsHTML(e,'lg')}</div>`;
+    if (S.compo === '2')
+      return `<div class="slot tight" ${d}><span class="rank">${i+1}</span>${clsHTML(e,'lg')}</div>`;
+    return `<div class="slot" ${d}><span class="rank">${i+1}</span>${clsHTML(e)}</div>`;
+  };
+  const items = st.emplacements.map(slot).join('');
+  if (S.compo === '3') return `<div class="hcompo">
+    <h2>Composition <span>${st.emplacements.length}/6</span></h2>
+    <div class="hslots">${items}</div>
+    <p class="frozen">${RANGHINT}</p></div>`;
+  return `<aside class="compo ${S.compo==='2'?'tight':''}" title="${
+      S.compo==='2' ? "L'ordre est le Rang : glisser pour le corriger." : ''}">
+    <h2>Composition <span>${st.emplacements.length}/6</span></h2>
+    <div class="slots">${items}</div>
+    <p class="frozen">${RANGHINT}</p></aside>`;
+}
+
+// L'editeur : la composition, et les fiches de Tour en grille.
 function editeurHTML(st, editable) {
-  return `<div class="ed ${editable?'':'ro'}">
-    <aside class="compo">
-      <h2>Composition <span>${st.emplacements.length}/6</span></h2>
-      <div class="slots">${st.emplacements.map((e,i) =>
-        `<div class="slot"><span class="rank">${i+1}</span>${clsHTML(e)}</div>`).join('')}</div>
-      <p class="frozen">L'ordre de la colonne est le <b>Rang</b>. Cet intérieur est
-        figé par #5 : il est reproduit ici comme décor, pas rejugé.</p>
-    </aside>
-    <section class="turns">
+  const compo = compoHTML(st, editable);
+  const turns = `<section class="turns ${S.largeurFiche==='full'?'full':''}">
       ${st.tours.length
         ? st.tours.map((_,i) => ficheHTML(st,i,editable)).join('')
-        : `<p class="why" style="padding:8px 2px 14px">Aucun Tour. L'Overlay
+        : `<p class="why" style="padding:8px 2px 14px;width:100%">Aucun Tour. L'Overlay
              dessinerait quand même la fiche <b>T1</b> et ses lignes vides (#18).</p>`}
       ${editable ? `<button class="addturn">＋ Ajouter un tour</button>` : ''}
-    </section>
-  </div>`;
+    </section>`;
+  return S.compo === '3'
+    ? `<div class="ed hcol ${editable?'':'ro'}">${compo}${turns}</div>`
+    : `<div class="ed ${editable?'':'ro'}">${compo}${turns}</div>`;
 }
 
 const swHTML = (cap) => `<button class="sw ${S.affichageDemande?'on':''}" data-act="switch">
@@ -935,7 +1013,12 @@ function render() {
       </div>
       <div class="winbody">${body}</div>
       ${dlgHTML()}${menuHTML()}
+      <div class="wingrip" id="wingrip" title="glisser : taille de la fenêtre"></div>
     </div>`;
+    const w = stage.querySelector('.win');
+    if (S.winW) w.style.setProperty('--winw', S.winW + 'px');
+    if (S.winH) w.style.setProperty('--winh', S.winH + 'px');
+    w.style.setProperty('--cardw', (S.largeurFiche === 'full' ? 420 : S.largeurFiche) + 'px');
   }
   renderDock();
   dump();
@@ -961,6 +1044,14 @@ function renderDock() {
       <span class="lab">${VARS[S.variante]}</span>
       <button data-act="cyc:var:1">↓</button></div>
     <div class="sep"></div>
+    <div class="grp"><label>compo</label>
+      ${[['1','colonne (#5)'],['2','colonne serrée'],['3','en ligne']].map(([k,l]) =>
+        `<button data-act="compo:${k}" class="${S.compo===k?'on':''}">${l}</button>`).join('')}</div>
+    <div class="sep"></div>
+    <div class="grp"><label>fiches</label>
+      <button data-act="fiche:full" class="${S.largeurFiche==='full'?'on':''}">toute la largeur</button>
+      <span class="st" id="mesures"></span></div>
+    <div class="sep"></div>
     <div class="grp"><label>scénario</label>
       <button data-act="sc:plein" class="${S.strats.length>1?'on':''}">5 strats</button>
       <button data-act="sc:une" class="${S.strats.length===1?'on':''}">1 strat</button>
@@ -972,6 +1063,17 @@ function renderDock() {
     <div class="grow"></div>
     <span class="st">overlay : <b class="${d?'':'no'}">${d?'dessiné':'pas dessiné'}</b>${
       d?'':' · manque : '+(manque()||'—')}</span>`;
+  majDock();
+}
+// Les deux mesures se rafraichissent PENDANT le glisser, sans re-rendu.
+function majDock() {
+  const m = document.getElementById('mesures');
+  if (!m) return;
+  const w = document.querySelector('.win');
+  m.textContent = (S.largeurFiche === 'full' ? 'fiche : toute la largeur'
+                    : 'fiche : ' + S.largeurFiche + ' px')
+    + (w ? ' · fenêtre : ' + Math.round(w.getBoundingClientRect().width)
+           + ' × ' + Math.round(w.getBoundingClientRect().height) : '');
 }
 
 function dump() {
@@ -1040,6 +1142,14 @@ function supprimer(id) {
 function apresScenario() {
   if (S.variante === '3' && S.choisieId) S.deplies.add(S.choisieId);
 }
+// Deplacer un Emplacement, c'est changer son Rang — la position EST le Rang, et
+// les Consignes suivent, etant indexees par id d'Emplacement (#11).
+function bougerEmplacement(sid, de, vers) {
+  const st = strat(sid);
+  if (!st || de === vers) return;
+  const [e] = st.emplacements.splice(de, 1);
+  st.emplacements.splice(vers, 0, e);
+}
 const SCEN = {
   plein: () => { S.strats = JEU_COMPLET(); S.choisieId = S.strats[0].id;
                  S.ouverteId = null; S.deplies.clear(); S.ob = null;
@@ -1064,6 +1174,9 @@ function sortieOnboarding() {
 }
 
 document.addEventListener('click', ev => {
+  // Un clic DANS une saisie en cours ne doit rien declencher : le champ vit
+  // dans un conteneur qui porte data-act, et le clic remontait jusqu'a lui.
+  if (ev.target.closest('input, textarea, [contenteditable]')) return;
   const el = ev.target.closest('[data-act]');
   if (!el) { if (S.menuId) { S.menuId = null; render(); } return; }
   const [act, a, b] = el.dataset.act.split(':');
@@ -1087,6 +1200,8 @@ document.addEventListener('click', ev => {
   else if (act === 'nav') goEcran(a);
   else if (act === 'back') { S.ouverteId = null; }
   else if (act === 'switch') S.affichageDemande = !S.affichageDemande;
+  else if (act === 'compo') S.compo = a;
+  else if (act === 'fiche') S.largeurFiche = S.largeurFiche === 'full' ? 420 : 'full';
   else if (act === 'wakfu') S.wakfuLance = !S.wakfuLance;
   else if (act === 'quit') S.appOpen = false;
   else if (act === 'relaunch') S.appOpen = true;
@@ -1151,16 +1266,100 @@ document.addEventListener('input', ev => {
   if (ev.target.isContentEditable) dump();
 });
 
+/* ------------------------------------------------- glisser-deposer du Rang -- */
+let dragFrom = null, dragSid = null;
+const slotAt = t => t.closest && t.closest('[data-slot]');
+document.addEventListener('dragstart', ev => {
+  const s = slotAt(ev.target);
+  if (!s) return;
+  dragFrom = +s.dataset.slot; dragSid = s.dataset.sid;
+  s.classList.add('drag');
+  ev.dataTransfer.effectAllowed = 'move';
+  ev.dataTransfer.setData('text/plain', String(dragFrom));
+});
+document.addEventListener('dragover', ev => {
+  const s = slotAt(ev.target);
+  if (!s || dragFrom === null || s.dataset.sid !== dragSid) return;
+  ev.preventDefault();
+  document.querySelectorAll('[data-slot].over').forEach(n => n.classList.remove('over'));
+  if (+s.dataset.slot !== dragFrom) s.classList.add('over');
+});
+document.addEventListener('drop', ev => {
+  const s = slotAt(ev.target);
+  if (!s || dragFrom === null || s.dataset.sid !== dragSid) return;
+  ev.preventDefault();
+  bougerEmplacement(dragSid, dragFrom, +s.dataset.slot);
+  dragFrom = null; dragSid = null;
+  render();
+});
+document.addEventListener('dragend', () => {
+  document.querySelectorAll('.drag,.over').forEach(n => n.classList.remove('drag','over'));
+  dragFrom = null; dragSid = null;
+});
+
+/* -------------------------- les deux poignees : largeur de fiche, fenetre --- */
+const tag = () => document.getElementById('sizetag');
+function drag(el, onMove, onEnd) {
+  const move = e => { onMove(e); const t = tag();
+    t.style.left = (e.clientX + 14) + 'px'; t.style.top = (e.clientY - 26) + 'px'; };
+  const up = () => { document.removeEventListener('mousemove', move);
+    document.removeEventListener('mouseup', up);
+    tag().style.display = 'none'; el.classList.remove('on'); onEnd && onEnd(); };
+  document.addEventListener('mousemove', move);
+  document.addEventListener('mouseup', up);
+  el.classList.add('on'); tag().style.display = 'block';
+}
+document.addEventListener('mousedown', ev => {
+  const g = ev.target.closest('.grip');
+  if (g) {
+    ev.preventDefault();
+    const card = g.closest('.card'), win = g.closest('.win');
+    const x0 = ev.clientX, w0 = card.getBoundingClientRect().width;
+    // La largeur est GLOBALE, pas par tour (#5) : on pousse la variable CSS.
+    drag(g, e => {
+      const w = Math.max(300, Math.min(1600, Math.round(w0 + e.clientX - x0)));
+      S.largeurFiche = w;
+      win.style.setProperty('--cardw', w + 'px');
+      win.querySelector('.turns').classList.remove('full');
+      tag().textContent = w + ' px';
+      majDock();
+    }, render);
+    return;
+  }
+  const wg = ev.target.closest('.wingrip');
+  if (wg) {
+    ev.preventDefault();
+    const win = wg.closest('.win'), r = win.getBoundingClientRect();
+    const x0 = ev.clientX, y0 = ev.clientY;
+    drag(wg, e => {
+      S.winW = Math.max(560, Math.round(r.width + e.clientX - x0));
+      S.winH = Math.max(360, Math.round(r.height + e.clientY - y0));
+      win.style.setProperty('--winw', S.winW + 'px');
+      win.style.setProperty('--winh', S.winH + 'px');
+      tag().textContent = S.winW + ' × ' + S.winH;
+      majDock();
+    });
+  }
+});
+// Double-clic sur la poignee : toute la largeur — le cas ou il n'en tient qu'une.
+document.addEventListener('dblclick', ev => {
+  if (!ev.target.closest('.grip')) return;
+  S.largeurFiche = S.largeurFiche === 'full' ? 420 : 'full';
+  render();
+});
+
 function syncURL() {
   const u = new URL(location);
   u.searchParams.set('coque', S.coque);
   u.searchParams.set('strats', S.variante);
+  u.searchParams.set('compo', S.compo);
   history.replaceState(null, '', u);
 }
 const q = new URLSearchParams(location.search);
 if (['A','B','C'].includes((q.get('coque')||'').toUpperCase())) S.coque = q.get('coque').toUpperCase();
 if (['1','2','3'].includes(q.get('strats'))) S.variante = q.get('strats');
 // ?sc= sert a partager un etat de depart (premier lancement, une seule strat).
+if (['1','2','3'].includes(q.get('compo'))) S.compo = q.get('compo');
 if (SCEN[q.get('sc')]) SCEN[q.get('sc')]();
 if (S.coque === 'C') S.ecran = 'accueil';
 if (S.variante !== '1') S.ouverteId = (S.strats[0]||{}).id; else S.ouverteId = null;
