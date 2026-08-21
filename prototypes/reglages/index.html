@@ -4,24 +4,38 @@
 <meta charset="utf-8">
 <title>PROTOTYPE — La surface des Réglages (#23)</title>
 <!--
-  PROTOTYPE JETABLE — ticket #23 « la surface des Réglages ».
+  PROTOTYPE JETABLE — ticket #23 « la surface des Réglages », resolu.
 
-  LA QUESTION : l'inventaire des reglages est GELE (#6, #11, #17, #21, ADR 0004,
-  #4, #12) et ce qui est STOCKE est gele (#11 : sac de cles tolerant). Il ne
-  reste que la FORME. Trois formes, changees par la pastille de la barre du bas
-  ou par ?variant=1|2|3, plus les fleches ← →.
+  Ce fichier ne porte plus que la forme RETENUE. Les deux autres — une page avec
+  un « Aperçu » collant, et trois sous-ecrans deplies dans la colonne laterale —
+  ont ete supprimees. Elles restent lisibles dans l'HISTORIQUE de cette branche,
+  au commit `ec5a120` et avant.
 
-    1 — UNE PAGE, APERCU COLLANT. Tout est ici, dans un seul defilement, avec un
-        specimen de la fiche du Tour epingle en haut qui bouge quand on regle.
-        Repond « on duplique » a la question des deux chemins : le curseur EST
-        la, et la phrase a cote nomme le geste a la souris.
-    2 — TROIS SOUS-ECRANS. « Reglages » se deplie dans la colonne laterale en
-        Overlay / Donnees / Prise en main. Trois petits ecrans denses, chacun une
-        famille. La navigation porte le classement.
-    3 — LA PORTE. La page ne garde QUE ce qui ne se regle pas sur l'objet :
-        raccourci, chemins, rattrapages. L'opacite, la taille du texte, la
-        largeur et la position se reglent SUR L'OVERLAY LUI-MEME, par-dessus le
-        jeu, dans un aller-retour ouvert par un bouton. Zero curseur duplique.
+  LA QUESTION ETAIT : l'inventaire des reglages est GELE (#6, #11, #17, #21, #4,
+  #12, ADR 0004) et ce qui est STOCKE l'est aussi (#11 : sac de cles tolerant).
+  Il ne restait que la FORME.
+
+  LA FORME RETENUE — LA PORTE :
+    - la page ne porte AUCUN curseur pour l'aspect de l'Overlay. Elle porte une
+      PORTE : « Régler maintenant » deverrouille l'Overlay par-dessus le jeu,
+      avec une barrette qui tient l'opacite et la taille du texte ; la position
+      et la largeur sont deux GESTES sur l'objet (glisser, bord droit). Zero
+      curseur duplique — c'est la reponse a « deux chemins pour un reglage ».
+    - Wakfu ferme, la porte le DIT et propose le meme aller-retour sur un decor
+      factice. Pas d'apercu tiede : l'opacite ne se juge que contre des pixels.
+    - le reste de la page est ce qui n'a pas de place sur l'objet : TROIS
+      raccourcis, la largeur MINIMALE d'une fiche dans la Fenetre principale
+      (#21), et DEUX dossiers.
+    - le VERROU est un cadenas dans l'en-tete de la fiche, a droite du chip de
+      Strat. Verrouille, les clics vont au jeu ; deverrouille, l'Overlay les
+      attrape — ce qu'exige l'Echange par clic de #16. Le cadenas etant traverse
+      lui aussi, son raccourci est le SEUL retour : il se change, il ne s'efface
+      pas.
+    - SORTIS de la V1 : la POLICE (jamais confirmee par #6, et la taille du
+      texte suffit), la section « Reprises » (les Personnages ignores se gerent
+      dans le Roster ; « rejouer la prise en main » doublonnait l'entree de la
+      colonne laterale), et l'AFFICHAGE de l'arbitrage entre deux dossiers de
+      logs — la regle de #4 tient toujours, elle n'est plus un ecran.
 
   CE QUI EST FIGE AILLEURS, ET QU'ON NE REDISCUTE PAS ICI :
     - #21 la coque : colonne laterale + Socle d'etat en pied (les trois
@@ -32,39 +46,29 @@
           Largeur de fiche minimale 340 px, hauteur non reglable.
     - #6  l'Overlay affiche UN Tour a la fois, avec un chip de Strat discret dans
           l'en-tete ; la Mise en avant est le fond de ligne teinte.
-          Confirme comme reglages V1 : opacite, taille du texte, largeur.
     - #11 reglages.json est un SAC DE CLES TOLERANT : une cle inconnue est
           conservee. C'est ce qui autorise cette maquette a arriver apres le
-          modele. Les NOMS DE CLES ci-dessous ne sont pas tranches.
+          modele. Les NOMS DE CLES du tiroir de pied de page ne sont pas tranches.
+    - #16 l'Echange par clic se fait DANS la fiche, en combat : c'est lui qui
+          interdit un Overlay verrouille en permanence.
     - #18 l'Overlay n'est dessine que si les TROIS conditions sont vraies. Hors
           combat il montre la fiche du Tour 1 sans Mise en avant.
-    - #4  le dossier de logs se DERIVE du client, et Steam + launcher Ankama
-          COEXISTENT sur la meme machine : on cherche les deux et on departage
-          sur le wakfu.log le plus recemment modifie.
-    - ADR 0004 : trois fichiers JSON dans userData, d'ou le bouton « ouvrir le
-          dossier de donnees ».
+    - ADR 0004 : trois fichiers JSON dans userData, d'ou « ouvrir le dossier de
+          donnees ».
     - ADR 0006 : l'Overlay n'a pas de vocabulaire pour son propre doute.
     - ADR 0012 : la Fenetre principale est le SEUL endroit qui explique. Les
           phrases grises sous les reglages sont donc legitimes ICI, et nulle part
           ailleurs.
 
-  TRANCHE EN SEANCE, et retire de la maquette :
-    - la section « REPRISES » n'existe plus. Les PERSONNAGES IGNORES se gerent
-      dans le Roster, pas ici — meme pas en renvoi. Et « rejouer la prise en
-      main » etait un doublon de l'entree « Prise en main » de la colonne
-      laterale, qui suffit a satisfaire #17.
-
   CE QUE CETTE MAQUETTE NE TRANCHE PAS :
     - les MOTS. Comme #17 et #21, les libelles sont du remplissage assume.
-    - les noms de cles de reglages.json (voir le tiroir en pied de page).
+    - la combinaison par defaut des raccourcis (`Ctrl+Alt+W`, `Ctrl+Alt+L` sont
+      des exemples), et les noms de cles de reglages.json.
 
-  MOTS NEUFS, absents de CONTEXT.md, proposes ici et a valider ou jeter :
-    « Aperçu » (le specimen de fiche que les Reglages dessinent eux-memes),
-    « Réglage sur l'objet » (l'aller-retour de la variante 3),
-    « Overlay verrouillé » (l'etat ou la souris passe au travers).
-
-  La barre du bas est la TELECOMMANDE, pas l'interface : elle change de
-  variante, lance ou ferme Wakfu, allume un combat. Rien n'est persiste.
+  La barre du bas est la TELECOMMANDE, pas l'interface : elle lance ou ferme
+  Wakfu, allume un combat, retire la Strat choisie. `?surjeu=1` entre directement
+  dans le reglage sur l'objet, `?wakfu=0` ouvre avec Wakfu ferme. Rien n'est
+  persiste.
 -->
 <style>
   /* Jetons repris tels quels de #5, #6, #16 et #21. */
@@ -127,9 +131,6 @@
   .rail .items button.cur:before { content:''; position:absolute; left:0; top:0; bottom:0;
     width:3px; background:var(--accent); }
   .rail .items .cnt { margin-left:auto; font:11px ui-monospace,monospace; color:var(--faint); }
-  /* variante 2 : les sous-entrees, en retrait, sous « Reglages ». */
-  .rail .items button.sub { padding-left:26px; font-size:13px; }
-  .rail .items button.sub.cur:before { left:14px; width:2px; }
   .rail .grow { flex:1; }
   .socle { border-top:1px solid var(--line); padding:11px 14px 13px; }
   .socle .conds { margin-top:7px; display:flex; flex-direction:column; gap:3px; }
@@ -194,33 +195,6 @@
     background:#15161c; border-top:1px dashed var(--line-2); font-style:italic;
     color:var(--note); font-size:.9em; }
 
-  /* --------------------------------------- l'Apercu, et le decor du « jeu » */
-  /* Un fond de jeu FACTICE, mais il porte exprès des zones TRES claires et des
-     zones TRES sombres : l'opacite ne se juge que contre les pixels qu'elle
-     laisse passer, et un fond gris uniforme mentirait dans les deux sens. */
-  .jeu { background:
-      radial-gradient(circle at 78% 22%, #ffe9a3 0 4%, #f0c04f55 4% 13%, transparent 13%),
-      radial-gradient(circle at 22% 74%, #dff3ff 0 3%, #7fd0ff44 3% 11%, transparent 11%),
-      radial-gradient(ellipse at 55% 40%, #3c6b4d 0 22%, transparent 60%),
-      repeating-linear-gradient(63deg, #0000 0 18px, #ffffff08 18px 19px),
-      repeating-linear-gradient(-63deg, #0000 0 18px, #ffffff08 18px 19px),
-      linear-gradient(165deg, #1d3324 0%, #2e2a1c 45%, #101418 100%);
-    position:relative; }
-  .jeu:after { content:'décor factice — pas une capture du jeu';
-    position:absolute; left:8px; bottom:6px; font-size:10.5px; color:#ffffff5c;
-    letter-spacing:.4px; }
-  .apercu { padding:14px 18px; border-bottom:1px solid var(--line); }
-  .apercu .hd { display:flex; align-items:baseline; gap:10px; margin-bottom:9px; }
-  .apercu .hd h3 { margin:0; font-size:11.5px; letter-spacing:.9px;
-    text-transform:uppercase; color:var(--faint); }
-  .apercu .hd .why { flex:1; }
-  .apercu .frame { border-radius:12px; overflow:hidden; border:1px solid var(--line);
-    padding:20px; display:flex; justify-content:center; min-height:120px; }
-  .apercu .frame > .wrap { width:var(--fw,420px); max-width:100%; opacity:var(--op,.85); }
-  /* variante 1 : l'apercu est COLLANT — on descend dans les reglages sans le
-     perdre de vue, parce que trois reglages sur quatre ne se jugent que dessus. */
-  .apercu.sticky { position:sticky; top:0; z-index:5; background:var(--bg); }
-  .apercu.sticky .frame { padding:14px; }
 
   /* ------------------------------------------------- lignes de reglage ----- */
   .sect { padding:16px 18px 6px; }
@@ -236,11 +210,7 @@
   .line .lbl .why { display:block; margin-top:2px; }
   .line .ctl { flex:1; min-width:0; display:flex; flex-wrap:wrap; align-items:center; gap:9px; }
   .line .val { font:12px ui-monospace,monospace; color:var(--dim); min-width:58px; }
-  .line.geste { padding-top:0; border-top:0; }
-  /* la phrase qui nomme le GESTE equivalent : c'est la reponse de la variante 1
      a « deux chemins pour un reglage ». */
-  .geste-note { font-size:11.5px; color:var(--note); display:block; }
-  .geste-note b { color:var(--note); font-weight:600; }
 
   input[type=range] { -webkit-appearance:none; appearance:none; width:190px;
     height:22px; background:transparent; cursor:pointer; }
@@ -253,12 +223,6 @@
   input[type=range]::-moz-range-thumb { width:14px; height:14px; border:0; border-radius:50%;
     background:var(--accent); }
 
-  .seg { display:inline-flex; border:1px solid var(--line-2); border-radius:8px;
-    overflow:hidden; }
-  .seg button { border:0; border-radius:0; background:transparent; padding:4px 10px;
-    font-size:12.5px; color:var(--dim); }
-  .seg button + button { border-left:1px solid var(--line-2); }
-  .seg button.on { background:#22304d; color:var(--txt); }
 
   .kbd { font:12px ui-monospace,monospace; background:#0c0e12; border:1px solid var(--line-2);
     border-bottom-width:2px; border-radius:6px; padding:3px 8px; color:var(--txt); }
@@ -270,18 +234,6 @@
     border:1px solid var(--line-2); border-radius:6px; padding:1px 6px; color:var(--faint); }
   .tag.pend { border-color:#5b8cff55; color:var(--accent); }
 
-  /* les cartes de la variante 2 : chaque sous-ecran est petit, donc il respire */
-  .cards { padding:16px 18px 30px; display:flex; flex-direction:column; gap:12px; }
-  .cardp { background:var(--panel); border:1px solid var(--line); border-radius:13px;
-    padding:13px 15px; }
-  .cardp > h2 { margin:0 0 3px; font-size:13.5px; font-weight:600; }
-  .cardp > .why { margin-bottom:9px; }
-  .cardp .lines { margin-top:4px; }
-  .cardp input[type=range] { width:150px; }
-  .v2split { display:flex; gap:0; min-height:0; flex:1; }
-  .v2split .left { flex:1; min-width:0; overflow:auto; }
-  .v2split .right { width:470px; flex:none; border-left:1px solid var(--line);
-    background:var(--panel); overflow:auto; }
 
   /* ------------------------------------- variante 3 : la porte et l'objet -- */
   .porte { margin:18px 18px 6px; border:1px solid var(--line-2); border-radius:14px;
@@ -336,13 +288,6 @@
   .dock .st b { color:var(--ok); font-weight:600; }
   .dock .st b.no { color:var(--faint); }
   /* la pastille de variante : volontairement en dehors du langage de l'app */
-  .vsw { display:flex; align-items:center; gap:2px; background:#e8eaef; color:#0c0e12;
-    border-radius:999px; padding:2px 3px; box-shadow:0 3px 14px #000a; }
-  .vsw button { background:transparent; border:0; color:#0c0e12; font-weight:700;
-    padding:2px 8px; border-radius:999px; }
-  .vsw button:hover { background:#0c0e1a1a; border:0; }
-  .vsw .lab { font:600 12px/1 ui-sans-serif,system-ui; padding:0 6px; white-space:nowrap; }
-  details.state { flex:none; border-top:1px solid var(--line); background:var(--panel);
     padding:6px 14px; font-size:12px; }
   details.state summary { cursor:pointer; color:var(--dim); }
   details.state pre { max-height:210px; overflow:auto; color:#a9b2c2; font-size:11.5px;
@@ -350,7 +295,7 @@
 </style>
 </head>
 <body spellcheck="false">
-<div class="ribbon">PROTOTYPE JETABLE — #23 « la surface des Réglages » · trois variantes, ← → ou la pastille blanche · la barre du bas est la télécommande, pas l'interface · rien n'est sauvegardé</div>
+<div class="ribbon">PROTOTYPE JETABLE — #23 « la surface des Réglages », résolu · la forme retenue, les écartées sont dans l'historique de la branche · la barre du bas est la télécommande, pas l'interface · rien n'est sauvegardé</div>
 
 <div class="stage" id="stage"></div>
 <div class="dock" id="dock"></div>
@@ -415,11 +360,9 @@ const POLICE_FICHE = 'ui-sans-serif,system-ui,"Segoe UI",sans-serif';
 
 /* ================================================================= etat === */
 const S = {
-  variante:1,
   ecran:'reglages',            // strats | roster | reglages | onboarding
-  sous:'overlay',              // variante 2 : overlay | donnees | prise
   wakfuLance:true, affichageDemande:true, stratChoisie:'Ombre Épaisse',
-  combat:false,                // pour voir la Mise en avant dans l'apercu
+  combat:false,                // pour voir la Mise en avant sur la fiche
   surjeu:false,                // variante 3 : on est parti regler sur l'objet
   capture:false,               // capture d'un raccourci en cours
   captureCible:'overlay',      // overlay | fenetre
@@ -506,9 +449,6 @@ const cadenasSVG = (ferme) => `<svg width="11" height="13" viewBox="0 0 11 13"
 const rangeHTML = (k, min, max, step) =>
   `<input type="range" data-reg="${k}" min="${min}" max="${max}" step="${step||1}"
      value="${R()[k]}">`;
-const segHTML = (k, opts) => `<span class="seg">${opts.map(([v,l]) =>
-  `<button data-set="${k}:${v}" class="${String(R()[k])===String(v)?'on':''}">${l}</button>`
-  ).join('')}</span>`;
 const CLES_RACC = { overlay:'raccourciOverlay', verrou:'raccourciVerrou',
                     fenetre:'raccourciFenetre' };
 // Le raccourci du VERROU ne s'efface pas : verrouille, l'Overlay est traverse
@@ -530,36 +470,7 @@ const ligne = (lbl, why, ctl, extra) => `<div class="line">
   <div class="lbl"><b>${lbl}</b>${why?`<span class="why">${why}</span>`:''}</div>
   <div class="ctl">${ctl}</div></div>${extra||''}`;
 
-const gesteNote = (txt) => `<div class="line geste"><div class="lbl"></div>
-  <div class="ctl"><span class="geste-note"><b>↳</b> ${txt}</span></div></div>`;
-
 /* --- les familles, en briques reutilisables ------------------------------ */
-// 1. l'ASPECT de l'Overlay. `dup` = la variante duplique-t-elle les reglages
-//    qui se prennent aussi a la souris sur l'objet (largeur, position) ?
-function aspectLignes(dup) {
-  const out = [];
-  out.push(ligne('Opacité',
-    "l'overlay laisse voir le jeu au travers",
-    `${rangeHTML('opacite',40,100)}<span class="val">${R().opacite} %</span>`));
-  out.push(ligne('Taille du texte',
-    'la hauteur de la fiche suit — elle ne se règle pas (#5)',
-    `${rangeHTML('tailleTexte',11,22)}<span class="val">${R().tailleTexte} px</span>`));
-  if (dup) {
-    out.push(ligne('Largeur de la fiche',
-      'la même pour tous les tours et toutes les strats (#6)',
-      `${rangeHTML('largeurFiche',340,900,10)}<span class="val">${R().largeurFiche} px</span>`,
-      gesteNote('se prend aussi en attrapant le <b>bord droit</b> de la fiche, sur l’overlay.')));
-    out.push(ligne('Position',
-      "le coin haut-gauche, en pixels de l'écran",
-      `<span class="path">x ${R().posX} · y ${R().posY}</span>
-       <button data-act="recentrer">Recentrer sur la fenêtre du jeu</button>`,
-      gesteNote('se prend surtout en <b>déplaçant l’overlay</b> à la souris.')));
-  }
-  // L'INTERRUPTEUR « verrouille » A QUITTE LA PAGE : il vit sur l'Overlay
-  // lui-meme, en cadenas dans l'en-tete de la fiche, et se rouvre au raccourci.
-  return out.join('');
-}
-
 // 2. le RACCOURCI. #17 le demande, #12 note qu'il pourrait aussi rappeler la
 //    Fenetre principale — d'ou DEUX lignes, et la seconde vide par defaut.
 function raccourciLignes() {
@@ -601,92 +512,13 @@ function fenetreLignes() {
     `${rangeHTML('ficheMiniFenetre',300,700,10)}<span class="val">${R().ficheMiniFenetre} px</span>`);
 }
 
-/* ---- l'Apercu : les Reglages dessinent EUX-MEMES une fiche, sur un decor
-     factice. C'est la reponse a « que montre-t-on quand Wakfu n'est pas
-     lance ? » — un specimen, jamais le vrai overlay, donc les trois conditions
-     de #18 ne s'appliquent pas. Le mot « Aperçu » est NEUF. */
-function apercuHTML(sticky) {
-  return `<div class="apercu ${sticky?'sticky':''}">
-    <div class="hd"><h3>Aperçu</h3>
-      <span class="why">un spécimen dessiné par l’app, sur un décor factice —
-        pas le vrai overlay, et pas une capture du jeu.
-        ${S.wakfuLance ? '' : 'Wakfu n’est pas lancé : il n’y a rien d’autre à montrer.'}</span></div>
-    <div class="frame jeu" style="--fw:${R().largeurFiche}px;--op:${R().opacite/100}">
-      <div class="wrap">${ficheHTML()}</div></div>
-  </div>`;
-}
-
-/* ====================================================== VARIANTE 1 ======== */
-/* Une seule page, un seul defilement, l'Apercu COLLANT en haut. Les cinq
-   familles s'enchainent en sections. Les deux reglages qui se prennent aussi a
-   la souris sont DUPLIQUES ici, avec une phrase qui nomme le geste. */
-function variante1() {
-  return `<main class="scr">
-    <div class="scrhead"><h1>Réglages</h1>
-      <span class="why">une page, dans l’ordre où on s’en sert</span></div>
-    <div class="scrbody">
-      ${apercuHTML(true)}
-      <div class="sect"><h2>L’overlay</h2>
-        <p class="intro why">Ce que vous réglez ici se voit tout de suite dans l’aperçu.</p>
-        <div class="lines">${aspectLignes(true)}</div></div>
-      <div class="sect"><h2>Raccourcis</h2><div class="lines">${raccourciLignes()}</div></div>
-      <div class="sect"><h2>La fenêtre principale</h2><div class="lines">${fenetreLignes()}</div></div>
-      <div class="sect" style="padding-bottom:34px"><h2>Chemins et données</h2>
-        <div class="lines">${cheminsLignes()}</div></div>
-    </div></main>`;
-}
-
-/* ====================================================== VARIANTE 2 ======== */
-/* « Reglages » se DEPLIE dans la colonne laterale : trois sous-ecrans, une
-   famille chacun. Le classement est porte par la navigation, pas par des titres
-   dans un long defilement. L'Apercu ne vit que sur le sous-ecran Overlay, en
-   colonne de droite — les deux autres n'en ont aucun besoin. */
-function variante2() {
-  if (S.sous === 'overlay') {
-    return `<main class="scr">
-      <div class="scrhead"><h1>Overlay</h1>
-        <span class="why">l’aspect de la fiche, par-dessus le jeu</span></div>
-      <div class="scrbody" style="display:flex;padding:0">
-        <div class="v2split">
-          <div class="left"><div class="cards">
-            <div class="cardp"><h2>Aspect</h2>
-              <p class="why">Trois réglages, et l’aperçu à droite qui les montre.</p>
-              <div class="lines">${aspectLignes(true)}</div></div>
-          </div></div>
-          <div class="right">${apercuHTML(false)}
-            <div class="cards" style="padding-top:6px">
-              <div class="cardp"><h2>Raccourci</h2>
-                <div class="lines">${raccourciLignes()}</div></div>
-            </div></div>
-        </div></div></main>`;
-  }
-  if (S.sous !== 'donnees') { S.sous = 'overlay'; }
-  if (S.sous === 'donnees') {
-    return `<main class="scr">
-      <div class="scrhead"><h1>Données</h1>
-        <span class="why">d’où l’app lit, et où elle écrit</span></div>
-      <div class="scrbody"><div class="cards">
-        <div class="cardp"><h2>Logs du jeu</h2>
-          <p class="why">L’état du combat vient de <code>wakfu.log</code>, en lecture seule.</p>
-          <div class="lines">${cheminsLignes()}</div></div>
-        <div class="cardp"><h2>La fenêtre principale</h2>
-          <div class="lines">${fenetreLignes()}</div></div>
-      </div></div></main>`;
-  }
-  // Le troisieme sous-ecran a disparu avec la section « Reprises » : la
-  // variante 2 ne classe plus que DEUX familles, ce qui affaiblit encore le
-  // motif d'une navigation dediee.
-  S.sous = 'overlay';
-  return variante2();
-}
-
-/* ====================================================== VARIANTE 3 ======== */
-/* La PORTE. Aucun curseur pour ce qui se juge sur le jeu : on part le regler sur
+/* ====================================================== LES REGLAGES ===== */
+/* LA FORME RETENUE : la porte. Aucun curseur pour ce qui se juge sur le jeu : on part le regler sur
    l'objet, par-dessus Wakfu, et on revient. Ce que la page garde, c'est ce qui
    ne se regle pas a la souris sur l'overlay. La question « et si Wakfu n'est pas
    lance ? » n'a pas de reponse tiede ici : la porte le DIT, et propose le meme
    aller-retour sur un decor factice. */
-function variante3() {
+function reglagesHTML() {
   const pret = S.wakfuLance;
   return `<main class="scr">
     <div class="scrhead"><h1>Réglages</h1>
@@ -743,20 +575,10 @@ function surjeuHTML() {
 
 /* =============================================================== coque ==== */
 const ECRANS = [['strats','Strats'],['roster','Roster'],['reglages','Réglages']];
-const SOUS = [['overlay','Overlay'],['donnees','Données']];
-
 function railHTML() {
-  const items = ECRANS.map(([k,l]) => {
-    const cur = S.ecran === k ? 'cur' : '';
-    let h = `<button data-act="nav:${k}" class="${cur}">${l}${
-      k==='strats'?'<span class="cnt">5</span>':''}</button>`;
-    // variante 2 : les trois sous-entrees, visibles seulement dans les Reglages.
-    if (k === 'reglages' && S.variante === 2 && S.ecran === 'reglages') {
-      h += SOUS.map(([sk,sl]) => `<button data-act="sous:${sk}"
-        class="sub ${S.sous===sk?'cur':''}">${sl}</button>`).join('');
-    }
-    return h;
-  }).join('');
+  const items = ECRANS.map(([k,l]) =>
+    `<button data-act="nav:${k}" class="${S.ecran===k?'cur':''}">${l}${
+      k==='strats'?'<span class="cnt">5</span>':''}</button>`).join('');
   const d = overlayDessine();
   return `<nav class="rail">
     <div class="brand">Wakfu Mémo</div>
@@ -777,7 +599,7 @@ function railHTML() {
 
 function ecranHTML() {
   if (S.ecran === 'reglages') {
-    return S.variante === 1 ? variante1() : S.variante === 2 ? variante2() : variante3();
+    return reglagesHTML();
   }
   const t = S.ecran === 'roster' ? 'Roster'
     : S.ecran === 'strats' ? 'Strats' : 'Prise en main';
@@ -810,15 +632,9 @@ function render() {
   dump();
 }
 
-const VNOMS = { 1:'Une page, aperçu collant', 2:'Trois sous-écrans',
-                3:'La porte : on règle sur l’objet' };
 function renderDock() {
   const d = overlayDessine();
   document.getElementById('dock').innerHTML = `
-    <div class="vsw"><button data-act="var:-1">‹</button>
-      <span class="lab">${S.variante} — ${VNOMS[S.variante]}</span>
-      <button data-act="var:1">›</button></div>
-    <div class="sep"></div>
     <div class="grp"><label>scénario</label>
       <button data-act="toggle:wakfu" class="${S.wakfuLance?'on':''}">Wakfu lancé</button>
       <button data-act="toggle:combat" class="${S.combat?'on':''}">combat en cours</button>
@@ -870,9 +686,7 @@ document.addEventListener('click', ev => {
     return;
   }
   const [act,a] = el.dataset.act.split(':');
-  if (act === 'var') { S.variante = ((S.variante - 1 + (+a) + 3) % 3) + 1; majURL(); }
-  else if (act === 'nav') { S.ecran = a; S.surjeu = false; }
-  else if (act === 'sous') S.sous = a;
+  if (act === 'nav') { S.ecran = a; S.surjeu = false; }
   else if (act === 'toggle') {
     if (a === 'wakfu') S.wakfuLance = !S.wakfuLance;
     else if (a === 'combat') S.combat = !S.combat;
@@ -933,13 +747,6 @@ document.addEventListener('keydown', ev => {
     S.capture = false; render();
     return;
   }
-  // ← → : la variante. Jamais quand on tape dans un champ.
-  if (ev.target.closest('input[type=text],[contenteditable]')) return;
-  if (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight') {
-    if (document.activeElement && document.activeElement.type === 'range') return;
-    S.variante = ((S.variante - 1 + (ev.key === 'ArrowRight' ? 1 : -1) + 3) % 3) + 1;
-    majURL(); render();
-  }
 });
 
 /* --- glisser l'overlay, et attraper son bord droit (variante 3) ----------- */
@@ -999,16 +806,9 @@ document.addEventListener('mousedown', ev => {
 });
 
 /* --------------------------------------------------------------- amorcage -- */
-function majURL() {
-  const u = new URL(location.href);
-  u.searchParams.set('variant', S.variante);
-  history.replaceState(null, '', u);
-}
 const q = new URLSearchParams(location.search);
-const v = +q.get('variant');
-if (v >= 1 && v <= 3) S.variante = v;
 S.posLocalX = 320; S.posLocalY = 54;
-if (q.get('surjeu')) { S.variante = 3; S.surjeu = true; }
+if (q.get('surjeu')) S.surjeu = true;
 if (q.get('wakfu') === '0') S.wakfuLance = false;
 render();
 </script>
