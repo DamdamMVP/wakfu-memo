@@ -34,18 +34,43 @@
 # CE QU'IL RÉVÈLE EN PLUS, ET QUI N'ÉTAIT PAS CHERCHÉ :
 #
 #  5. LES DEUX CLIENTS N'ÉCRIVENT PAS EN ALTERNANCE DANS `wakfu.log` : ils y
-#     écrivent par BLOCS. Un seul recul d'horodatage dans tout le fichier
-#     (315 s), et la couture a DÉTRUIT une ligne — ` value for key
-#     content.15.32132`, dont la tête ` WARN 15:54:51,726 [...] Unable to get `
-#     a été écrasée. Les trois frontières du combat apparaissent donc deux fois
-#     à ~355 lignes d'écart, jamais côte à côte, alors que dans
-#     `wakfu_chat.log`, au même instant, les mêmes copies sont à 1 à 3 lignes.
-#     Sur le premier bloc seul — le seul visible PENDANT le combat — il y a UNE
-#     copie par entité, donc `k` se lit à 1 au lieu de 2 ; le second bloc n'a
-#     été écrit qu'environ 4 min après `End fight`. Ça pèse sur l'ADR 0009.
+#     écrivent par BLOCS. Bloc A = lignes 1-628, bloc B = lignes 630-974, un
+#     seul recul d'horodatage entre les deux (ligne 628 = 15:56:20,955 → ligne
+#     630 = 15:54:51,726, soit 89 s ici). Les trois frontières du combat
+#     apparaissent donc deux fois, à 345-346 lignes d'écart (551/583/597 puis
+#     897/928/942), JAMAIS côte à côte — alors que dans `wakfu_chat.log`, au
+#     même instant, les mêmes copies sont à 1 à 3 lignes.
+#     Sur le bloc A seul — le seul visible PENDANT le combat — il y a UNE copie
+#     par entité, donc `k` se lit à **1** ; sur le fichier entier, `k` = 2.
+#     Ordre d'écriture : dans le fichier BRUT (avant retrait du chat tiers), le
+#     bloc A continue de recevoir du chat jusqu'à 16:00:34, donc le bloc B a été
+#     écrit AU MOINS 4 min après `End fight` (15:56:20). Déduction, pas mesure :
+#     elle repose sur le fait qu'un fichier en ajout seul a un ordre d'écriture
+#     égal à son ordre de lignes.
 #
-#  6. 257 des 995 lignes n'ont PAS d'horodatage : traces Java multi-lignes.
-#     Tout parseur ligne à ligne doit les traverser.
+#  6. LA COUTURE A DÉTRUIT UNE LIGNE. La ligne 629 est `N 15:54:51,726
+#     [Initialization-Tasks-0] (ME:157) - Unable to get value for key
+#     content.15.32134` : la tête ` WAR` a été écrasée. Le dégât est ici anodin
+#     (une clé i18n manquante), mais rien ne garantit que la ligne perdue ne
+#     soit pas une frontière ou un `[_FL_]`, ni que deux fragments ne se
+#     recollent pas en une ligne qui s'analyse de travers. Parade : n'accepter
+#     qu'une ligne dont le préfixe est intact.
+#
+#  7. CE QUE ÇA NE CASSE PAS, ET LA RÈGLE QUI SAUVE. Chaque client écrit
+#     EXACTEMENT une frontière par tour réel : le flux d'un seul client est donc
+#     déjà complet et juste. `k`=1 sur 3 frontières → 3 tours ; `k`=2 sur 6 →
+#     3 tours. Les deux bouts tombent juste, et seule la TRANSITION non
+#     recalculée dérive (3 tours déjà comptés, puis les 3 copies tardives
+#     ajoutées avec l'ancien `k`). Le bloc B portant sa PROPRE rafale `[_FL_]`
+#     du même `fightId`, `k` monte de 1 à 2 AVANT que ses frontières
+#     n'arrivent : il suffit donc de REJOUER le combat depuis son `[_FL_]`
+#     quand `k` monte. #9 lit déjà `k` comme un MAXIMUM, donc sa hausse est
+#     prévue ; et l'ADR 0007 a déjà décidé que l'app sait rejouer le combat
+#     courant depuis le log. Il ne manque que la règle « `k` monte → on
+#     recompte », qui n'est écrite nulle part.
+#
+#  8. 257 des 995 lignes du fichier brut n'ont PAS d'horodatage : traces Java
+#     multi-lignes. Tout parseur ligne à ligne doit les traverser.
 #
 # Réserve : UNE seule session observée, et le mécanisme du point 5 n'est pas
 # établi (tampon par appender ? un `wakfu.log.1` a été tourné à 15:54).
