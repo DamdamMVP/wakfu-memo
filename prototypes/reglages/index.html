@@ -261,7 +261,6 @@
   .tag { font-size:10.5px; letter-spacing:.5px; text-transform:uppercase;
     border:1px solid var(--line-2); border-radius:6px; padding:1px 6px; color:var(--faint); }
   .tag.pend { border-color:#5b8cff55; color:var(--accent); }
-  .tag.auto { border-color:#2f7a54; color:var(--ok); }
 
   /* les cartes de la variante 2 : chaque sous-ecran est petit, donc il respire */
   .cards { padding:16px 18px 30px; display:flex; flex-direction:column; gap:12px; }
@@ -416,7 +415,6 @@ const S = {
   surjeu:false,                // variante 3 : on est parti regler sur l'objet
   capture:false,               // capture d'un raccourci en cours
   captureCible:'overlay',      // overlay | fenetre
-  logsOuvert:false,            // le tiroir des deux installations trouvees
   winW:null, winH:null,
   // ------- reglages.json (noms de cles NON tranches, #11 : sac tolerant) ----
   reg: {
@@ -432,14 +430,13 @@ const S = {
   },
 };
 
-// #4 : les deux installations COEXISTENT, et on departage sur le wakfu.log le
-// plus recemment modifie. La maquette montre les deux, et laquelle a gagne.
-const INSTALLS = [
-  { src:'Steam', chemin:'D:\\SteamLibrary\\steamapps\\common\\Wakfu\\preferences\\logs',
-    vu:'il y a 3 min', actif:true },
-  { src:'Launcher Ankama', chemin:'C:\\Users\\damien\\AppData\\Roaming\\zaap\\gamesLogs\\wakfu\\logs',
-    vu:'le 14 août', actif:false },
-];
+// #4 tient toujours SOUS le capot : les deux installations peuvent coexister
+// sur une machine (un vieux dossier Steam plus le launcher Ankama), et on
+// departage sur le wakfu.log le plus recemment modifie. Mais on ne le RACONTE
+// pas : personne ne joue sur deux Wakfu differents, donc l'ecran montre le
+// dossier retenu, un point. L'arbitrage reste une regle, il n'est plus une
+// information.
+const DOSSIER_LOGS = 'D:\\SteamLibrary\\steamapps\\common\\Wakfu\\preferences\\logs';
 const DOSSIER_DONNEES = 'C:\\Users\\damien\\AppData\\Roaming\\wakfu-memo';
 
 const esc = s => String(s == null ? '' : s)
@@ -550,42 +547,18 @@ function raccourciLignes() {
 // 3. les CHEMINS. #4 : rien n'est code en dur, les deux installations
 //    coexistent, et le secours manuel existe pour quand la decouverte echoue.
 function cheminsLignes() {
-  const actif = INSTALLS.find(i => i.actif);
   const manuel = R().dossierLogsManuel;
   return ligne('Dossier de logs',
-      manuel ? 'désigné à la main : la découverte automatique est ignorée'
-             : 'trouvé tout seul depuis l’installation du jeu',
-      `${manuel ? `<span class="path">${esc(manuel)}</span>`
-        : `<span class="tag auto">automatique</span>
-           <span class="path">${esc(actif.chemin)}</span>`}
-       <button data-act="logsdrawer">${S.logsOuvert?'masquer':'2 installations trouvées'}</button>
+      manuel ? 'désigné à la main' : 'trouvé tout seul au premier lancement',
+      `<span class="path">${esc(manuel || DOSSIER_LOGS)}</span>
        <button data-act="pickdir">Désigner un dossier…</button>
-       ${manuel?`<button class="ghost" data-act="autodir">revenir à l’automatique</button>`:''}`,
-      S.logsOuvert ? `<div class="line geste"><div class="lbl"></div><div class="ctl"
-        style="flex-direction:column;align-items:stretch">
-        ${INSTALLS.map(i => `<div style="display:flex;gap:9px;align-items:baseline">
-          <span class="tag ${i.actif?'auto':''}">${i.actif?'retenu':'ignoré'}</span>
-          <span class="path" style="flex:1">${esc(i.chemin)}</span>
-          <span class="why">${esc(i.src)} · vu ${esc(i.vu)}</span></div>`).join('')}
-        <span class="why" style="margin-top:5px">Les deux peuvent exister sur la même
-          machine : on garde celle dont le <code>wakfu.log</code> a bougé le plus
-          récemment (#4).</span></div></div>` : '')
+       ${manuel?`<button class="ghost" data-act="autodir">retrouver tout seul</button>`:''}`)
     + ligne('Dossier de données',
       'les trois fichiers de l’app : réglages, roster, strats (ADR 0004)',
       `<span class="path">${esc(DOSSIER_DONNEES)}</span>
        <button data-act="opendata">Ouvrir le dossier</button>`);
 }
 
-// (4.) LES RATTRAPAGES N'EXISTENT PLUS. La section « Reprises » portait deux
-//      lignes, et les deux tombent :
-//        - « rejouer la prise en main » etait un DOUBLON : la colonne laterale
-//          de #21 porte deja une entree « Prise en main » permanente, et c'est
-//          elle qui satisfait l'exigence de #17 (l'onboarding se rejoue).
-//        - les PERSONNAGES IGNORES se gerent dans le Roster, directement. La
-//          question « un seul endroit, lequel ? » que #23 renvoyait a #22 est
-//          donc tranchee ici, du cote des Reglages : ce n'est pas ici.
-//      Il ne reste aucune famille « rattrapage » : ce n'etait pas une famille,
-//      c'etait un tiroir a restes.
 // 5. la Fenetre principale. #21 a verse ici une grandeur qui n'est PAS celle de
 //    l'Overlay : le minimum d'une fiche dans la grille, d'ou le nombre de colonnes.
 function fenetreLignes() {
@@ -881,7 +854,6 @@ document.addEventListener('click', ev => {
     S.reg[a === 'fenetre' ? 'raccourciFenetre' : 'raccourciOverlay'] = null;
   }
   else if (act === 'recentrer') { S.reg.posX = 1246; S.reg.posY = 322; }
-  else if (act === 'logsdrawer') S.logsOuvert = !S.logsOuvert;
   else if (act === 'pickdir') S.reg.dossierLogsManuel = 'E:\\Jeux\\Wakfu\\preferences\\logs';
   else if (act === 'autodir') S.reg.dossierLogsManuel = null;
   else if (act === 'opendata') { /* ouvre l'explorateur — rien a maquetter */ }
