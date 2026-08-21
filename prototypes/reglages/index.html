@@ -191,6 +191,18 @@
     padding:5px 9px; font-size:.9em; color:var(--dim); }
   .stratmenu button:hover { background:var(--raise); color:var(--txt); }
   .stratmenu button.cur { color:var(--txt); background:#22304d; }
+  /* VARIANTE « icone » (?entete=icone) — la proposition de Damien : le nom reste
+     du TEXTE, et un bouton dedie a cote du cadenas ouvre la liste. Le cout se
+     voit : l'Overlay porte alors DEUX boutons, sur une surface a laquelle l'ADR
+     0006 veut retirer la parole. Le benefice aussi : l'icone est un bouton, et
+     un bouton ne se confond avec rien. */
+  .stratbar .nom { padding:2px 8px; font-size:.92em; font-weight:500;
+    color:var(--txt); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .stratbar .changer { flex:none; align-self:center; padding:1px 6px; font-size:.85em;
+    line-height:1.5; background:transparent; border:1px solid var(--line-2);
+    border-radius:7px; color:var(--dim); }
+  .stratbar .changer:hover { border-color:var(--accent); background:#283040; color:var(--txt); }
+  .stratmenu.droite { left:auto; right:4px; }
   .fiche > header { display:flex; align-items:center; gap:10px; padding:9px 12px;
     background:linear-gradient(#1e2330,#1a1e28); border-bottom:1px solid var(--line); }
   .tnum { flex:none; min-width:32px; padding:2px 7px; border-radius:9px;
@@ -447,6 +459,7 @@ const S = {
   combat:false,                // pour voir la Mise en avant dans l'apercu
   surjeu:false,                // variante 3 : on est parti regler sur l'objet
   stratMenu:false,             // le selecteur de Strat, deplie
+  entete:'nom',                // l'axe de CE tour : nom | icone
   capture:false,               // capture d'un raccourci en cours
   captureCible:'overlay',      // overlay | fenetre
   winW:null, winH:null,
@@ -499,18 +512,23 @@ function ficheHTML() {
   const avant = S.combat ? 1 : -1;   // la Rotation est arrivee sur le Rang 2
   return `<div class="fiche" style="--fs:${R().tailleTexte}px;--ff:${POLICE_FICHE}">
     <div class="stratbar">
-      <button class="stratpick" data-act="stratmenu"
-        title="changer de strat">${esc(S.stratChoisie || 'aucune strat')}
-        <svg class="chev" width="9" height="6" viewBox="0 0 9 6" fill="none"
-          stroke="currentColor" stroke-width="1.4" aria-hidden="true"
-          ><path d="M1 1.4 4.5 4.7 8 1.4"></path></svg></button>
-      <div class="grow"></div>
+      ${S.entete === 'icone'
+        ? `<span class="nom">${esc(S.stratChoisie || 'aucune strat')}</span>
+           <div class="grow"></div>
+           <button class="changer" data-act="stratmenu"
+             title="changer de strat">${listeSVG()}</button>`
+        : `<button class="stratpick" data-act="stratmenu"
+             title="changer de strat">${esc(S.stratChoisie || 'aucune strat')}
+             <svg class="chev" width="9" height="6" viewBox="0 0 9 6" fill="none"
+               stroke="currentColor" stroke-width="1.4" aria-hidden="true"
+               ><path d="M1 1.4 4.5 4.7 8 1.4"></path></svg></button>
+           <div class="grow"></div>`}
       <button class="cadenas ${R().verrouille?'ferme':''}" data-act="cadenas"
         title="${R().verrouille
           ? 'verrouillé — les clics vont au jeu. Le raccourci le déverrouille.'
           : 'déverrouillé — l’overlay attrape les clics. Cliquer : verrouiller.'}"
         >${cadenasSVG(R().verrouille)}</button>
-      ${S.stratMenu ? `<div class="stratmenu">${STRATS.map(n =>
+      ${S.stratMenu ? `<div class="stratmenu ${S.entete==='icone'?'droite':''}">${STRATS.map(n =>
         `<button data-act="pickstrat:${encodeURIComponent(n)}"
            class="${n===S.stratChoisie?'cur':''}">${esc(n)}</button>`).join('')}</div>` : ''}
     </div>
@@ -530,6 +548,13 @@ function ficheHTML() {
 
 // Anse fermee au-dessus du corps, ou basculee a droite : deux chemins, aucun
 // texte, et la couleur du bouton (donc du theme).
+// Dessinee, comme le cadenas, et pour la meme raison qu'au commit precedent : un
+// glyphe de police (≡, ▾) ne sort pas partout et se lit comme du bruit. Une LISTE
+// et non deux fleches d'echange : ce qui s'ouvre est une liste de Strats, on ne
+// permute pas deux choses.
+const listeSVG = () => `<svg width="12" height="11" viewBox="0 0 12 11" fill="none"
+  stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"
+  ><path d="M1 1.7h10M1 5.5h10M1 9.3h6"></path></svg>`;
 const cadenasSVG = (ferme) => `<svg width="11" height="13" viewBox="0 0 11 13"
   fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"
   style="vertical-align:-2px">
@@ -856,6 +881,10 @@ function renderDock() {
       <span class="lab">${S.variante} — ${VNOMS[S.variante]}</span>
       <button data-act="var:1">›</button></div>
     <div class="sep"></div>
+    <div class="grp"><label>en-tête</label>
+      <button data-act="entete:nom" class="${S.entete==='nom'?'on':''}">le nom se clique</button>
+      <button data-act="entete:icone" class="${S.entete==='icone'?'on':''}">une icône à côté du cadenas</button></div>
+    <div class="sep"></div>
     <div class="grp"><label>scénario</label>
       <button data-act="toggle:wakfu" class="${S.wakfuLance?'on':''}">Wakfu lancé</button>
       <button data-act="toggle:combat" class="${S.combat?'on':''}">combat en cours</button>
@@ -921,6 +950,7 @@ document.addEventListener('click', ev => {
   else if (act === 'clearkey') { if (EFFACABLE[a]) S.reg[CLES_RACC[a]] = null; }
   // Le cadenas verrouille ; s'il ferme pendant un reglage sur l'objet, il en
   // sort — regler et laisser saisissable sont le meme etat.
+  else if (act === 'entete') { S.entete = a; S.stratMenu = false; majURL(); }
   else if (act === 'stratmenu') S.stratMenu = !S.stratMenu;
   else if (act === 'pickstrat') { S.stratChoisie = decodeURIComponent(a); S.stratMenu = false; }
   else if (act === 'cadenas') {
@@ -1041,6 +1071,7 @@ document.addEventListener('mousedown', ev => {
 function majURL() {
   const u = new URL(location.href);
   u.searchParams.set('variant', S.variante);
+  u.searchParams.set('entete', S.entete);
   history.replaceState(null, '', u);
 }
 const q = new URLSearchParams(location.search);
@@ -1049,6 +1080,7 @@ if (v >= 1 && v <= 3) S.variante = v;
 S.posLocalX = 320; S.posLocalY = 54;
 if (q.get('surjeu')) { S.variante = 3; S.surjeu = true; }
 if (q.get('wakfu') === '0') S.wakfuLance = false;
+if (['nom','icone'].includes(q.get('entete'))) S.entete = q.get('entete');
 if (q.get('menu')) S.stratMenu = true;   // le selecteur deja deplie, pour la capture d'ecran
 render();
 </script>
