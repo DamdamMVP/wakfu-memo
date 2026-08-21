@@ -48,10 +48,13 @@
           phrases grises sous les reglages sont donc legitimes ICI, et nulle part
           ailleurs.
 
+  TRANCHE EN SEANCE, et retire de la maquette :
+    - la section « REPRISES » n'existe plus. Les PERSONNAGES IGNORES se gerent
+      dans le Roster, pas ici — meme pas en renvoi. Et « rejouer la prise en
+      main » etait un doublon de l'entree « Prise en main » de la colonne
+      laterale, qui suffit a satisfaire #17.
+
   CE QUE CETTE MAQUETTE NE TRANCHE PAS :
-    - les PERSONNAGES IGNORES. #17 les reclame dans les Reglages, l'ecran Roster
-      les reclame aussi : un seul endroit, et la decision se prend sur #22. Les
-      trois variantes montrent donc la meme ligne de RENVOI, marquee « #22 ».
     - les MOTS. Comme #17 et #21, les libelles sont du remplissage assume.
     - les noms de cles de reglages.json (voir le tiroir en pied de page).
 
@@ -428,7 +431,6 @@ const S = {
     raccourciFenetre:null,     // #12 : le raccourci pourrait aussi rappeler la Fenetre
     dossierLogsManuel:null,    // #4 : le secours, quand la decouverte echoue
   },
-  ignores:[['Épouvantrotot','sram'],['Nozadah','pandawa']],
 };
 
 // #4 : les deux installations COEXISTENT, et on departage sur le wakfu.log le
@@ -578,20 +580,16 @@ function cheminsLignes() {
        <button data-act="opendata">Ouvrir le dossier</button>`);
 }
 
-// 4. les RATTRAPAGES. La prise en main se rejoue (#17, drapeau prevu par #11).
-//    Les Personnages ignores sont un RENVOI : #22 tranche ou ils vivent.
-function rattrapageLignes() {
-  return ligne('Prise en main',
-      'les cinq écrans du premier lancement, à revoir quand on veut',
-      `<button data-act="nav:onboarding">Rejouer la prise en main</button>`)
-    + ligne('Personnages ignorés',
-      'refusés une fois, jamais reproposés — et réversible',
-      `<span class="tag pend">#22</span>
-       <span class="why">${S.ignores.length} personnage${S.ignores.length>1?'s':''} :
-         ${S.ignores.map(i => esc(i[0])).join(', ')}</span>
-       <button data-act="nav:roster">Voir dans le Roster ›</button>`);
-}
-
+// (4.) LES RATTRAPAGES N'EXISTENT PLUS. La section « Reprises » portait deux
+//      lignes, et les deux tombent :
+//        - « rejouer la prise en main » etait un DOUBLON : la colonne laterale
+//          de #21 porte deja une entree « Prise en main » permanente, et c'est
+//          elle qui satisfait l'exigence de #17 (l'onboarding se rejoue).
+//        - les PERSONNAGES IGNORES se gerent dans le Roster, directement. La
+//          question « un seul endroit, lequel ? » que #23 renvoyait a #22 est
+//          donc tranchee ici, du cote des Reglages : ce n'est pas ici.
+//      Il ne reste aucune famille « rattrapage » : ce n'etait pas une famille,
+//      c'etait un tiroir a restes.
 // 5. la Fenetre principale. #21 a verse ici une grandeur qui n'est PAS celle de
 //    l'Overlay : le minimum d'une fiche dans la grille, d'ou le nombre de colonnes.
 function fenetreLignes() {
@@ -632,9 +630,8 @@ function variante1() {
         <div class="lines">${aspectLignes(true)}</div></div>
       <div class="sect"><h2>Raccourcis</h2><div class="lines">${raccourciLignes()}</div></div>
       <div class="sect"><h2>La fenêtre principale</h2><div class="lines">${fenetreLignes()}</div></div>
-      <div class="sect"><h2>Chemins et données</h2><div class="lines">${cheminsLignes()}</div></div>
-      <div class="sect" style="padding-bottom:34px"><h2>Reprises</h2>
-        <div class="lines">${rattrapageLignes()}</div></div>
+      <div class="sect" style="padding-bottom:34px"><h2>Chemins et données</h2>
+        <div class="lines">${cheminsLignes()}</div></div>
     </div></main>`;
 }
 
@@ -662,6 +659,7 @@ function variante2() {
             </div></div>
         </div></div></main>`;
   }
+  if (S.sous !== 'donnees') { S.sous = 'overlay'; }
   if (S.sous === 'donnees') {
     return `<main class="scr">
       <div class="scrhead"><h1>Données</h1>
@@ -674,13 +672,11 @@ function variante2() {
           <div class="lines">${fenetreLignes()}</div></div>
       </div></div></main>`;
   }
-  return `<main class="scr">
-    <div class="scrhead"><h1>Prise en main</h1>
-      <span class="why">ce qu’on peut refaire ou défaire</span></div>
-    <div class="scrbody"><div class="cards">
-      <div class="cardp"><h2>Reprises</h2>
-        <div class="lines">${rattrapageLignes()}</div></div>
-    </div></div></main>`;
+  // Le troisieme sous-ecran a disparu avec la section « Reprises » : la
+  // variante 2 ne classe plus que DEUX familles, ce qui affaiblit encore le
+  // motif d'une navigation dediee.
+  S.sous = 'overlay';
+  return variante2();
 }
 
 /* ====================================================== VARIANTE 3 ======== */
@@ -717,9 +713,8 @@ function variante3() {
       </div>
       <div class="sect"><h2>Raccourcis</h2><div class="lines">${raccourciLignes()}</div></div>
       <div class="sect"><h2>La fenêtre principale</h2><div class="lines">${fenetreLignes()}</div></div>
-      <div class="sect"><h2>Chemins et données</h2><div class="lines">${cheminsLignes()}</div></div>
-      <div class="sect" style="padding-bottom:34px"><h2>Reprises</h2>
-        <div class="lines">${rattrapageLignes()}</div></div>
+      <div class="sect" style="padding-bottom:34px"><h2>Chemins et données</h2>
+        <div class="lines">${cheminsLignes()}</div></div>
     </div></main>`;
 }
 
@@ -755,7 +750,7 @@ function surjeuHTML() {
 
 /* =============================================================== coque ==== */
 const ECRANS = [['strats','Strats'],['roster','Roster'],['reglages','Réglages']];
-const SOUS = [['overlay','Overlay'],['donnees','Données'],['prise','Prise en main']];
+const SOUS = [['overlay','Overlay'],['donnees','Données']];
 
 function railHTML() {
   const items = ECRANS.map(([k,l]) => {
@@ -864,10 +859,8 @@ ${JSON.stringify({ schema:1,
 }, null, 1)}
 
 // AILLEURS, et pas ici : les Personnages ignores vivent dans roster.json (#11),
-// et c'est #22 qui dit sur QUEL ecran on les revoit. Cette maquette n'en montre
-// qu'un renvoi.
-${JSON.stringify({ personnagesIgnores:S.ignores.map(([nom,cls]) =>
-  ({ nom, classe:cls, idEntite:'…' })) }, null, 1)}`;
+// et ils se GERENT DANS LE ROSTER. Les Reglages n'en portent meme plus le
+// renvoi — un seul endroit, et ce n'est pas celui-ci.`;
 }
 
 /* ============================================================== gestes ==== */
