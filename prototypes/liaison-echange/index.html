@@ -920,17 +920,27 @@ function render(){
 
 /* Une liste flottante ne doit jamais sortir de la fenetre qui la porte : une
    application de bureau n'a pas ce droit-la, et le cadre arrondi la couperait
-   de toute facon. Elle s'ouvre vers le bas s'il y a la place, vers le haut
-   sinon — et on garde la marge de 8 px du bord. */
+   de toute facon.
+
+   Retourner la liste vers le haut ne suffit pas — quand elle est plus haute
+   que la place disponible DES DEUX COTES, elle est coupee dans les deux sens.
+   On choisit donc le cote ou il y a le plus de place, et on la contraint a
+   cette place : elle defile plutot qu'elle ne deborde. */
+const MARGE = 8;
 function fitPopovers(mw){
   const cadre = mw.getBoundingClientRect();
   mw.querySelectorAll('.profpop, .newprof').forEach(el=>{
-    el.style.top = ''; el.style.bottom = '';
-    const r = el.getBoundingClientRect();
-    if (r.bottom > cadre.bottom - 8){
-      el.style.top = 'auto';
-      el.style.bottom = 'calc(100% - 4px)';
-    }
+    el.style.top=''; el.style.bottom=''; el.style.maxHeight=''; el.style.overflowY='';
+    const anc = el.parentElement.getBoundingClientRect();
+    const dessous = cadre.bottom - anc.bottom - MARGE;
+    const dessus  = anc.top - cadre.top - MARGE;
+    const h = el.getBoundingClientRect().height;
+    const versLeHaut = () => { el.style.top='auto'; el.style.bottom='calc(100% - 4px)'; };
+    if (h <= dessous) return;                       // elle tient dessous
+    if (h <= dessus)  return versLeHaut();          // elle tient dessus
+    if (dessus > dessous) versLeHaut();             // nulle part : le plus grand côté
+    el.style.maxHeight = Math.max(64, Math.max(dessous, dessus)) + 'px';
+    el.style.overflowY = 'auto';
   });
 }
 
