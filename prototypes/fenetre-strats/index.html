@@ -253,6 +253,37 @@
     font:700 11px/1 ui-monospace,monospace; text-align:center; }
   .compo .frozen { padding:0 14px 14px; font-size:11px; color:var(--faint); line-height:1.45; }
 
+  /* Le ＋ d'ajout, au bout de la composition. */
+  .plus { display:grid; place-items:center; cursor:pointer; color:var(--dim);
+    border:1px dashed var(--line-2); border-radius:0; font-size:15px; }
+  .compo .plus { height:44px; margin-bottom:6px; }
+  .compo:not(.tight) .plus { height:40px; }
+  .hcompo .plus { width:47px; height:47px; border-radius:10px; }
+  .plus:hover { border-color:var(--accent); color:var(--txt); background:var(--raise); }
+
+  /* Le panneau d'un Emplacement. La colonne serrée n'a la place ni du bouton de
+     Couleur ni du ✕ que #5 mettait sur la ligne : ils se regroupent ici, avec
+     la grille des 18, et le panneau DEBORDE la colonne — c'est le prix de la
+     colonne serrée, et il se paie une fois. */
+  .slotpop { position:absolute; z-index:50; width:246px; padding:9px;
+    background:var(--panel-2); border:1px solid var(--line-2); border-radius:12px;
+    box-shadow:0 16px 40px #000c; }
+  .slotpop h5 { margin:0 0 6px; font:11px/1 ui-sans-serif,system-ui; letter-spacing:.7px;
+    text-transform:uppercase; color:var(--faint); }
+  .clsgrid { display:grid; grid-template-columns:repeat(6,1fr); gap:3px; }
+  .clsgrid img { width:100%; aspect-ratio:1; cursor:pointer; display:block;
+    box-shadow:0 0 0 1px #ffffff14 inset; }
+  .clsgrid img:hover { outline:2px solid var(--accent); outline-offset:-2px; }
+  .clsgrid img.cur { outline:2px solid var(--accent); outline-offset:-2px; }
+  .colrow { display:flex; gap:4px; margin-top:2px; }
+  .colrow div { flex:1; height:19px; cursor:pointer; border:1px solid #ffffff1a; }
+  .colrow div.cur { outline:2px solid var(--txt); outline-offset:-2px; }
+  .colrow div.taken:after { content:'·'; display:block; text-align:center;
+    color:#0009; font-weight:700; line-height:17px; }
+  .slotpop .del { width:100%; margin-top:9px; text-align:center; font-size:12.5px;
+    border-color:transparent; background:transparent; color:var(--dim); }
+  .slotpop .del:hover { border-color:var(--bad); background:#3a1f1f; color:var(--txt); }
+
   /* Dix pastilles, plus une case pour retirer la couleur. Carrees, comme les
      icones de classe : la maquette ne melange pas deux idiomes de coin. */
   .palette { display:grid; gap:3px; margin-top:2px; }
@@ -561,6 +592,7 @@ const S = {
   editionId:null,                 // v3 : le bloc passe en edition
   renommeId:null,
   menuId:null, menuXY:null,
+  slotPop:null,                   // { sid, i } — le panneau d'un Emplacement
   aSupprimer:null,
   ob:null,                        // index d'ecran d'onboarding, ou null
   hubPick:false,                  // coque C : la liste plate depliee sur l'accueil
@@ -630,6 +662,13 @@ const PALETTE = [
   ['cyan','#2fb3c9'], ['bleu','#5b8cff'], ['violet','#a97ae8'], ['rose','#e85fa8'],
   ['gris','#9aa2b2'], ['blanc','#e8eaef'],
 ];
+// La colonne se ferme d'elle-même à six (#5) : le ＋ disparaît, rien ne
+// l'explique.
+const plusHTML = (st, editable) =>
+  (editable && st.emplacements.length < 6)
+    ? `<div class="plus" data-act="slotpop:-1" data-sid="${st.id}"
+         title="ajouter un emplacement">＋</div>` : '';
+
 const paletteHTML = () => `<div class="palette">${
   PALETTE.map(([n,c]) => `<div class="swatch" data-c="${c}" title="${n}"
     style="background:${c}"></div>`).join('')
@@ -641,7 +680,8 @@ const paletteHTML = () => `<div class="palette">${
 const RANGHINT = `L'ordre est le <b>Rang</b> : glisser pour le corriger.`;
 function compoHTML(st, editable) {
   const slot = (e, i) => {
-    const d = editable ? `draggable="true" data-slot="${i}" data-sid="${st.id}"` : '';
+    const d = editable
+      ? `draggable="true" data-slot="${i}" data-sid="${st.id}" data-act="slotpop:${i}"` : '';
     if (S.compo === '3')
       return `<div class="hslot" ${d}><span class="rank">${i+1}</span>${clsHTML(e,'lg')}</div>`;
     if (S.compo === '2')
@@ -650,14 +690,14 @@ function compoHTML(st, editable) {
   };
   const items = st.emplacements.map(slot).join('');
   if (S.compo === '3') return `<div class="hcompo">
-    <h2>Compo <span>${st.emplacements.length}/6</span></h2>
-    <div class="hslots">${items}</div>
+    <h2>Compo</h2>
+    <div class="hslots">${items}${plusHTML(st, editable)}</div>
     ${editable ? paletteHTML() : ''}
     <p class="frozen">${RANGHINT}</p></div>`;
   return `<aside class="compo ${S.compo==='2'?'tight':''}" title="${
       S.compo==='2' ? "L'ordre est le Rang : glisser pour le corriger." : ''}">
-    <h2>${S.compo==='2' ? 'Compo' : 'Composition'} <span>${st.emplacements.length}/6</span></h2>
-    <div class="slots">${items}</div>
+    <h2>${S.compo==='2' ? 'Compo' : 'Composition'}</h2>
+    <div class="slots">${items}${plusHTML(st, editable)}</div>
     <p class="frozen">${RANGHINT}</p>
     ${editable ? paletteHTML() : ''}</aside>`;
 }
@@ -1012,6 +1052,33 @@ function dlgHTML() {
   </div></div>`;
 }
 
+/* Le panneau d'un Emplacement : sa classe (la grille des 18 de #5), sa Couleur
+   (les six de l'ADR 0003), et sa suppression. `i === -1` = ajout. */
+function slotPopHTML() {
+  const sp = S.slotPop;
+  if (!sp) return '';
+  const st = strat(sp.sid);
+  if (!st) return '';
+  const ajout = sp.i === -1;
+  const e = ajout ? null : st.emplacements[sp.i];
+  if (!ajout && !e) return '';
+  return `<div class="slotpop" style="left:${sp.x}px;top:${sp.y}px">
+    <h5>${ajout ? 'Ajouter un emplacement' : 'Classe'}</h5>
+    <div class="clsgrid">${CLASSES.map((n,ci) =>
+      `<img src="${ICONS[ci]}" alt="${esc(n)}" title="${esc(n)}"
+        class="${!ajout && e.cls===ci ? 'cur':''}"
+        data-act="${ajout?'addcls':'setcls'}:${sp.i}:${ci}">`).join('')}</div>
+    ${ajout ? '' : `<h5 style="margin-top:11px">Couleur</h5>
+      <div class="colrow">${SLOT_COLORS.map((c,k) => {
+        const pris = st.emplacements.some(o => o !== e && o.couleur === c);
+        return `<div style="background:${c}" data-act="setcol:${sp.i}:${k}"
+          class="${e.couleur===c?'cur':''} ${pris?'taken':''}"
+          title="${pris?'déjà prise — elle sera échangée':''}"></div>`;
+      }).join('')}</div>
+      <button class="del" data-act="delslot:${sp.i}">Supprimer cet emplacement</button>`}
+  </div>`;
+}
+
 function menuHTML() {
   if (!S.menuId || !S.menuXY) return '';
   const st = strat(S.menuId);
@@ -1043,7 +1110,7 @@ function render() {
         <span class="wb x" data-act="quit" title="quitte tout, Overlays compris">✕</span>
       </div>
       <div class="winbody">${body}</div>
-      ${dlgHTML()}${menuHTML()}
+      ${dlgHTML()}${menuHTML()}${slotPopHTML()}
       <div class="wingrip" id="wingrip" title="glisser : taille de la fenêtre"></div>
     </div>`;
     const w = stage.querySelector('.win');
@@ -1177,6 +1244,29 @@ function supprimer(id) {
 function apresScenario() {
   if (S.variante === '3' && S.choisieId) S.deplies.add(S.choisieId);
 }
+// Une Couleur est unique dans une Strat (ADR 0003) : en choisir une deja prise
+// l'ECHANGE avec l'Emplacement qui la portait, plutot que d'accepter un doublon.
+function poserCouleur(sid, i, c) {
+  const st = strat(sid), e = st.emplacements[i];
+  const autre = st.emplacements.find(o => o !== e && o.couleur === c);
+  if (autre) autre.couleur = e.couleur;
+  e.couleur = c;
+}
+const couleurLibre = st =>
+  SLOT_COLORS.find(c => !st.emplacements.some(e => e.couleur === c)) || SLOT_COLORS[0];
+function ajouterEmplacement(sid, cls) {
+  const st = strat(sid);
+  if (st.emplacements.length >= 6) return;
+  st.emplacements.push({ id:nid(), cls, couleur:couleurLibre(st) });
+}
+// Supprimer un Emplacement emporte ses Consignes : elles lui appartiennent, et
+// une clef orpheline dans `tours` serait un fichier sale (#11).
+function supprimerEmplacement(sid, i) {
+  const st = strat(sid), e = st.emplacements[i];
+  st.emplacements.splice(i, 1);
+  st.tours.forEach(t => { delete t.consignes[e.id]; });
+}
+
 // Deplacer un Emplacement, c'est changer son Rang — la position EST le Rang, et
 // les Consignes suivent, etant indexees par id d'Emplacement (#11).
 function bougerEmplacement(sid, de, vers) {
@@ -1213,7 +1303,10 @@ document.addEventListener('click', ev => {
   // dans un conteneur qui porte data-act, et le clic remontait jusqu'a lui.
   if (ev.target.closest('input, textarea, [contenteditable]')) return;
   const el = ev.target.closest('[data-act]');
-  if (!el) { if (S.menuId) { S.menuId = null; render(); } return; }
+  if (!el) {
+    if (S.menuId || S.slotPop) { S.menuId = null; S.slotPop = null; render(); }
+    return;
+  }
   const [act, a, b] = el.dataset.act.split(':');
   ev.stopPropagation();
   if (act === 'cyc') {
@@ -1236,6 +1329,26 @@ document.addEventListener('click', ev => {
   else if (act === 'back') { S.ouverteId = null; }
   else if (act === 'switch') S.affichageDemande = !S.affichageDemande;
   else if (act === 'compo') S.compo = a;
+  else if (act === 'slotpop') {
+    const sid = el.dataset.sid || el.closest('[data-sid]').dataset.sid;
+    if (S.slotPop && S.slotPop.i === +a && S.slotPop.sid === sid) S.slotPop = null;
+    else {
+      const r = el.getBoundingClientRect(), w = el.closest('.win').getBoundingClientRect();
+      S.slotPop = { sid, i:+a,
+        x:Math.min(r.right - w.left + 6, w.width - 254),
+        y:Math.min(Math.max(r.top - w.top - 8, 6), w.height - 250) };
+    }
+  }
+  else if (['setcls','setcol','addcls','delslot'].includes(act)) {
+    const sp = S.slotPop, st = sp && strat(sp.sid);
+    if (st) {
+      if (act === 'setcls' && st.emplacements[+a]) { st.emplacements[+a].cls = +b; S.slotPop = null; }
+      else if (act === 'setcol' && st.emplacements[+a]) poserCouleur(sp.sid, +a, SLOT_COLORS[+b]);
+      else if (act === 'addcls') { ajouterEmplacement(sp.sid, +b); S.slotPop = null; }
+      else if (act === 'delslot' && st.emplacements[+a]) {
+        supprimerEmplacement(sp.sid, +a); S.slotPop = null; }
+    } else S.slotPop = null;
+  }
   else if (act === 'fiche') S.ficheMini = Math.max(280, Math.min(1600, S.ficheMini + (+a)));
   else if (act === 'wakfu') S.wakfuLance = !S.wakfuLance;
   else if (act === 'quit') S.appOpen = false;
