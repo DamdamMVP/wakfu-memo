@@ -4,40 +4,53 @@
 <meta charset="utf-8">
 <title>PROTOTYPE — La demande en placement et l'échange par clic (#16)</title>
 <!--
-  PROTOTYPE JETABLE — ticket #16.
+  PROTOTYPE JETABLE — ticket #16 « la demande de liaison en placement et
+  l'echange par clic », resolu.
 
-  Trois variantes de LA DEMANDE (?demande=A|B|C) et trois variantes de
-  L'ECHANGE PAR CLIC (?echange=1|2|3), combinables librement. La barre
-  flottante en bas change les deux ; les fleches du clavier aussi
-  (gauche/droite = la demande, haut/bas = l'echange).
+  Ce fichier ne porte plus que la FORME RETENUE :
+    - la demande = UN SECOND OVERLAY, qui surgit au placement, n'a ni barre de
+      titre ni ✕, porte un « plus tard ▾ » qui replie, et reste tant qu'on n'y a
+      pas repondu, `End fight` compris (ADR 0010) ;
+    - l'echange = DEUX CLICS AVEC SURVOL. Le survol nomme TOUTE icone, permutable
+      ou non, et allume les partenaires quand il y en a ; seuls les doublons se
+      cliquent. Sans ça un echange reussi serait INVISIBLE — meme icone, Consigne
+      attachee a l'Emplacement, et l'ADR 0003 interdit le pseudo au repos ;
+    - le profil = UN SEUL MENU « Ajouter a ▾ », qui deborde de la fenetre en vrai
+      (Menu.popup natif) et ne defile qu'au-dela d'une quarantaine de profils.
 
-  La scene est reprise du prototype de #6 : meme fiche de Tour, memes
-  Couleurs, memes icones muettes, meme Mise en avant. Le panneau de droite
-  est la telecommande du prototype, pas l'interface. Rien n'est persiste.
+  Les ecartees — « tout dans la fiche », « une carte compagnon », « le menu au
+  clic », « le glisser-deposer », « les profils en clair », « le menu ancre » —
+  sont supprimees. Elles restent lisibles dans l'HISTORIQUE de cette branche,
+  avec le compte de gestes qui les a departagees (A et B = 4, C = 3, mais C
+  laisse le Conflit debout par construction : ce n'est pas 3 contre 4, c'est
+  « 3 tout de suite et la reparation plus tard » contre « 4 et c'est regle »).
 
-  LE CAS JOUE est celui que le ticket exige : deux joueurs a trois
-  personnages chacun, dont deux personnages de meme classe.
-    « moi »     : Damdamiop (Iop), Damdam (Ecaflip), Damdamcra (Cra)
-    « Nozadah » : Nozadah (Ecaflip), Nozaheal (Eniripsa), Nozaxel (Xelor)
-  Le Roster ne connait que les trois premiers. Les trois autres declenchent
-  une Demande d'ajout, et l'arrivee de Nozadah FABRIQUE le Conflit sur les
-  deux Emplacements Ecaflip — l'ordre des questions n'est donc pas libre.
+  ────────────────────────────────────────────────────────────────────────────
+  DEUX MISES A NIVEAU POSTERIEURES A LA RESOLUTION :
 
-  Deux pieges sont montes expres :
-    - « Nozaheal » du log contre « Nozaheal » saisi a la main avec une
-      coquille (« Nozaheal » sans accent contre « Nozaheal » avec) : c'est le
-      filet a coquille de #17, et il n'a de sens que si le rattachement est
-      propose AVANT la creation.
-    - « Nozaxel » a ete saisi comme Eniripsa alors que le log dit Xelor :
-      #11 exige que l'app previenne, et que « non » ANNULE le rattachement.
+  1. LA BARRE DE STRAT. Le nom de la Strat monte sur sa propre ligne au-dessus de
+     « T1 », la pastille « a identifier » se met a sa droite, et le cadenas du
+     verrou au bout. ⚠️ Ça RECTIFIE #6, qui gardait le selecteur « en chip discret
+     dans l'en-tete » : un chip ne dit pas qu'il se clique. Les trois maquettes
+     qui dessinent cette fiche — celle de l'Overlay, celle des Reglages, celle-ci
+     — montrent desormais la MEME chose.
 
-  CE QUE LE PROTOTYPE REND VISIBLE, et qu'on ne voyait pas sur le papier :
-  echanger deux Ecaflips ne change RIEN a l'ecran. Les deux lignes portent la
-  meme icone, la Consigne appartient a l'Emplacement et ne bouge pas, et
-  l'ADR 0003 interdit le pseudo. Un echange reussi est donc invisible. Chaque
-  variante d'echange doit repondre a « comment je vois que c'est fait ? », et
-  les variantes 2 et 3 tentent la meme reponse : le pseudo n'existe QUE
-  pendant le geste.
+  2. LE RACCOURCI DE RATTACHEMENT A DISPARU DE L'ECRAN, et son cas avec lui. Il
+     affichait « ↳ « Nozahéal » » en tete de ligne face au « Nozaheal » du log.
+     Or un nom Wakfu n'a qu'UNE orthographe possible — lettres, tiret,
+     apostrophe, pas d'accent, majuscule forcee en tete et apres chaque
+     separateur — et l'app canonise A LA SAISIE. Un « Nozahéal » accentue n'est
+     donc plus saisissable : il SERAIT « Nozaheal », et s'accrocherait tout seul
+     au premier combat. Le fixture de l'accent est retire.
+     ⚠️ MAIS LE MECANISME RESTE, dans « Ajouter a ▾ », parce que la canonisation
+     ne repare pas tout : une lettre a la place d'une autre reste une coquille
+     (c'est le filet de #17), et « Nozaxel » saisi Eniripsa alors que le log dit
+     Xelor reste le cas ou #11 exige que l'app PREVIENNE et que « non » ANNULE le
+     rattachement — l'ADR 0002 interdisant de garder une classe fausse sur un ID
+     attache.
+
+  Le panneau de droite est la telecommande, pas l'interface. Rien n'est persiste.
+  Glisser une capture d'ecran de Wakfu sur la scene pour juger sur un vrai fond.
 -->
 <style>
   /* Les jetons visuels viennent tels quels du prototype de #6 : on ne juge
@@ -89,16 +102,28 @@
     background:#0c0e12; border:1px solid var(--line-2); color:var(--accent);
     font:700 1em/26px ui-monospace,monospace; text-align:center; }
   header.oh .glob { flex:1; min-width:0; font-weight:500; padding-top:2px; }
-  .chip { flex:none; font-size:.82em; color:var(--dim); padding:2px 7px;
-    border-radius:7px; border:1px solid var(--line-2); background:#0c0e12;
-    cursor:pointer; white-space:nowrap; }
-  .chip:hover { color:var(--txt); border-color:var(--accent); }
-
-  /* la pastille « il y a des questions » de la variante C : un compte, pas un
-     doute. Elle ne dit jamais que l'overlay n'est pas sur de lui (ADR 0006). */
-  /* le coin droit de l'en-tête est une colonne : le sélecteur de strat, et
-     sous lui la pastille. Elle ne se met plus en travers du titre du Tour. */
-  .hright { flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:5px; }
+  /* LA BARRE DE STRAT, au-dessus de « T1 » : le nom de la Strat sur toute la
+     ligne, la pastille « a identifier » a sa droite, et le cadenas au bout.
+     ⚠️ RECTIFIE #6, qui gardait le selecteur « en chip discret dans l'en-tete » :
+     un chip ne dit pas qu'il se clique. Meme forme que la maquette de l'overlay
+     et celle des Reglages — les trois dessinent la meme fiche, elles ne doivent
+     pas la dessiner differemment. */
+  .stratbar { position:relative; display:flex; align-items:center; gap:6px;
+    padding:4px 6px 4px 5px; background:#14161c;
+    border-bottom:1px solid var(--line); cursor:grab; }
+  .stratbar .grow { flex:1; }
+  .stratpick { display:flex; align-items:center; gap:6px; background:transparent;
+    border:1px solid transparent; border-radius:8px; padding:2px 8px;
+    font-size:.92em; color:var(--txt); font-weight:500; cursor:pointer; }
+  .stratpick:hover { background:var(--raise); border-color:var(--line-2); }
+  .stratpick .chev { flex:none; color:var(--dim); }
+  .stratpick:hover .chev { color:var(--txt); }
+  /* Le cadenas du verrou, arrive avec #23. Il n'a rien a faire de neuf ici : il
+     est dessine pour que les trois maquettes montrent la meme fiche. */
+  .cadenas { flex:none; align-self:center; padding:1px 6px; font-size:.85em;
+    line-height:1.5; background:transparent; border:1px solid var(--line-2);
+    border-radius:7px; color:var(--dim); cursor:pointer; }
+  .cadenas:hover { border-color:var(--accent); background:#283040; }
   .askdot { flex:none; display:flex; align-items:center; gap:5px; font-size:.8em;
     color:var(--accent); background:#0c0e12; border:1px solid var(--accent);
     border-radius:7px; padding:2px 7px; cursor:pointer; white-space:nowrap; }
@@ -342,21 +367,10 @@
   .counter span { font-size:11.5px; color:var(--faint); }
 
   /* ---------------------------------------------------- la barre du bas -- */
-  .switcher { position:fixed; left:50%; bottom:16px; transform:translateX(-50%);
-    display:flex; align-items:stretch; gap:0; z-index:200;
-    background:#e8eaef; color:#0f1115; border-radius:999px;
-    box-shadow:0 10px 30px #000b; font-size:12.5px; overflow:hidden; }
-  .switcher .grp { display:flex; align-items:center; }
-  .switcher .grp + .grp { border-left:1px solid #b9bfcb; }
-  .switcher .ar { padding:8px 11px; cursor:pointer; user-select:none; color:#41485a; }
-  .switcher .ar:hover { background:#cfd5e0; }
-  .switcher .lb { padding:8px 4px; min-width:212px; text-align:center; }
-  .switcher .lb b { font-weight:700; }
-  .switcher .lb i { font-style:normal; color:#5b6478; }
 </style>
 </head>
 <body>
-<div class="ribbon">PROTOTYPE JETABLE — #16 « la demande en placement et l'échange par clic » · le panneau de droite est la télécommande, pas l'interface · rien n'est sauvegardé</div>
+<div class="ribbon">PROTOTYPE JETABLE — #16 « la demande en placement et l'échange par clic », résolu · la forme retenue ; les écartées sont dans l'historique de la branche · le panneau de droite est la télécommande</div>
 
 <div class="wrap">
   <div class="stage" id="stage">
@@ -390,7 +404,8 @@
     </div>
     <p class="hint">« hors combat » est l'état d'après <code>End fight</code> :
        la fiche du <b>T1</b> sans Mise en avant. #18 y laisse survivre une
-       Demande d'ajout — c'est là que les variantes A et B se cognent à
+       Demande d'ajout — c'est là que « tout dans la fiche » et « la carte
+       compagnon » se cognaient à
        l'interdiction de tout élément en plus.</p>
 
     <h3>Le combat</h3>
@@ -437,7 +452,6 @@
   </aside>
 </div>
 
-<div class="switcher" id="switcher"></div>
 
 <script>
 /* ============================================================= donnees === */
@@ -503,7 +517,6 @@ const ROSTER0 = [
   {id:'p1', nom:'Damdamiop', cls:IOP,  profil:'moi',     eid:4022},
   {id:'p2', nom:'Damdam',    cls:ECA,  profil:'moi',     eid:4021},
   {id:'p3', nom:'Damdamcra', cls:CRA,  profil:'moi',     eid:4023},
-  {id:'p4', nom:'Nozahéal',  cls:ENI,  profil:'Nozadah', eid:null},
   {id:'p5', nom:'Nozaxel',   cls:ENI,  profil:'Nozadah', eid:null},
 ];
 // Ce que `[_FL_]` annonce, en `isControlledByAI=false`.
@@ -541,7 +554,7 @@ const TURNS = [
 ];
 
 const S = {
-  demande:'C', echange:'2',   // retenues par Damien ; A/B et 1/3 restent visitables
+
   appOpen:true,   // l'application native tourne ; la fermer quitte tout
   appFront:false, // ... mais elle est derrière le jeu tant qu'on n'y va pas
   purge:[],
@@ -553,9 +566,10 @@ const S = {
   chaud:false,         // combat rattrape a froid : Liaison provisoire
   clicks:0,
   inactif:{},          // rang -> true (Emplacement inactif, pour la densite)
-  // etats d'interface, propres a chaque variante
+  // etats d'interface
   held:null, chipMenu:null, ratMenu:null, swapMenu:null, hoverRow:null, swapSrc:null,
-  profil:'2', newProfil:null,
+  newProfil:null,
+  verrouille:false,           // le cadenas : son comportement appartient a #23
   dragSrc:null, warn:null, qIndex:0, folded:false, profMenu:null,
   ghost:{}, flash:{},
   fs:1, w:430, op:94,
@@ -618,6 +632,17 @@ const estPermutable = rang => permutables(rang).length>0 && !!liaison()[rang];
 const questionsEnAttente = () => unknowns().length + (S.chaud?0:conflits().length);
 
 /* ============================================================== rendu ==== */
+// Dessine, comme dans les maquettes de l'Overlay et des Reglages : un glyphe de
+// police ne sort pas partout. Le VERROU lui-meme appartient a #23 — il n'est ici
+// que pour que les trois maquettes montrent la MEME fiche.
+const cadenasSVG = () => `<svg width="11" height="13" viewBox="0 0 11 13"
+  fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"
+  style="vertical-align:-2px">
+  <rect x="0.7" y="5.6" width="9.6" height="6.7" rx="1.4" fill="currentColor"
+    stroke="none" opacity=".85"></rect>
+  <path d="${S.verrouille ? 'M2.9 5.6V3.6a2.6 2.6 0 0 1 5.2 0v2'
+                          : 'M2.9 5.6V3.6a2.6 2.6 0 0 1 5.2 0'}"></path>
+</svg>`;
 const clsHTML = (cls,color,extra='') =>
   `<span class="cls ${extra}" style="--c:${color||'transparent'}"><span class="edge"></span>` +
   `<img src="${ico(cls)}" alt="${CLASSES[cls]}"></span>`;
@@ -630,24 +655,31 @@ function overlayHTML(){
   const L = liaison();
   const enCombat = S.phase==='combat';
 
-  // La variante C ne pose aucune question dans le combat : elle pose une
+  // Le second overlay ne pose aucune question DANS la fiche : elle y pose une
   // pastille qui COMPTE, et renvoie a la fenetre principale. Elle ne compte que
   // les INCONNUS : C ne demande jamais de trancher un Conflit — il se tranche
   // par le Rang le plus bas et se repare a l'echange par clic.
   const pending = questionsEnAttente();
-  const dot = (S.demande==='C' && unknowns().length>0)
-    ? `<span class="askdot" data-raise>● ${unknowns().length} à identifier</span>` : '';
+  const dot = (unknowns().length>0)
+    ? `<span class="askdot" data-raise>${unknowns().length} à identifier</span>` : '';
 
   // L'ancre du pre-eclairage : la ligne saisie si on est en mode echange,
   // sinon la ligne survolee — et seulement si elle est permutable.
-  const ancre = (S.echange!=='2') ? null
-    : (S.swapSrc!==null ? S.swapSrc
-      : (S.hoverRow!==null && estPermutable(S.hoverRow) ? S.hoverRow : null));
+  const ancre = S.swapSrc!==null ? S.swapSrc
+    : (S.hoverRow!==null && estPermutable(S.hoverRow) ? S.hoverRow : null);
 
-  const head = `<header class="oh">
+  const head = `<div class="stratbar">
+      <span class="stratpick">Nozadah
+        <svg class="chev" width="9" height="6" viewBox="0 0 9 6" fill="none"
+          stroke="currentColor" stroke-width="1.4" aria-hidden="true"
+          ><path d="M1 1.4 4.5 4.7 8 1.4"></path></svg></span>
+      <div class="grow"></div>${dot}
+      <button class="cadenas" title="déverrouillé — l’overlay attrape les clics">
+        ${cadenasSVG()}</button>
+    </div>
+    <header class="oh">
       <span class="tnum">T${S.turn}</span>
       <div class="glob">${t ? t.global : ''}</div>
-      <div class="hright"><span class="chip">Nozadah ▾</span>${dot}</div>
     </header>`;
 
   const rows = slots().map((s,r)=>{
@@ -655,14 +687,9 @@ function overlayHTML(){
     const now  = enCombat && !off && r===S.cursor;
     const perm = estPermutable(r);
     const cl = ['row', off?'off':'', now?'now':'',
-      (perm && S.echange==='1') ? 'perm-1':'',
-      (perm && S.echange==='2') ? 'perm-2':'',
-      (perm && S.echange==='3') ? 'perm-3':'',
-      (S.echange==='2' && ancre!==null && ancre!==r && permutables(ancre).some(p=>L[r]&&p.id===L[r].id)) ? 'lit':'',
-      (S.echange==='2' && S.swapSrc===r) ? 'src':'',
-      (S.echange==='3' && S.dragSrc===r) ? 'dragging':'',
-      (S.echange==='3' && S.dragSrc!==null && S.dragSrc!==r && permutables(S.dragSrc).some(p=>L[r]&&p.id===L[r].id)) ? 'target':'',
-      (S.demande==='A' && S.held && slots()[r].cls===S.held.cls) ? 'drop':'',
+      perm ? 'perm-2':'',
+      (ancre!==null && ancre!==r && permutables(ancre).some(p=>L[r]&&p.id===L[r].id)) ? 'lit':'',
+      (S.swapSrc===r) ? 'src':'',
       S.flash[r] ? 'flash':'',
     ].filter(Boolean).join(' ');
 
@@ -672,8 +699,7 @@ function overlayHTML(){
     // ne coute donc rien, mais seul un doublon se clique.
     const lit = ancre!==null && ancre!==r && permutables(ancre).some(p=>L[r]&&p.id===L[r].id);
     const showGhost = S.ghost[r] ||
-      (S.echange==='2' && (r===S.hoverRow || r===S.swapSrc || lit)) ||
-      (S.echange==='3' && S.dragSrc!==null);
+      (r===S.hoverRow || r===S.swapSrc || lit);
     const gname = (showGhost && L[r]) ? `<span class="ghost-name">${L[r].nom}</span>` : '';
 
     return `<div class="${cl}" style="--c:${s.color}" data-rang="${r}">
@@ -684,7 +710,7 @@ function overlayHTML(){
   const note = (t && t.note)
     ? `<div class="note"><span class="arrow">↳</span><div class="txt">${t.note}</div></div>` : '';
 
-  const tray = (S.demande==='A' && !S.folded && pending>0) ? trayHTML() : '';
+  const tray = '';
   return `<div class="inner">${head}<div class="rows">${rows}</div>${note}${tray}</div>`;
 }
 
@@ -754,9 +780,9 @@ function mountMenus(){
     if (r.bottom > innerHeight - 12)
       el.style.top = (a.top - ovr.top - r.height - 4) + 'px';
   };
-  if (S.echange==='1' && S.swapMenu!==null)
+  if (false)
     mount(ov.querySelector(`.row[data-rang="${S.swapMenu}"] .cls`), swapMenuHTML(S.swapMenu));
-  if (S.demande==='A' && S.chipMenu!==null){
+  if (false){
     const c = combatantOf(S.chipMenu);
     if (c) mount(ov.querySelector(`[data-chip="${S.chipMenu}"]`), chipMenuHTML(c));
   }
@@ -934,24 +960,32 @@ function rosterHTML(){
        « ignorer ». Tient quel que soit le nombre de profils.
    3 — LE MENU ANCRE : on garde « profil… », mais il ouvre une vraie liste
        flottante au lieu d'une rangee de boutons qui pousse la mise en page. */
+/* UN SEUL MENU, la forme retenue. « Les profils en clair » et « le menu ancre »
+   sont supprimees ; elles restent dans l'historique de la branche.
+   ⚠️ Le RACCOURCI de rattachement en tete de ligne — « ↳ « Nozahéal » » — a
+   disparu de l'ecran, mais PAS le mecanisme. Ce qui a disparu, c'est son cas :
+   un nom Wakfu n'a qu'une orthographe possible, l'app canonise a la saisie, donc
+   un « Nozahéal » accentue n'est plus saisissable et ne peut plus faire face a un
+   « Nozaheal » du log — il SERAIT ce nom, et s'accrocherait tout seul au premier
+   combat. Le rattachement reste dans « Ajouter a ▾ » pour ce qu'il sait encore
+   rattraper : la vraie faute de frappe, une lettre a la place d'une autre, et la
+   classe fausse (« Nozaxel » saisi Eniripsa alors que le log dit Xelor). */
 function actsHTML(c){
-  const first = ratCandidats(c).memes[0];
-  const rat = first ? `<button class="on" data-ans="${c.eid}:rattach:${first.id}">↳ « ${first.nom} »</button>` : '';
-  const ign = `<button class="ghost" data-ans="${c.eid}:ignore">ignorer</button>`;
-  if (S.profil==='1')
-    return rat + profils().map(pr=>`<button data-ans="${c.eid}:profil:${pr}">${pr}</button>`).join('')
-      + `<button data-ans="${c.eid}:nouveau" title="nouveau profil">＋</button>` + ign;
-  if (S.profil==='2')
-    return rat + `<button class="${S.profMenu===c.eid?'on':''}" data-ans="${c.eid}:profilmenu">Ajouter à ▾</button>` + ign;
-  return rat + `<button data-ans="${c.eid}:profil:moi">moi</button>`
-    + `<button class="${S.profMenu===c.eid?'on':''}" data-ans="${c.eid}:profilmenu">profil… ▾</button>` + ign;
+  return `<button class="${S.profMenu===c.eid?'on':''}" data-ans="${c.eid}:profilmenu">Ajouter à ▾</button>`
+    + `<button class="ghost" data-ans="${c.eid}:ignore">ignorer</button>`;
 }
+/* Le menu deborde de la fenetre en vrai (Menu.popup natif) : il ne defile qu'au
+   dela d'une quarantaine de profils, la ou il quitterait l'ecran. */
 function profPopHTML(c){
-  if (S.profil==='1') return '';
-  const liste = S.profil==='2' ? profils() : profils().filter(p=>p!=='moi');
+  const {memes, autres} = ratCandidats(c);
+  const rat = [...memes, ...autres];
   return `<div class="profpop">
-    ${liste.map(pr=>`<div class="it" data-ans="${c.eid}:profil:${pr}">${pr}</div>`).join('')}
+    ${profils().map(pr=>`<div class="it" data-ans="${c.eid}:profil:${pr}">${pr}</div>`).join('')}
     <div class="it neuf" data-ans="${c.eid}:nouveau">＋ nouveau profil</div>
+    ${rat.length ? `<div class="sep"></div>${rat.map(pi =>
+      `<div class="it" data-ans="${c.eid}:rattach:${pi.id}">Rattacher à « ${pi.nom} »${
+        pi.cls===c.cls ? '' : ` — saisi ${CLASSES[pi.cls]}, le log dit ${CLASSES[c.cls]}`
+      }</div>`).join('')}` : ''}
   </div>`;
 }
 function newProfilHTML(c){
@@ -963,14 +997,6 @@ function newProfilHTML(c){
 }
 
 /* ================================================================ render = */
-const DEMANDES = {
-  A:'Tout dans la fiche', B:'Une carte compagnon',
-  C:'Un second overlay' };
-const ECHANGES = {
-  '1':'Le menu au clic', '2':'Deux clics, survol', '3':'Le glisser-déposer' };
-const PROFILS = {
-  '1':'Les profils en clair', '2':'Un seul menu', '3':'Le menu ancré' };
-
 function render(){
   const ov = document.getElementById('ov');
   ov.style.display = S.appOpen ? '' : 'none';
@@ -978,12 +1004,12 @@ function render(){
   ov.style.setProperty('--w', S.w+'px');
   ov.style.setProperty('--fs', S.fs);
   ov.style.setProperty('--op', S.op);
-  ov.classList.toggle('swapping', S.echange==='2' && S.swapSrc!==null);
+  ov.classList.toggle('swapping', S.swapSrc!==null);
   ov.innerHTML = overlayHTML();
   mountMenus();
 
   const cg = document.getElementById('compagnon');
-  const showCg = S.appOpen && S.demande==='B' && !S.folded && questionsEnAttente()>0;
+  const showCg = false;
   cg.style.display = showCg ? '' : 'none';
   if (showCg){ cg.innerHTML = compagnonHTML();
     if (!cg.dataset.placed){ cg.style.left=(34+S.w+18)+'px'; cg.style.top='30px'; cg.dataset.placed='1'; } }
@@ -991,7 +1017,7 @@ function render(){
   // le second overlay : par-dessus le jeu, tant qu'il reste des inconnus
   const oa = document.getElementById('ovask');
   const inc = unknowns();
-  const showOa = S.appOpen && S.demande==='C' && inc.length>0 && !S.folded;
+  const showOa = S.appOpen && inc.length>0 && !S.folded;
   oa.style.display = showOa ? '' : 'none';
   oa.style.setProperty('--op', S.op);
   if (showOa){ oa.innerHTML = ovaskHTML(inc);
@@ -1005,7 +1031,6 @@ function render(){
     if (!ap.dataset.placed){ ap.style.left='470px'; ap.style.top='90px'; ap.dataset.placed='1'; } }
 
   mountPop();
-  renderSwitcher();
   renderPanel();
 }
 
@@ -1023,7 +1048,7 @@ const MARGE = 8;
 function mountPop(){
   const layer = document.getElementById('poplayer');
   layer.innerHTML = '';
-  if (S.demande!=='C') return;
+
   const eid = (S.newProfil!==null) ? S.newProfil : S.profMenu;
   if (eid===null) return;
   const c = combatantOf(eid); if (!c) return;
@@ -1056,19 +1081,6 @@ function mountPop(){
   const f = document.getElementById('npf'); if (f) f.focus();
 }
 
-function renderSwitcher(){
-  document.getElementById('switcher').innerHTML = `
-    <div class="grp"><span class="ar" data-cyc="demande:-1">◀</span>
-      <span class="lb"><i>demande</i> <b>${S.demande}</b> — ${DEMANDES[S.demande]}</span>
-      <span class="ar" data-cyc="demande:1">▶</span></div>
-    <div class="grp"><span class="ar" data-cyc="echange:-1">◀</span>
-      <span class="lb"><i>échange</i> <b>${S.echange}</b> — ${ECHANGES[S.echange]}</span>
-      <span class="ar" data-cyc="echange:1">▶</span></div>
-    <div class="grp"><span class="ar" data-cyc="profil:-1">◀</span>
-      <span class="lb"><i>profil</i> <b>${S.profil}</b> — ${PROFILS[S.profil]}</span>
-      <span class="ar" data-cyc="profil:1">▶</span></div>`;
-}
-
 const SC_HINT = {
   reel:`Trois inconnus et, dès que <b>Nozadah</b> est ajouté, le Conflit sur les
         deux Emplacements Ecaflip. Les questions ne sont pas indépendantes :
@@ -1094,7 +1106,7 @@ function renderPanel(){
 
   const L = liaison();
   const perm = slots().map((_,r)=>r).filter(estPermutable);
-  const warn18 = (S.phase==='hors' && S.demande!=='C' && questionsEnAttente()>0)
+  const warn18 = (false)
     ? `\n⚠ #18 interdit tout élément en plus hors combat, et une Demande d'ajout\n`+
       `  y survit pourtant. A et B se cognent ici ; C non.` : '';
   document.getElementById('dump').textContent =
@@ -1190,7 +1202,7 @@ const stage = document.getElementById('stage');
 stage.addEventListener('click', e=>{
   const t = e.target;
 
-  // --- reponses aux demandes (communes aux trois variantes) ---
+  // --- reponses aux demandes ---
   const ans = t.closest('[data-ans]');
   if (ans){ const [eid,kind,arg] = ans.dataset.ans.split(':');
     return repondre(+eid, kind, arg); }
@@ -1228,7 +1240,7 @@ stage.addEventListener('click', e=>{
   const pick = t.closest('[data-pick]');
   if (pick){ const [r,eid]=pick.dataset.pick.split(':'); return trancher(+r,+eid); }
 
-  // --- l'echange, variantes 1 et 2 ---
+  // --- l'echange par clic ---
   const swapto = t.closest('[data-swapto]');
   if (swapto){ const [r,pid]=swapto.dataset.swapto.split(':');
     return echanger(+r, byId(pid) || presents().find(p=>p.id===pid)); }
@@ -1237,15 +1249,15 @@ stage.addEventListener('click', e=>{
   if (rowEl){
     const r = +rowEl.dataset.rang;
     // A : poser le pseudo tenu en main sur une ligne de la bonne classe
-    if (S.demande==='A' && S.held && slots()[r].cls===S.held.cls){
+    if (false){
       if (byEid(S.held.eid)) return trancher(r, S.held.eid);
     }
     if (t.closest('.cls')){
-      if (S.echange==='1'){
+      if (false){
         if (!estPermutable(r)) return;               // rien ne s'ouvre : etat vide
         clic(); S.swapMenu = S.swapMenu===r?null:r; return render();
       }
-      if (S.echange==='2'){
+      if (true){
         if (S.swapSrc===null){ if (!estPermutable(r)) return;
           clic(); S.swapSrc=r; return render(); }
         if (S.swapSrc===r){ S.swapSrc=null; return render(); }
@@ -1267,7 +1279,7 @@ stage.addEventListener('click', e=>{
 // v2 : le survol allume les partenaires AVANT le clic. C'est la reponse du
 // prototype a « montrer ce qui est permutable sans expliquer la regle ».
 stage.addEventListener('pointerover', e=>{
-  if (S.echange!=='2' || S.swapSrc!==null) return;
+  if (S.swapSrc!==null) return;
   const row = e.target.closest('.row');
   const next = (row && e.target.closest('.cls')) ? +row.dataset.rang : null;
   if (next!==S.hoverRow){ S.hoverRow=next; render(); }
@@ -1275,7 +1287,7 @@ stage.addEventListener('pointerover', e=>{
 
 // v3 : le glisser-deposer. Le curseur `grab` est le seul indice avant le geste.
 stage.addEventListener('pointerdown', e=>{
-  if (S.echange!=='3') return;
+  return;
   const row = e.target.closest('.row'); if (!row || !e.target.closest('.cls')) return;
   const r = +row.dataset.rang; if (!estPermutable(r)) return;
   e.preventDefault(); S.dragSrc = r; render();
@@ -1296,7 +1308,7 @@ stage.addEventListener('pointerdown', e=>{
 [['ov','header.oh'],['compagnon','.ch'],['ovask','.oah'],['app','.tb']].forEach(([id,handle])=>{
   const el = document.getElementById(id);
   el.addEventListener('pointerdown', e=>{
-    if (!e.target.closest(handle) || e.target.closest('.later,.chip,.askdot')) return;
+    if (!e.target.closest(handle) || e.target.closest('.later,.stratpick,.cadenas,.askdot')) return;
     if (S.profMenu!==null || S.newProfil!==null){ S.profMenu=null; S.newProfil=null; render(); }
     const r=el.getBoundingClientRect(), st=stage.getBoundingClientRect();
     const dx=e.clientX-r.left, dy=e.clientY-r.top;
@@ -1361,33 +1373,12 @@ sl('fs','fsv',v=>v+'%',v=>S.fs=v/100);
 sl('w','wv',v=>v+'',v=>S.w=v);
 sl('op','opv',v=>v+'%',v=>S.op=v);
 
-/* ============================================== la barre de variantes ==== */
-const AXES = {demande:DEMANDES, echange:ECHANGES, profil:PROFILS};
-function cycle(axis, dir){
-  const keys = Object.keys(AXES[axis]);
-  const i = keys.indexOf(S[axis]);
-  S[axis] = keys[(i+dir+keys.length)%keys.length];
-  S.folded=false; S.swapMenu=null; S.swapSrc=null; S.hoverRow=null; S.dragSrc=null;
-  syncURL(); render();
-}
 function syncURL(){
   const u = new URL(location);
-  u.searchParams.set('demande', S.demande);
-  u.searchParams.set('echange', S.echange);
-  u.searchParams.set('profil',  S.profil);
   history.replaceState(null,'',u);
 }
-document.getElementById('switcher').addEventListener('click', e=>{
-  const c = e.target.closest('[data-cyc]'); if (!c) return;
-  const [axis,dir] = c.dataset.cyc.split(':'); cycle(axis, +dir);
-});
 addEventListener('keydown', e=>{
   if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName) || e.target.isContentEditable) return;
-  if (e.key==='ArrowLeft')  { e.preventDefault(); cycle('demande',-1); }
-  if (e.key==='ArrowRight') { e.preventDefault(); cycle('demande', 1); }
-  if (e.key==='ArrowUp')    { e.preventDefault(); cycle('echange',-1); }
-  if (e.key==='ArrowDown')  { e.preventDefault(); cycle('echange', 1); }
-  if (e.key==='p')          { cycle('profil', 1); }
   if (e.key===' ')          { e.preventDefault(); document.getElementById('tick').click(); }
   if (e.key==='Escape')     { S.swapSrc=null; S.swapMenu=null; S.chipMenu=null;
                               S.profMenu=null; S.newProfil=null; render(); }
@@ -1405,9 +1396,6 @@ stage.addEventListener('drop', e=>{
 /* ==================================================== demarrage ========== */
 {
   const q = new URLSearchParams(location.search);
-  if (DEMANDES[q.get('demande')]) S.demande = q.get('demande');
-  if (ECHANGES[q.get('echange')]) S.echange = q.get('echange');
-  if (PROFILS[q.get('profil')])   S.profil  = q.get('profil');
 }
 render();
 </script>
