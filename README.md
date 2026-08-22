@@ -41,15 +41,17 @@ src/main/         le processus principal — conditions d'affichage, surjeu,
                   verrou, raccourcis, veille du combat
 src/pont/         le preload : ce que les surfaces ont le droit de demander
 src/surfaces/     la Fenêtre principale — sa colonne, son Socle d'état, l'écran
-                  des Strats — et les deux Overlays
+                  des Strats, le mur de portraits du Roster — et les deux
+                  Overlays
 src/logs/         le lecteur de wakfu.log — tokenizer, relecture de session,
                   suivi du fichier qui grandit, découverte du dossier
 src/suivi/        le Tour courant, la Rotation, et la fiche du Tour qu'ils
                   dessinent avec une Strat
 src/persistance/  les trois fichiers JSON — réglages, roster, strats — les
-                  cascades de suppression, et le réducteur qui édite une Strat
+                  cascades de suppression, et les deux réducteurs qui éditent
+                  une Strat et le Roster
 src/domaine/      les Classes, la Composition d'une Strat, les deux palettes,
-                  les segments de texte riche
+                  les segments de texte riche, la forme canonique d'un nom
 src/echantillons/ l'accès aux captures, pour les tests seuls
 icons/            les dix-huit portraits de classe, nommés par clé de classe.
                   `npm run build` les recopie dans `dist/icons/`, où les
@@ -69,13 +71,23 @@ qui les rend vérifiables contre les captures du dépôt, sans lancer le jeu.
 `src/persistance/` non plus : le dossier de données lui est **donné** — ce sera
 `app.getPath('userData')` — donc il se teste dans un dossier temporaire.
 
-**L'écran des Strats n'écrit rien lui-même.** Une surface n'a pas d'API Node,
-donc elle envoie une **intention** — `ajouter-emplacement`, `poser-couleur`,
-`deplacer-emplacement` — et `edition-strats.ts` décide : la Couleur libre,
-l'échange d'une Couleur déjà prise, la renumérotation des Rangs, les Consignes
-qu'un Emplacement supprimé emporte. Tous les invariants de `strats.json` ont
-donc **un seul gardien**, et il se teste sans Electron. La surface ne fait que
-peindre et demander.
+**Les écrans qui écrivent n'écrivent rien eux-mêmes.** Une surface n'a pas d'API
+Node, donc elle envoie une **intention** — `ajouter-emplacement`,
+`poser-couleur`, `deplacer-emplacement`, `saisir-personnage`, `rattacher` — et
+`edition-strats.ts` ou `edition-roster.ts` décide : la Couleur libre, l'échange
+d'une Couleur déjà prise, la renumérotation des Rangs, les Consignes qu'un
+Emplacement supprimé emporte ; la canonisation d'un nom tapé, le refus d'un
+doublon, la purge silencieuse de l'homonyme quand un ID d'entité s'attache. Tous
+les invariants de `strats.json` et de `roster.json` ont donc **un seul gardien
+chacun**, et ils se testent sans Electron. La surface ne fait que peindre et
+demander.
+
+⚠️ **La liste « à identifier » n'est persistée par aucune clef**, et c'est une
+décision : elle vaut pour la session, et un inconnu revient au prochain combat
+où il joue. Auto-nettoyante, dans l'esprit de l'ADR `0007`, là où une clef de
+plus accumulerait pour toujours les questions sur des passants. Conséquence à
+connaître : le rattrapage d'une Demande d'ajout ne vaut que si l'app n'a pas été
+fermée.
 
 ⚠️ Tout y est **synchrone**, et ce n'est pas de la paresse : `before-quit` ne sait
 pas attendre une promesse, donc un vidage asynchrone perdrait la dernière
