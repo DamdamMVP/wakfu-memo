@@ -29,9 +29,14 @@
         <button id="verrou" type="button"></button>
         <button id="demande" type="button"></button>
       </div>
+      <!--
+        BANC DU LOT 4. L'Overlay ne se dessine pas sans Strat choisie (ADR 0006)
+        et l'éditeur est le Lot 5 : sans ce bouton, la fiche du Tour ne pourrait
+        pas être regardée une seule fois.
+      -->
+      <div class="gestes" id="strats"></div>
       <div class="gestes">
-        <input id="nom-strat" type="text" placeholder="nom d’une Strat" autocomplete="off">
-        <button id="choisir-strat" type="button">Choisir cette Strat</button>
+        <button id="semer-strat" type="button">Semer une Strat d’essai</button>
         <button id="retirer-strat" type="button">Retirer le choix</button>
       </div>
       <div class="gestes">

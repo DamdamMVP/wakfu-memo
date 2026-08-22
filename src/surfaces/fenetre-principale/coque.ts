@@ -34,6 +34,8 @@ type Etat = {
   wakfuLog: string | null;
   dossierLogsManuel: string | null;
   stratChoisie: string | null;
+  stratChoisieId: string | null;
+  strats: { id: string; nom: string }[];
   raccourcis: Record<string, Pose> | null;
   dossierDonnees: string;
   avertissements: Avertissement[];
@@ -49,6 +51,7 @@ type PontMemo = {
   oublierDossierLogs: () => void;
   ouvrirDossierDonnees: () => void;
   bancDemande: (enAttente: boolean) => void;
+  bancStrat: () => void;
 };
 
 const memo = (window as unknown as { memo?: PontMemo }).memo;
@@ -132,6 +135,23 @@ function peindre(etat: Etat): void {
     : 'Faire surgir la Demande d’ajout';
   demande.classList.toggle('on', etat.demandeEnAttente);
 
+  // LOT 4 BENCH. One button per Strat that exists, the chosen one marked. Lot 5
+  // replaces this whole window with the real Strats screen, where choosing is a
+  // pastille that does not force the Strat open.
+  const strats = par<HTMLDivElement>('strats');
+  strats.replaceChildren();
+  for (const strat of etat.strats) {
+    const bouton = document.createElement('button');
+    bouton.type = 'button';
+    bouton.textContent = strat.nom === '' ? '(sans nom)' : strat.nom;
+    bouton.classList.toggle('on', strat.id === etat.stratChoisieId);
+    // `memo?.` and not `memo.`: inside a hoisted function the compiler drops
+    // the narrowing the guard at the top of the file gives.
+    bouton.addEventListener('click', () => memo?.choisirStrat(strat.id));
+    strats.append(bouton);
+  }
+  strats.hidden = etat.strats.length === 0;
+
   const surjeu = par<HTMLDListElement>('surjeu');
   surjeu.replaceChildren();
   ligneDefinition(surjeu, 'fenêtre visée', etat.titreCible);
@@ -212,10 +232,7 @@ par('verrou').addEventListener('click', () => memo.basculerVerrou());
 par('demande').addEventListener('click', () =>
   memo.bancDemande(!(dernier?.demandeEnAttente ?? false)),
 );
-par('choisir-strat').addEventListener('click', () => {
-  const nom = par<HTMLInputElement>('nom-strat').value.trim();
-  memo.choisirStrat(nom === '' ? null : nom);
-});
+par('semer-strat').addEventListener('click', () => memo.bancStrat());
 par('retirer-strat').addEventListener('click', () => memo.choisirStrat(null));
 par('designer-dossier').addEventListener('click', () => void memo.designerDossierLogs());
 par('oublier-dossier').addEventListener('click', () => memo.oublierDossierLogs());
