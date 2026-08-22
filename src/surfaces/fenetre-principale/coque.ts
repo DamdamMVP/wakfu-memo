@@ -13,6 +13,7 @@
 
 import { bouton, element } from './dom.ts';
 import { type Etat, memo } from './pont.ts';
+import { calquesReglages, ecranReglages, gesteSurLeDecor } from './reglages.ts';
 import { calquesRoster, ecranRoster, validerLeNomDeProfil } from './roster.ts';
 import { calquesStrats, ecranStrats, validerLeNom } from './strats.ts';
 import { type Ecran, fermerLesCalques, repeindre, surRepeindre, vue } from './vue.ts';
@@ -54,18 +55,14 @@ const ENTREES: readonly (readonly [Ecran, string])[] = [
   ['prise-en-main', 'Prise en main'],
 ];
 
-const NOMS_RACCOURCIS: Record<string, string> = {
-  overlay: 'Afficher / masquer l’overlay',
-  verrou: 'Verrouiller / déverrouiller',
-  fenetre: 'Rappeler la fenêtre principale',
-};
-
 let dernier: Etat | null = null;
 
 function allerA(ecran: Ecran): void {
   vue.ecran = ecran;
   fermerLesCalques();
   if (ecran === 'strats') vue.ouverteId = null;
+  // Le décor factice n'est pas un état de l'app : quitter les Réglages l'oublie.
+  vue.decorFactice = false;
   // Changer d'écran abandonne ce qui était commencé sur celui qu'on quitte :
   // un formulaire de saisie qui ressurgirait au retour serait un revenant.
   vue.saisie = null;
@@ -151,11 +148,6 @@ function peindreLeSocle(etat: Etat): void {
 
 /* ================================================= les écrans en attente = */
 
-function ligneDeDefinition(hote: HTMLElement, terme: string, valeur: string, classe = ''): void {
-  hote.append(element('dt', '', terme));
-  hote.append(element('dd', classe, valeur));
-}
-
 function ecranEnAttente(titre: string, lot: string, ticket: string): DocumentFragment {
   const hote = document.createDocumentFragment();
   const tete = element('div', 'scrhead');
@@ -198,61 +190,6 @@ function bancDuRoster(etat: Etat): HTMLElement {
   return banc;
 }
 
-/**
- * Ce que le Lot 7 remplacera, et ce qui doit survivre en attendant : la
- * deuxième ligne du Socle d'état mène ici (ADR `0014`), et une explication en
- * cul-de-sac n'explique pas. Les trois raccourcis y sont aussi, parce qu'un
- * raccourci que le système refuse doit se lire quelque part.
- */
-function bancDesReglages(etat: Etat): HTMLElement {
-  const banc = element('div', 'banc');
-  banc.append(element('h2', '', 'Banc d’essai — le Lot 7 le remplace'));
-
-  const gestes = element('div', 'gestes');
-  gestes.append(bouton('', 'Désigner le dossier de logs…', () => void memo?.designerDossierLogs()));
-  gestes.append(bouton('', 'Revenir à la détection', () => memo?.oublierDossierLogs()));
-  gestes.append(bouton('', 'Ouvrir le dossier de données', () => memo?.ouvrirDossierDonnees()));
-  banc.append(gestes);
-
-  const liste = element('dl');
-  // Lequel des deux a produit le dossier retenu — détecté ou désigné.
-  ligneDeDefinition(
-    liste,
-    'dossier de logs',
-    etat.dossierLogsManuel !== null
-      ? `désigné — ${etat.dossierLogsManuel}`
-      : etat.wakfuLog !== null
-        ? 'détecté'
-        : 'aucun',
-    etat.wakfuLog !== null ? '' : 'non',
-  );
-  ligneDeDefinition(liste, 'wakfu.log', etat.wakfuLog ?? 'aucun', etat.wakfuLog ? '' : 'non');
-  ligneDeDefinition(liste, 'fenêtre visée', etat.titreCible);
-  ligneDeDefinition(
-    liste,
-    'attachement',
-    etat.attache ? 'attaché à la fenêtre du jeu' : 'aucune fenêtre trouvée',
-    etat.attache ? '' : 'non',
-  );
-  for (const [nom, pose] of Object.entries(etat.raccourcis ?? {})) {
-    const dit =
-      pose.etat === 'pris'
-        ? (pose.combinaison ?? '')
-        : pose.etat === 'refuse'
-          ? `${pose.combinaison} — refusé par le système`
-          : 'aucun';
-    ligneDeDefinition(
-      liste,
-      NOMS_RACCOURCIS[nom] ?? nom,
-      dit,
-      pose.etat === 'refuse' ? 'refuse' : '',
-    );
-  }
-  ligneDeDefinition(liste, 'dossier de données', etat.dossierDonnees);
-  banc.append(liste);
-  return banc;
-}
-
 function ecranCourant(etat: Etat): DocumentFragment {
   switch (vue.ecran) {
     case 'roster': {
@@ -260,11 +197,8 @@ function ecranCourant(etat: Etat): DocumentFragment {
       hote.querySelector('.scrbody')?.append(bancDuRoster(etat));
       return hote;
     }
-    case 'reglages': {
-      const hote = ecranEnAttente('Réglages', 'Lot 7', '#32');
-      hote.querySelector('.scrbody')?.append(bancDesReglages(etat));
-      return hote;
-    }
+    case 'reglages':
+      return ecranReglages(etat);
     case 'prise-en-main':
       return ecranEnAttente('Prise en main', 'Lot 9', '#34');
     default:
@@ -342,7 +276,9 @@ function peindre(menager = false): void {
       ? calquesStrats(etat)
       : vue.ecran === 'roster'
         ? calquesRoster(etat)
-        : [];
+        : vue.ecran === 'reglages'
+          ? calquesReglages(etat)
+          : [];
   calques.replaceChildren(...dessus);
 
   const apres = document.querySelector<HTMLElement>('.scrbody, .turns');
@@ -362,7 +298,10 @@ surRepeindre(() => peindre(false));
 
 const rafraichir = (etat: Etat): void => {
   dernier = etat;
-  peindre(saisieEnCours());
+  // Un geste sur le décor factice ménage l'écran pour la même raison qu'une
+  // frappe : reconstruire arracherait de la main la fiche qu'on est en train de
+  // déplacer.
+  peindre(saisieEnCours() || gesteSurLeDecor());
 };
 
 memo.surEtat(rafraichir);
@@ -380,8 +319,10 @@ document.addEventListener('keydown', (evenement) => {
   // La saisie manuelle répond déjà pour elle-même quand son champ a le focus.
   // Ce filet est pour l'autre cas : on vient de cliquer une icône de classe, le
   // focus a quitté le champ, et Échap n'aurait plus rien fermé.
-  const avaitUnCalque = vue.aSupprimer !== null || vue.saisie !== null;
+  const avaitUnCalque = vue.aSupprimer !== null || vue.saisie !== null || vue.decorFactice;
   vue.aSupprimer = null;
   vue.saisie = null;
+  // Échap sort du décor factice comme le cadenas : on en revient toujours.
+  vue.decorFactice = false;
   if (fermerLesCalques() || avaitUnCalque) peindre(false);
 });

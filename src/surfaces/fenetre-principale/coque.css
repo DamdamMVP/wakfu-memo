@@ -1260,3 +1260,379 @@ input:focus {
   justify-content: flex-end;
   margin-top: 15px;
 }
+
+/* ============================================== l'écran des Réglages ===== */
+/* Transcrit de `prototypes/reglages/`, la forme retenue. Quatre blocs, aucun
+   défilement : ce qui est ici est exactement ce qui n'a pas de place sur
+   l'Overlay (ADR 0013). */
+
+/* LA PORTE. Elle remplace les curseurs d'aspect, donc elle est le premier objet
+   de l'écran et le plus voyant : elle porte à elle seule l'apprentissage des
+   gestes sur l'objet, que rien d'autre n'enseigne.
+
+   Écrite `.scrbody > .porte` : le Socle d'état a sa propre `.porte`, celle de la
+   ligne des logs, et deux blocs portant le même mot ne doivent pas se marcher
+   dessus. Le mot reste le même parce que la chose l'est — un passage. */
+.scrbody > .porte {
+  margin: 18px 18px 6px;
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  background: linear-gradient(#1b2130, #171a21);
+  padding: 17px 18px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+.porte .txtcol {
+  flex: 1;
+  min-width: 0;
+}
+.porte h2 {
+  margin: 0 0 5px;
+  font-size: 15.5px;
+}
+.porte p {
+  margin: 0;
+  color: var(--dim);
+  font-size: 13px;
+}
+/* Deux phrases : ce qui se règle ici, et ce qui se règle sur le jeu. */
+.porte p + p {
+  margin-top: 6px;
+}
+.porte .cta {
+  flex: none;
+  font-size: 14px;
+  padding: 9px 16px;
+  border-color: var(--accent);
+  background: #22304d;
+  text-align: center;
+}
+.porte .cta:hover {
+  background: #2b3d62;
+}
+.porte .cta.alt {
+  border-color: var(--line-2);
+  background: transparent;
+  font-size: 13px;
+}
+
+/* Les blocs, et la ligne d'un réglage : libellé et phrase à gauche, contrôles à
+   droite. La phrase grise est légitime ici et nulle part ailleurs — c'est la
+   Fenêtre principale qui explique (ADR 0012). */
+.sect {
+  padding: 16px 18px 6px;
+}
+.sect > h2 {
+  margin: 0 0 2px;
+  font-size: 11.5px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.sect:last-child {
+  padding-bottom: 34px;
+}
+.lines {
+  display: flex;
+  flex-direction: column;
+}
+.line {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 11px 2px;
+  border-top: 1px solid #1e222c;
+}
+.line:first-child {
+  border-top: 0;
+}
+.line .lbl {
+  width: 240px;
+  flex: none;
+}
+.line .lbl b {
+  font-weight: 500;
+  display: block;
+}
+.line .lbl .why {
+  display: block;
+  margin-top: 2px;
+}
+.line .ctl {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+}
+.line .val {
+  font:
+    12px ui-monospace,
+    monospace;
+  color: var(--dim);
+  min-width: 58px;
+}
+/* Un raccourci que le système a refusé doit se lire quelque part : lui seul sait
+   qu'une combinaison est déjà prise ailleurs. */
+.line .refuse {
+  font-size: 12px;
+  color: var(--bad);
+}
+
+/* La touche capturée. Bordure basse épaisse : c'est une touche, pas un bouton
+   d'action, et elle s'allume pendant qu'elle attend la frappe. */
+.kbd {
+  font:
+    12px ui-monospace,
+    monospace;
+  background: #0c0e12;
+  border: 1px solid var(--line-2);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  padding: 3px 8px;
+  color: var(--txt);
+}
+.kbd.cap {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.path {
+  font:
+    11.5px ui-monospace,
+    monospace;
+  color: var(--dim);
+  background: #0c0e12;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 4px 8px;
+  overflow-wrap: anywhere;
+}
+.path.non {
+  color: var(--faint);
+  border-style: dashed;
+}
+input[type="range"] {
+  appearance: none;
+  width: 190px;
+  height: 22px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: #2f3542;
+}
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px #5b8cff33;
+}
+
+/* ================================================ le décor factice ======= */
+/* Le même aller-retour que la porte, faute de jeu à quoi se comparer. Il est
+   NOMMÉ comme tel : un décor qui se ferait passer pour le jeu serait exactement
+   l'aperçu tiède que la forme retenue a écarté. */
+.decor {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  background: #07080a;
+}
+/* Une zone très claire et une zone très sombre, et ce n'est pas de la
+   décoration : l'opacité ne se juge que contre les pixels qu'elle laisse
+   passer, donc un fond uni ne se jugerait pas du tout. */
+.decor .plateau {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(112deg, #e6ecf6 0 34%, #33405a 34% 63%, #05070b 63% 100%);
+}
+.decor .fauxwakfu {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  background: #0e1014;
+  border-bottom: 1px solid #000;
+  font-size: 11.5px;
+  color: #7d8494;
+}
+.decor .ovl {
+  position: absolute;
+  cursor: move;
+  user-select: none;
+}
+.decor .poignee-largeur {
+  position: absolute;
+  right: -3px;
+  top: 0;
+  bottom: 0;
+  width: 9px;
+  cursor: ew-resize;
+}
+.decor .poignee-largeur:hover:after {
+  content: "";
+  position: absolute;
+  top: 8%;
+  bottom: 8%;
+  left: 3px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+/* La fiche, recopiée de la feuille de l'Overlay : c'est le même objet, et il
+   doit se ressembler d'une surface à l'autre. */
+.decor .fiche {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 14px 40px #000000aa;
+}
+.decor .stratbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 5px;
+  background: #14161c;
+  border-bottom: 1px solid var(--line);
+  border-radius: 13px 13px 0 0;
+}
+.decor .stratbar .stratpick {
+  padding: 2px 8px;
+  font-size: 0.92em;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.decor .stratbar .grow {
+  flex: 1;
+}
+.decor .cadenas {
+  flex: none;
+  padding: 1px 6px;
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: 7px;
+  color: var(--dim);
+  line-height: 1;
+}
+.decor .cadenas:hover {
+  border-color: var(--accent);
+  background: #283040;
+}
+.decor .fiche > header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: linear-gradient(#1e2330, #1a1e28);
+  border-bottom: 1px solid var(--line);
+}
+.decor .fiche .tnum {
+  cursor: inherit;
+  flex: none;
+  min-width: 32px;
+  height: auto;
+  padding: 2px 7px;
+  font:
+    700 1em / 1.5 ui-monospace,
+    monospace;
+}
+.decor .fiche .glob {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.decor .fiche .rows {
+  padding: 5px 0;
+}
+.decor .fiche .row {
+  gap: 10px;
+  padding: 6px 13px 6px 10px;
+}
+.decor .fiche .cons {
+  min-height: 0;
+  padding: 0;
+}
+.decor .fiche .cons.vide {
+  color: var(--faint);
+  font-style: italic;
+}
+.decor .fiche .note {
+  margin: 0;
+  padding: 6px 16px 6px 13px;
+  border-radius: 0 0 13px 13px;
+  font-size: 0.9em;
+}
+.decor .fiche .note .txt {
+  min-height: 0;
+}
+
+/* La barrette du décor : la même qu'au-dessus du jeu, aux mêmes réglages. */
+.decor .barrette {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 9px 14px;
+  background: #0c0e12;
+  border-top: 1px solid var(--line-2);
+}
+.decor .barrette .grp {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.decor .barrette label {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.decor .barrette input[type="range"] {
+  width: 112px;
+}
+.decor .barrette .grow {
+  flex: 1;
+}
+.decor .barrette .why {
+  margin: 0;
+  font:
+    11.5px ui-monospace,
+    monospace;
+}
+.decor .barrette .tag {
+  font-size: 10.5px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: 1px solid #5b8cff55;
+  border-radius: 6px;
+  padding: 1px 6px;
+  color: var(--accent);
+}
+.decor .barrette .fin {
+  border-color: var(--accent);
+  background: #22304d;
+}
+.decor .barrette .fin:hover {
+  background: #2b3d62;
+}

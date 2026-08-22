@@ -77,6 +77,15 @@ export type Pose = {
   readonly etat: 'pris' | 'refuse' | 'absent';
 };
 
+/** Les quatre réglages d'aspect, tels que le décor factice les dessine. */
+export type Aspect = {
+  readonly opacite: number;
+  readonly tailleTexte: number;
+  readonly largeur: number;
+  readonly x: number;
+  readonly y: number;
+};
+
 /** L'instantané que le processus principal pousse à chaque changement. */
 export type Etat = {
   readonly conditions: Record<string, boolean>;
@@ -87,7 +96,9 @@ export type Etat = {
   readonly verrouille: boolean;
   readonly demandeEnAttente: boolean;
   readonly wakfuLog: string | null;
+  readonly dossierLogs: string | null;
   readonly dossierLogsManuel: string | null;
+  readonly aspect: Aspect;
   readonly stratChoisie: string | null;
   readonly stratChoisieId: string | null;
   readonly strats: readonly Strat[];
@@ -233,6 +244,11 @@ type PontMemo = {
   surEtat: (rappel: (etat: Etat) => void) => void;
   basculerAffichage: () => void;
   choisirStrat: (id: string | null) => void;
+  poserAspect: (aspect: { opacite?: number; tailleTexte?: number }) => void;
+  poserLargeurFiche: (largeur: number | null) => void;
+  poserPositionFiche: (x: number, y: number) => void;
+  poserFicheMiniFenetre: (largeur: number) => void;
+  poserRaccourci: (nom: string, combinaison: string | null) => void;
   designerDossierLogs: () => Promise<string | null>;
   oublierDossierLogs: () => void;
   ouvrirDossierDonnees: () => void;
