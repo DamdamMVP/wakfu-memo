@@ -41,8 +41,8 @@ src/main/         le processus principal — conditions d'affichage, surjeu,
                   verrou, raccourcis, veille du combat
 src/pont/         le preload : ce que les surfaces ont le droit de demander
 src/surfaces/     la Fenêtre principale — sa colonne, son Socle d'état, l'écran
-                  des Strats, le mur de portraits du Roster — et les deux
-                  Overlays
+                  des Strats, le mur de portraits du Roster, la porte des
+                  Réglages — et les deux Overlays
 src/logs/         le lecteur de wakfu.log — tokenizer, relecture de session,
                   suivi du fichier qui grandit, découverte du dossier
 src/suivi/        le Tour courant, la Rotation, et la fiche du Tour qu'ils
@@ -70,6 +70,19 @@ l'Overlay** : l'entrée est le texte de `wakfu.log`, la sortie un état. C'est c
 qui les rend vérifiables contre les captures du dépôt, sans lancer le jeu.
 `src/persistance/` non plus : le dossier de données lui est **donné** — ce sera
 `app.getPath('userData')` — donc il se teste dans un dossier temporaire.
+
+**L'aspect de l'Overlay se règle sur une fiche, pas sur une page** (ADR `0013`).
+L'écran des Réglages porte une **porte**, qui ouvre un **décor factice** — une
+zone très claire, une zone très sombre, la fiche dessus, et une **barrette** qui
+tient l'opacité et la taille du texte. Elle ouvre toujours, jeu lancé ou non,
+strat choisie ou non : sinon ces deux réglages seraient inatteignables au premier
+lancement. Sur le jeu, le raccourci du verrou déverrouille l'Overlay, qui porte
+la même barrette et les deux gestes de la souris — la fiche se place en la
+glissant, sa largeur s'attrape au **bord droit**, dont la poignée se montre dès
+qu'il est déverrouillé. Ce qui reste sur la page est exactement ce qui n'a de
+place ni sur l'un ni sur l'autre : trois raccourcis globaux, la largeur minimale
+d'une fiche **dans la Fenêtre principale** — une autre grandeur que celle de
+l'Overlay — et deux dossiers.
 
 **Les écrans qui écrivent n'écrivent rien eux-mêmes.** Une surface n'a pas d'API
 Node, donc elle envoie une **intention** — `ajouter-emplacement`,

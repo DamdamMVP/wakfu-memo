@@ -55,6 +55,36 @@
     <p class="note" id="note" hidden><span class="fleche">↳</span><span id="note-texte"></span></p>
   </div>
 
+  <!--
+    LA BARRETTE. Elle ne paraît que déverrouillé, et c'est exactement ce que dit
+    l'ADR 0013 : régler et déverrouiller sont le même état, il n'y a pas de
+    « mode réglage » de plus à nommer. Elle porte les deux réglages d'aspect qui
+    n'ont pas de poignée sur la fiche — l'opacité et la taille du texte —, les
+    deux autres étant des gestes (glisser, attraper le bord droit).
+
+    Elle est SŒUR de la fiche, jamais dedans : l'opacité de la fiche est ce qu'on
+    règle, et une barrette qui s'effacerait avec elle deviendrait illisible juste
+    au moment où elle sert. C'est une surface d'outil, temporaire, et elle
+    disparaît en sortant — l'ADR 0006 n'y perd rien, elle ne parle pas de
+    l'Overlay, elle le règle.
+  -->
+  <div class="barrette" id="barrette" data-cliquable hidden>
+    <span class="tag">réglage en cours</span>
+    <div class="grp">
+      <label for="opacite">opacité</label>
+      <input type="range" id="opacite" min="40" max="100" step="1">
+      <span class="val" id="val-opacite"></span>
+    </div>
+    <div class="grp">
+      <label for="taille-texte">texte</label>
+      <input type="range" id="taille-texte" min="11" max="22" step="1">
+      <span class="val" id="val-taille"></span>
+    </div>
+    <div class="grow"></div>
+    <span class="mesures" id="mesures"></span>
+    <button class="fin" id="fin" type="button" title="reverrouiller : les clics repartent au jeu">Terminé</button>
+  </div>
+
   <script type="module" src="coque.js"></script>
 </body>
 </html>

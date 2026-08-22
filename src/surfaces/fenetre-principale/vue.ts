@@ -15,6 +15,9 @@ import type {
 
 export type Ecran = 'strats' | 'roster' | 'reglages' | 'prise-en-main';
 
+/** Les trois raccourcis globaux, par leur nom de canal (`raccourcis-regles.ts`). */
+export type NomRaccourci = 'overlay' | 'verrou' | 'fenetre';
+
 export type Vue = {
   ecran: Ecran;
   /** La Strat descendue dans l'éditeur. `null` : la liste plein écran. */
@@ -39,6 +42,15 @@ export type Vue = {
    * sept gestes contre cinq pour la liste — et il se paie ici.
    */
   menuRoster: MenuRoster | null;
+  /* -------------------------------------------------------- les Réglages -- */
+  /**
+   * Le décor factice est ouvert. Ce n'est pas un état de l'app : c'est le même
+   * aller-retour que la porte, joué faute de jeu à quoi se comparer. Fermer la
+   * fenêtre ou changer d'écran l'oublie, et rien n'en est persisté.
+   */
+  decorFactice: boolean;
+  /** Le raccourci dont on attend la combinaison. Une frappe, et c'est fini. */
+  captureRaccourci: NomRaccourci | null;
   /** La saisie manuelle. `personnageId` non nul : c'est une correction. */
   saisie: {
     profilId: string;
@@ -98,19 +110,29 @@ export const vue: Vue = {
   renommeProfilId: null,
   menuRoster: null,
   saisie: null,
+  decorFactice: false,
+  captureRaccourci: null,
 };
 
 /**
  * Vrai s'il y avait quelque chose à fermer : un clic ailleurs referme.
  *
  * La saisie manuelle n'en est pas : un formulaire à moitié rempli ne se ferme
- * pas sur un clic de travers — il a son « Annuler » et sa touche Échap.
+ * pas sur un clic de travers — il a son « Annuler » et sa touche Échap. Le
+ * décor factice non plus : on en sort par le cadenas, « Terminé » ou Échap.
  */
 export function fermerLesCalques(): boolean {
-  const ouvert = vue.menu !== null || vue.panneau !== null || vue.menuRoster !== null;
+  const ouvert =
+    vue.menu !== null ||
+    vue.panneau !== null ||
+    vue.menuRoster !== null ||
+    vue.captureRaccourci !== null;
   vue.menu = null;
   vue.panneau = null;
   vue.menuRoster = null;
+  // Une capture attend une frappe : un clic ailleurs est un renoncement, et la
+  // laisser ouverte volerait la prochaine combinaison tapée n'importe où.
+  vue.captureRaccourci = null;
   return ouvert;
 }
 

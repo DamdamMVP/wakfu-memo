@@ -29,6 +29,10 @@ const CANAL: typeof CANAUX = {
   designerDossierLogs: 'memo:designer-dossier-logs',
   oublierDossierLogs: 'memo:oublier-dossier-logs',
   basculerVerrou: 'memo:basculer-verrou',
+  poserVerrou: 'memo:poser-verrou',
+  aspectOverlay: 'memo:aspect-overlay',
+  ficheMiniFenetre: 'memo:fiche-mini-fenetre',
+  poserRaccourci: 'memo:poser-raccourci',
   ouvrirDossierDonnees: 'memo:ouvrir-dossier-donnees',
   deplacerDemande: 'memo:deplacer-demande',
   largeurFiche: 'memo:largeur-fiche',
@@ -53,6 +57,14 @@ const memo = {
   basculerAffichage: () => ipcRenderer.send(CANAL.basculerAffichage),
   choisirStrat: (nom: string | null) => ipcRenderer.send(CANAL.choisirStrat, nom),
   basculerVerrou: () => ipcRenderer.send(CANAL.basculerVerrou),
+  /** The porte of the Réglages, and the « Terminé » of the barrette. */
+  poserVerrou: (verrouille: boolean) => ipcRenderer.send(CANAL.poserVerrou, verrouille),
+  /** The barrette, on the Overlay or on the décor factice: opacity, text size. */
+  poserAspect: (aspect: { opacite?: number; tailleTexte?: number }) =>
+    ipcRenderer.send(CANAL.aspectOverlay, aspect),
+  poserFicheMiniFenetre: (largeur: number) => ipcRenderer.send(CANAL.ficheMiniFenetre, largeur),
+  poserRaccourci: (nom: string, combinaison: string | null) =>
+    ipcRenderer.send(CANAL.poserRaccourci, nom, combinaison),
   declarerZonesCliquables: (zones: { x: number; y: number; width: number; height: number }[]) =>
     ipcRenderer.send(CANAL.zonesCliquables, zones),
   designerDossierLogs: () => ipcRenderer.invoke(CANAL.designerDossierLogs),
