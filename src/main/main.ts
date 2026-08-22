@@ -8,7 +8,11 @@
 
 import { join } from 'node:path';
 import { app, dialog, ipcMain, shell } from 'electron';
-
+import {
+  dossierDeLogs,
+  environnementReel,
+  systemeDeFichiersReel,
+} from '../logs/dossier-de-logs.ts';
 import { CANAL } from './canaux.ts';
 import { type Conditions, EtatConditions, type NomCondition } from './conditions-affichage.ts';
 import { DepotReglages } from './depot-reglages.ts';
@@ -17,7 +21,7 @@ import { OverlayDemande } from './overlay-demande.ts';
 import { OverlayTour } from './overlay-tour.ts';
 import { CLE_REGLAGE, type Poses, Raccourcis } from './raccourcis.ts';
 import { type Bornes, Surjeu, TITRE_FENETRE_WAKFU } from './surjeu.ts';
-import { VeilleWakfuLog, wakfuLogDe } from './veille-wakfu-log.ts';
+import { VeilleWakfuLog } from './veille-wakfu-log.ts';
 
 const OZONE_X11 = '--ozone-platform=x11';
 
@@ -85,6 +89,20 @@ function demarrer(): void {
     diffuser();
   });
 
+  /**
+   * The `wakfu.log` to watch: the dossier désigné when there is one, otherwise
+   * the derivation across the Steam and launcher installs, arbitrated on the
+   * most recently modified `wakfu.log` (ADR `0014`).
+   *
+   * Called at startup and on demand only — never on a timer. The condition
+   * itself stays live, but on the retained file: that is `VeilleWakfuLog`'s job,
+   * not this one's.
+   */
+  const cheminWakfuLog = (): string | null =>
+    dossierDeLogs(systemeDeFichiersReel(), environnementReel(), {
+      dossierDesigne: depot.lire<string | null>('dossierLogsManuel', null) ?? undefined,
+    })?.fichier ?? null;
+
   const instantane = (): Instantane => ({
     conditions: etat.valeurs,
     manquantes: etat.manquantes,
@@ -134,7 +152,9 @@ function demarrer(): void {
 
   const poserDossierLogs = (dossier: string | null): void => {
     depot.ecrire('dossierLogsManuel', dossier);
-    veilleLogs.suivre(wakfuLogDe(dossier));
+    // Clearing it does not turn the condition off: it hands the arbitration back
+    // to the detection, which is the return the Réglages promise.
+    veilleLogs.suivre(cheminWakfuLog());
     overlayTour?.appliquer();
     diffuser();
   };
@@ -249,7 +269,7 @@ function demarrer(): void {
     // The starting state, as the disk knows it.
     etat.poser('affichageDemande', depot.lire('affichageDemande', false));
     etat.poser('stratChoisie', depot.lire<string | null>('stratChoisie', null) !== null);
-    veilleLogs.suivre(wakfuLogDe(depot.lire<string | null>('dossierLogsManuel', null)));
+    veilleLogs.suivre(cheminWakfuLog());
 
     etat.surChangement(diffuser);
     leTour.appliquer();

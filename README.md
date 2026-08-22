@@ -37,11 +37,20 @@ l'édition de liens, même si les sources sont du C). Sous Windows : les Build
 Tools de Visual Studio.
 
 ```
-src/main/      le processus principal — conditions d'affichage, surjeu, verrou,
-               raccourcis, réglages
-src/pont/      le preload : ce que les surfaces ont le droit de demander
-src/surfaces/  la Fenêtre principale et les deux Overlays
+src/main/         le processus principal — conditions d'affichage, surjeu,
+                  verrou, raccourcis, réglages
+src/pont/         le preload : ce que les surfaces ont le droit de demander
+src/surfaces/     la Fenêtre principale et les deux Overlays
+src/logs/         le lecteur de wakfu.log — tokenizer, relecture de session,
+                  découverte du dossier
+src/suivi/        le Tour courant et la Rotation, déduits des événements
+src/domaine/      les Classes et la Composition d'une Strat
+src/echantillons/ l'accès aux captures, pour les tests seuls
 ```
+
+`src/logs/`, `src/suivi/` et `src/domaine/` ne connaissent **ni Electron ni
+l'Overlay** : l'entrée est le texte de `wakfu.log`, la sortie un état. C'est ce
+qui les rend vérifiables contre les captures du dépôt, sans lancer le jeu.
 
 `tools/` mélange trois choses, et il faut savoir laquelle on tient :
 
@@ -52,6 +61,7 @@ src/surfaces/  la Fenêtre principale et les deux Overlays
 | `essai-titre.c` | `src/main/surjeu-titre.test.ts`, qui le compile et l'exécute |
 | `entetes-bouchons/uv.h` | le compilateur — un bouchon pour libuv, que l'en-tête rustiné inclut mais que la règle testée ne touche jamais |
 | `commandes-compilation.mjs` | `postinstall` — écrit `compile_commands.json` pour que l'éditeur sache ouvrir `essai-titre.c` |
+| `suivre-en-direct.ts` | toi, à la main — imprime le Tour courant en direct, pour vérifier le lecteur contre un vrai combat |
 | `capture-multi-account.sh` | toi, à la main, pour produire un échantillon de logs |
 | `extract-i18n-patterns.sh` | toi, à la main — les motifs du parser se dérivent de l'i18n du client, ils ne s'écrivent pas à la main |
 
@@ -66,9 +76,9 @@ proteste :
 
 | | quoi | pourquoi à part |
 |---|---|---|
-| `tsconfig.main.json` | `src/main/` et `src/pont/` | CommonJS, API Node, **pas de DOM** |
+| `tsconfig.main.json` | `src/main/`, `src/pont/`, et le lecteur de logs | CommonJS, API Node, **pas de DOM** |
 | `tsconfig.renderer.json` | `src/surfaces/` | ESM, **DOM**, pas d'API Node |
-| `tsconfig.test.json` | les `*.test.ts` | Node les exécute en ESM par détection de syntaxe ; `noEmit` |
+| `tsconfig.test.json` | les `*.test.ts` et la sonde de `tools/` | Node les exécute en ESM par détection de syntaxe ; `noEmit` |
 | `tsconfig.base.json` | — | les options strictes communes aux trois |
 | `tsconfig.json` | — | la solution : `tsc -b` bâtit les deux vrais projets dans l'ordre |
 
