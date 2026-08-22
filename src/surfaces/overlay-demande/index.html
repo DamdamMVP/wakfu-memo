@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'">
+<title>Demande d’ajout</title>
+<link rel="stylesheet" href="coque.css">
+</head>
+<body>
+  <!--
+    LOT 2 SHELL. No title bar, no close button: a close button would mean "no",
+    when not answering is not a refusal (ADR 0010). Lot 8 asks the question
+    itself. The counter below only proves that this surface does catch clicks:
+    the lock never applies to it.
+  -->
+  <div class="panneau">
+    <p class="titre">Overlay de la Demande d’ajout — coque</p>
+    <p class="note">Le Lot 8 pose la question ici. Cette surface attrape toujours les clics.</p>
+    <button id="preuve" type="button">Cliqué 0 fois</button>
+  </div>
+  <script type="module" src="coque.js"></script>
+</body>
+</html>
