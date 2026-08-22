@@ -279,7 +279,7 @@ input:focus {
 }
 /* La seule des quatre qui porte une action : personne ne devine qu'un dossier de
    logs se désigne dans les Réglages (ADR 0014). */
-.socle .porte {
+.socle .lien {
   background: transparent;
   border: 0;
   padding: 0;
@@ -289,7 +289,7 @@ input:focus {
   text-decoration: underline;
   text-align: left;
 }
-.socle .porte:hover {
+.socle .lien:hover {
   background: transparent;
   color: var(--txt);
 }
@@ -1268,12 +1268,8 @@ input:focus {
 
 /* LA PORTE. Elle remplace les curseurs d'aspect, donc elle est le premier objet
    de l'écran et le plus voyant : elle porte à elle seule l'apprentissage des
-   gestes sur l'objet, que rien d'autre n'enseigne.
-
-   Écrite `.scrbody > .porte` : le Socle d'état a sa propre `.porte`, celle de la
-   ligne des logs, et deux blocs portant le même mot ne doivent pas se marcher
-   dessus. Le mot reste le même parce que la chose l'est — un passage. */
-.scrbody > .porte {
+   gestes sur l'objet, que rien d'autre n'enseigne. */
+.porte {
   margin: 18px 18px 6px;
   border: 1px solid var(--line-2);
   border-radius: 14px;

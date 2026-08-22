@@ -150,6 +150,23 @@ celle des logs porte une action — décochée, elle mène aux Réglages.
 Contrepartie nommée du silence que l'ADR `0006` impose à l'Overlay.
 _Avoid_: statut, indicateur, barre d'état
 
+**Porte** :
+Le bloc de tête de l'écran des Réglages, et le seul chemin depuis la Fenêtre
+principale vers l'aspect de l'Overlay, qui n'a de curseur nulle part (ADR
+`0013`). Elle ouvre le Décor factice — toujours, jeu lancé ou non, Strat choisie
+ou non — et elle **nomme les gestes** qui se prennent sur la fiche, ce que rien
+d'autre ne fait. Il n'y en a qu'une : une entrée de la colonne latérale n'est pas
+une Porte.
+_Avoid_: bouton, lien, raccourci
+
+**Décor factice** :
+Le plateau que la Porte ouvre, à l'intérieur de la Fenêtre principale : une zone
+très claire, une zone très sombre, et une fiche dessus. **Nommé comme tel à
+l'écran**, parce qu'il n'est pas le jeu — l'opacité s'y règle, elle ne s'y juge
+pas. Porte la fiche de la Strat choisie, ou une fiche d'exemple quand il n'y en a
+pas.
+_Avoid_: aperçu, prévisualisation, simulation, spécimen
+
 **Overlay** :
 Une surface dessinée par-dessus le jeu, sans barre de titre ni bouton de
 fermeture. Il y en a deux : celui qui porte le Tour courant, et celui qui porte
@@ -165,6 +182,14 @@ traversé lui aussi, donc ce raccourci est le seul retour. Verrouillé par défa
 Ne s'applique jamais à l'Overlay de la Demande d'ajout, qu'une question sans
 réponse possible viderait de son sens.
 _Avoid_: click-through, transparent aux clics, épinglé, figé
+
+**Barrette** :
+La bande d'outil collée au pied de l'Overlay déverrouillé, et du Décor factice :
+l'opacité, la taille du texte, la lecture de la largeur et de la position, et la
+sortie. Paraît avec le déverrouillage et disparaît avec lui — il n'y a donc pas
+de « mode réglage » à nommer en plus. Ce n'est pas l'Overlay qui parle (ADR
+`0006`) : c'est un outil posé dessus, et il s'en va.
+_Avoid_: barre d'outils, panneau, palette, inspecteur
 
 ### Les logs — d'où vient l'état
 

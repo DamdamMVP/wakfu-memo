@@ -125,7 +125,9 @@ function peindreLeSocle(etat: Etat): void {
     // assumée : à qui il manque une Strat sait où aller, personne ne devine
     // qu'un dossier se désigne dans les Réglages (ADR 0014).
     if (nom === 'logsTrouves' && !vraie) {
-      ligne.append(bouton('porte', phrase, () => allerA('reglages')));
+      // `lien`, et plus `porte` : la Porte est le bloc de tête des Réglages, et
+      // un mot du glossaire ne désigne qu'une chose (`CONTEXT.md`).
+      ligne.append(bouton('lien', phrase, () => allerA('reglages')));
     } else {
       ligne.append(element('span', '', phrase));
     }
