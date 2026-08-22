@@ -10,6 +10,19 @@
 
 type Pose = { combinaison: string | null; etat: 'pris' | 'refuse' | 'absent' };
 
+/**
+ * Mirrors `Avertissement` of `src/persistance/`. Duplicated by hand like the
+ * state below: a surface has no Node API, so it cannot import a module that
+ * reads files.
+ */
+type Avertissement = {
+  sorte: 'migration' | 'mise-de-cote' | 'refus';
+  fichier: string;
+  depuis?: number;
+  sauvegarde?: string;
+  miseDeCote?: string | null;
+};
+
 type Etat = {
   conditions: Record<string, boolean>;
   manquantes: string[];
@@ -23,8 +36,7 @@ type Etat = {
   stratChoisie: string | null;
   raccourcis: Record<string, Pose> | null;
   dossierDonnees: string;
-  reglagesRefuses: boolean;
-  reglagesCorrompus: boolean;
+  avertissements: Avertissement[];
 };
 
 type PontMemo = {
@@ -164,17 +176,24 @@ function peindre(etat: Etat): void {
   }
   ligneDefinition(surjeu, 'dossier de données', etat.dossierDonnees);
 
+  // Announced after the fact, one line per file: a migration is silent but not
+  // mute, and a file set aside or refused has to be said (ADR `0004`).
   const alerte = par<HTMLParagraphElement>('alerte');
-  if (etat.reglagesRefuses) {
-    alerte.textContent =
-      'reglages.json vient d’une version plus récente : il est refusé, jamais écrasé, et rien ne sera enregistré.';
-    alerte.hidden = false;
-  } else if (etat.reglagesCorrompus) {
-    alerte.textContent =
-      'reglages.json était illisible : il a été mis de côté et l’app est repartie sur les défauts.';
-    alerte.hidden = false;
-  } else {
-    alerte.hidden = true;
+  alerte.textContent = etat.avertissements.map(phraseAvertissement).join(' ');
+  alerte.hidden = etat.avertissements.length === 0;
+}
+
+function phraseAvertissement(avertissement: Avertissement): string {
+  const fichier = avertissement.fichier;
+  switch (avertissement.sorte) {
+    case 'migration':
+      return `${fichier} a été migré depuis la version ${avertissement.depuis} ; l’ancien est gardé sous ${avertissement.sauvegarde}.`;
+    case 'refus':
+      return `${fichier} vient d’une version plus récente : il est refusé, jamais écrasé, et rien ne sera enregistré.`;
+    default:
+      return avertissement.miseDeCote === null || avertissement.miseDeCote === undefined
+        ? `${fichier} était illisible et n’a même pas pu être mis de côté ; l’app est repartie sur les défauts.`
+        : `${fichier} était illisible : il a été mis de côté sous ${avertissement.miseDeCote} et l’app est repartie sur les défauts.`;
   }
 }
 

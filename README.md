@@ -38,19 +38,28 @@ Tools de Visual Studio.
 
 ```
 src/main/         le processus principal — conditions d'affichage, surjeu,
-                  verrou, raccourcis, réglages
+                  verrou, raccourcis
 src/pont/         le preload : ce que les surfaces ont le droit de demander
 src/surfaces/     la Fenêtre principale et les deux Overlays
 src/logs/         le lecteur de wakfu.log — tokenizer, relecture de session,
                   découverte du dossier
 src/suivi/        le Tour courant et la Rotation, déduits des événements
-src/domaine/      les Classes et la Composition d'une Strat
+src/persistance/  les trois fichiers JSON — réglages, roster, strats — et les
+                  cascades de suppression
+src/domaine/      les Classes, la Composition d'une Strat, les deux palettes,
+                  les segments de texte riche
 src/echantillons/ l'accès aux captures, pour les tests seuls
 ```
 
 `src/logs/`, `src/suivi/` et `src/domaine/` ne connaissent **ni Electron ni
 l'Overlay** : l'entrée est le texte de `wakfu.log`, la sortie un état. C'est ce
 qui les rend vérifiables contre les captures du dépôt, sans lancer le jeu.
+`src/persistance/` non plus : le dossier de données lui est **donné** — ce sera
+`app.getPath('userData')` — donc il se teste dans un dossier temporaire.
+
+⚠️ Tout y est **synchrone**, et ce n'est pas de la paresse : `before-quit` ne sait
+pas attendre une promesse, donc un vidage asynchrone perdrait la dernière
+écriture en quittant.
 
 `tools/` mélange trois choses, et il faut savoir laquelle on tient :
 
@@ -62,6 +71,7 @@ qui les rend vérifiables contre les captures du dépôt, sans lancer le jeu.
 | `entetes-bouchons/uv.h` | le compilateur — un bouchon pour libuv, que l'en-tête rustiné inclut mais que la règle testée ne touche jamais |
 | `commandes-compilation.mjs` | `postinstall` — écrit `compile_commands.json` pour que l'éditeur sache ouvrir `essai-titre.c` |
 | `suivre-en-direct.ts` | toi, à la main — imprime le Tour courant en direct, pour vérifier le lecteur contre un vrai combat |
+| `essai-persistance.ts` | toi, à la main — sème trois fichiers JSON dans un dossier jetable, pour les casser et regarder la lecture les réparer |
 | `capture-multi-account.sh` | toi, à la main, pour produire un échantillon de logs |
 | `extract-i18n-patterns.sh` | toi, à la main — les motifs du parser se dérivent de l'i18n du client, ils ne s'écrivent pas à la main |
 

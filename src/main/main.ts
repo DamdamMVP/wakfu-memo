@@ -13,13 +13,13 @@ import {
   environnementReel,
   systemeDeFichiersReel,
 } from '../logs/dossier-de-logs.ts';
+import { type Avertissement, Persistance } from '../persistance/index.ts';
 import { CANAL } from './canaux.ts';
 import { type Conditions, EtatConditions, type NomCondition } from './conditions-affichage.ts';
-import { DepotReglages } from './depot-reglages.ts';
 import { FenetrePrincipale } from './fenetre-principale.ts';
 import { OverlayDemande } from './overlay-demande.ts';
 import { OverlayTour } from './overlay-tour.ts';
-import { CLE_REGLAGE, type Poses, Raccourcis } from './raccourcis.ts';
+import { type Poses, Raccourcis } from './raccourcis.ts';
 import { type Bornes, Surjeu, TITRE_FENETRE_WAKFU } from './surjeu.ts';
 import { VeilleWakfuLog } from './veille-wakfu-log.ts';
 
@@ -64,8 +64,7 @@ type Instantane = {
   stratChoisie: string | null;
   raccourcis: Poses | null;
   dossierDonnees: string;
-  reglagesRefuses: boolean;
-  reglagesCorrompus: boolean;
+  avertissements: Avertissement[];
 };
 
 function demarrer(): void {
@@ -73,8 +72,8 @@ function demarrer(): void {
   const preload = join(racine, 'pont', 'pont.js');
   const page = (surface: string) => join(racine, 'surfaces', surface, 'index.html');
 
-  const depot = new DepotReglages(app.getPath('userData'));
-  depot.charger();
+  const persistance = new Persistance(app.getPath('userData'));
+  persistance.charger();
 
   const etat = new EtatConditions();
   const surjeu = new Surjeu();
@@ -100,7 +99,7 @@ function demarrer(): void {
    */
   const cheminWakfuLog = (): string | null =>
     dossierDeLogs(systemeDeFichiersReel(), environnementReel(), {
-      dossierDesigne: depot.lire<string | null>('dossierLogsManuel', null) ?? undefined,
+      dossierDesigne: persistance.reglages.lire().dossierLogsManuel ?? undefined,
     })?.fichier ?? null;
 
   const instantane = (): Instantane => ({
@@ -112,12 +111,11 @@ function demarrer(): void {
     verrouille: overlayTour?.verrouille ?? true,
     demandeEnAttente: overlayDemande?.enAttente ?? false,
     wakfuLog: veilleLogs.chemin,
-    dossierLogsManuel: depot.lire<string | null>('dossierLogsManuel', null),
-    stratChoisie: depot.lire<string | null>('stratChoisie', null),
+    dossierLogsManuel: persistance.reglages.lire().dossierLogsManuel,
+    stratChoisie: persistance.reglages.lire().stratChoisie,
     raccourcis: raccourcis?.poses ?? null,
     dossierDonnees: app.getPath('userData'),
-    reglagesRefuses: depot.refuse,
-    reglagesCorrompus: depot.corrompu,
+    avertissements: persistance.avertissements,
   });
 
   const diffuser = (): void => fenetre?.envoyer(CANAL.etat, instantane());
@@ -137,21 +135,21 @@ function demarrer(): void {
 
   /** Affichage demandé is persisted: it is never asked again between fights. */
   const poserAffichageDemande = (demande: boolean): void => {
-    depot.ecrire('affichageDemande', demande);
+    persistance.modifierReglages({ affichageDemande: demande });
     etat.poser('affichageDemande', demande);
     overlayTour?.appliquer();
     diffuser();
   };
 
-  const poserStratChoisie = (nom: string | null): void => {
-    depot.ecrire('stratChoisie', nom);
-    etat.poser('stratChoisie', nom !== null);
+  const poserStratChoisie = (id: string | null): void => {
+    persistance.modifierReglages({ stratChoisie: id });
+    etat.poser('stratChoisie', id !== null);
     overlayTour?.appliquer();
     diffuser();
   };
 
   const poserDossierLogs = (dossier: string | null): void => {
-    depot.ecrire('dossierLogsManuel', dossier);
+    persistance.modifierReglages({ dossierLogsManuel: dossier });
     // Clearing it does not turn the condition off: it hands the arbitration back
     // to the detection, which is the return the Réglages promise.
     veilleLogs.suivre(cheminWakfuLog());
@@ -164,12 +162,12 @@ function demarrer(): void {
   app.on('before-quit', () => {
     raccourcis?.retirer();
     veilleLogs.arreter();
-    depot.vider();
+    persistance.vider();
   });
 
   ipcMain.handle(CANAL.demanderEtat, () => instantane());
   ipcMain.on(CANAL.basculerAffichage, () => poserAffichageDemande(!etat.valeurs.affichageDemande));
-  ipcMain.on(CANAL.choisirStrat, (_evenement, nom: string | null) => poserStratChoisie(nom));
+  ipcMain.on(CANAL.choisirStrat, (_evenement, id: string | null) => poserStratChoisie(id));
   ipcMain.on(CANAL.basculerVerrou, () => overlayTour?.basculerVerrou());
   ipcMain.on(CANAL.zonesCliquables, (_evenement, zones: Bornes[]) =>
     overlayTour?.declarerZones(zones),
@@ -255,10 +253,11 @@ function demarrer(): void {
     });
     raccourcis = lesRaccourcis;
 
+    const reglages = persistance.reglages.lire();
     const poses = lesRaccourcis.poser({
-      overlay: depot.lire<unknown>(CLE_REGLAGE.overlay, null),
-      verrou: depot.lire<unknown>(CLE_REGLAGE.verrou, null),
-      fenetre: depot.lire<unknown>(CLE_REGLAGE.fenetre, null),
+      overlay: reglages.raccourciOverlay,
+      verrou: reglages.raccourciVerrou,
+      fenetre: reglages.raccourciFenetre,
     });
     for (const [nom, pose] of Object.entries(poses)) {
       if (pose.etat === 'refuse') {
@@ -267,8 +266,15 @@ function demarrer(): void {
     }
 
     // The starting state, as the disk knows it.
-    etat.poser('affichageDemande', depot.lire('affichageDemande', false));
-    etat.poser('stratChoisie', depot.lire<string | null>('stratChoisie', null) !== null);
+    etat.poser('affichageDemande', reglages.affichageDemande);
+    etat.poser('stratChoisie', reglages.stratChoisie !== null);
+
+    // A migration, a file set aside or refused is announced afterwards, never
+    // asked about beforehand (ADR `0004`). The Fenêtre principale carries the
+    // banner; the terminal is what reports during a manual check.
+    for (const avertissement of persistance.avertissements) {
+      console.warn(`[persistance] ${JSON.stringify(avertissement)}`);
+    }
     veilleLogs.suivre(cheminWakfuLog());
 
     etat.surChangement(diffuser);
