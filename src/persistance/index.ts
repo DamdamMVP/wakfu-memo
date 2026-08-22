@@ -18,6 +18,7 @@ import { FORME_ROSTER, type Roster } from './roster.ts';
 import { FORME_STRATS, type Strats } from './strats.ts';
 import type { Etat } from './suppressions.ts';
 
+export * from './edition-roster.ts';
 export * from './edition-strats.ts';
 export * from './fichier-versionne.ts';
 export * from './ids.ts';
