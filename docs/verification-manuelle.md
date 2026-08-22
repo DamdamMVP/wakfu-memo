@@ -40,10 +40,10 @@ Tout le reste se déroule à l'identique : la fenêtre visée tient le rôle du 
 
 La Fenêtre principale est arrivée avec le Lot 5 : les gestes de ce protocole sont
 désormais les siens — l'interrupteur et les quatre conditions dans le **Socle
-d'état**, en pied de la colonne. Deux gestes attendent encore leur écran, et ils
-vivent dans un **banc d'essai nommé** : le dossier de logs sur l'écran
-**Réglages** (Lot 7), la Demande d'ajout sur l'écran **Roster** (Lot 8). Le
-terminal, lui, raconte chaque attachement.
+d'état**, en pied de la colonne. Le dossier de logs a son écran depuis le Lot 7
+— les **Réglages** ; un seul geste attend encore le sien, dans un **banc d'essai
+nommé** : la Demande d'ajout sur l'écran **Roster** (Lot 8). Le terminal, lui,
+raconte chaque attachement.
 
 1. **Une seconde instance refuse de démarrer.** L'app déjà ouverte, relancer
    `npm start` : le second processus rend la main aussitôt et la Fenêtre
@@ -74,8 +74,8 @@ terminal, lui, raconte chaque attachement.
    tranchée) : la **fiche seule** attrape alors les clics — tout le reste du jeu
    reste cliquable, la fenêtre de l'Overlay ayant beau couvrir l'écran entier.
    Le même raccourci reverrouille. `Ctrl+Alt+W` bascule l'Affichage demandé. Un
-   raccourci que le système refuse est signalé dans le terminal, et dans le banc
-   d'essai de l'écran Réglages.
+   raccourci que le système refuse est signalé dans le terminal, et sur sa ligne
+   dans l'écran Réglages, où les trois se changent depuis le Lot 7.
 6. **L'Overlay de la Demande d'ajout.** *Faire surgir la Demande d'ajout*, dans
    le banc d'essai de l'écran Roster :
    elle se pose au milieu de la fenêtre du jeu, suit ses déplacements, et
@@ -226,10 +226,9 @@ c'est le seul moyen de fabriquer le **débordement** — la phrase du Tour dépa
 4. **Le cadenas et le menu des Strats.** Déverrouillé, le cadenas s'ouvre et le
    nom de la Strat se clique. Verrouiller **replie le menu** s'il était ouvert,
    et le cadenas est traversé lui aussi — le raccourci global est le seul retour.
-5. **L'opacité et la taille du texte** n'ont pas encore de commande : elles
-   viennent avec la **porte** des Réglages (Lot 7). Pour les regarder tout de
-   même, quitter l'app, changer `opacite` et `tailleTexte` dans
-   `~/.config/wakfu-memo/reglages.json`, relancer.
+5. **L'opacité et la taille du texte** se prennent dans la **barrette**, qui ne
+   paraît que déverrouillé (Lot 7) : la porte des Réglages y mène, et le
+   protocole de ce lot-là les regarde en face.
 6. **Une Strat presque vide se dessine sans un mot.** Dans `strats.json`, vider
    les `tours` d'une Strat : `T1` et des lignes vides. Vider ses `emplacements` :
    l'en-tête seul. Aucun message, aucune explication — c'est l'objet du lot.
@@ -270,7 +269,8 @@ qui se tape** ne se rejoue sans une fenêtre.
 
 ⚠️ Ce lot **supprime le banc d'essai** de la coque du Lot 2. Deux de ses gestes
 survivent, nommés, sur l'écran qui les recevra : le dossier de logs sur
-**Réglages** (Lot 7), la Demande d'ajout sur **Roster** (Lot 8). Le bouton
+**Réglages** — que le Lot 7 a depuis remplacé par le vrai écran —, la Demande
+d'ajout sur **Roster** (Lot 8). Le bouton
 *Semer une Strat d'essai*, lui, disparaît : l'écran des Strats le remplace, et
 c'est tout l'objet du lot.
 
@@ -346,9 +346,9 @@ mv ~/.config/wakfu-memo ~/.config/wakfu-memo.garde && npm start
    **1 colonne à 912 px**, **2 à 1180**, et les fiches s'étirent pour ne laisser
    aucun trou. « Une colonne » n'est pas un mode, c'est le cas où le minimum
    dépasse la moitié de la place.
-2. ⚠️ **Le minimum n'a pas encore de commande** : il vit dans les Réglages
-   (Lot 7). Pour le regarder tout de même, quitter l'app, changer
-   `ficheMiniFenetre` dans `~/.config/wakfu-memo/reglages.json`, relancer.
+2. **Le minimum se règle dans les Réglages** (Lot 7), au seul curseur de
+   l'écran : *Largeur minimale d'une fiche*. Le bouger et revenir ici doit
+   changer le nombre de colonnes, et rien d'autre.
 3. ⚠️ **Personne n'attrape le bord droit d'une fiche ici** : dans la Fenêtre
    principale la largeur est **calculée**, et le geste de #5 ne survit que dans
    l'Overlay, où une seule fiche est visible.
@@ -552,3 +552,137 @@ portent sur des pixels et des comptes de gestes, jamais sur des secondes. Et un
 fait à guetter en usage réel : le mur coûte **sept gestes** là où la liste en
 coûtait cinq. Si répondre à trois inconnus après chaque run devient pénible,
 c'est ce chiffre-là qui aura eu raison de la forme.
+
+
+## Lot 7 — l'écran des Réglages : la porte, la barrette, et les trois raccourcis
+
+Même partage qu'aux Lots 5 et 6. Ce qui est une **règle** est en CI — `npm test`
+vérifie qu'une combinaison nue est refusée, que celle du verrou ne s'efface pas,
+et dans quel ordre une capture écrit ses modificateurs. Mais l'objet de ce lot
+est précisément **ce qui ne se juge pas sur une règle** : l'opacité contre les
+pixels du jeu, et le geste au bord droit d'une fiche, que personne ne devine.
+
+⚠️ **Ce lot supprime le banc d'essai des Réglages.** Ses quatre boutons sont
+devenus l'écran ; ce que le banc listait pour diagnostic — la fenêtre visée,
+l'attachement, le chemin du `wakfu.log` — **disparaît sans remplacement**. Ces
+faits-là se lisent au terminal, et le Socle d'état dit la seule chose qui
+intéresse le joueur : la condition est cochée, ou elle ne l'est pas.
+
+### Avant de commencer
+
+Wakfu en fenêtré, ou `WAKFU_MEMO_TITRE_FENETRE` pour viser une autre fenêtre,
+comme au Lot 2. Les deux moitiés de ce protocole se vérifient **dans les deux
+sens** : la porte sans le jeu, l'Overlay déverrouillé avec.
+
+### L'écran, avant d'y toucher
+
+1. **Quatre blocs, et aucun défilement** à la taille par défaut de la fenêtre :
+   la porte, trois raccourcis, une largeur, deux dossiers. Si l'écran défile,
+   c'est raté — la forme retenue tient sur une page, c'est ce qui l'a fait
+   gagner.
+2. ⚠️ **Aucun curseur d'aspect sur la page** : ni opacité, ni taille du texte, ni
+   largeur de la fiche de l'Overlay, ni position. Ils vivent tous derrière la
+   porte ou sur l'objet (ADR `0013`) ; s'il en réapparaît un ici, c'est une
+   régression.
+3. **Rien de ce qui a été sorti** : pas de choix de police, pas de section
+   « Reprises », pas de « rejouer la prise en main » (l'entrée de la colonne le
+   fait déjà), **aucune trace des Personnages ignorés** — ils se gèrent dans le
+   Roster, et pas même en renvoi —, aucun arbitrage entre deux dossiers de logs.
+4. **La deuxième ligne du Socle mène ici et l'écran répond.** Décocher la
+   condition des logs (renommer le `wakfu.log` surveillé), cliquer la ligne : on
+   arrive sur cet écran, et la ligne *Dossier de logs* dit qu'aucun `wakfu.log`
+   lisible n'a été trouvé. Une explication en cul-de-sac n'explique pas.
+
+### La porte, et le décor factice
+
+1. ⚠️ **Un seul geste, dans toutes les conditions.** *Régler maintenant* ouvre le
+   décor factice, **toujours** : Wakfu fermé, Affichage éteint, aucune Strat
+   choisie. Une porte qui refuserait d'ouvrir laisserait l'opacité et la taille
+   du texte irréglables au premier lancement, c'est-à-dire au moment exact où on
+   vient les régler.
+2. **Elle nomme aussi l'autre chemin**, avec la vraie combinaison du verrou : sur
+   le jeu, l'Overlay déverrouillé porte la même barrette et les deux gestes.
+3. **Le décor est nommé comme tel**, en tête du plateau. Un décor qui se ferait
+   passer pour le jeu serait l'aperçu tiède que la forme retenue a écarté.
+4. **Une zone très claire et une zone très sombre**, et ce n'est pas de la
+   décoration : sur un fond uni, l'opacité ne se jugerait pas du tout.
+5. **La fiche est celle de la Strat choisie**, son Tour 1, sans Mise en avant.
+   ⚠️ **Sans Strat choisie**, c'est une **fiche d'exemple**, dite telle quelle
+   dans sa barre. C'est un spécimen assumé, et il ne doit **jamais** paraître
+   quand une vraie fiche existe.
+6. **Les mêmes gestes qu'au-dessus du jeu** — glisser par la barre de Strat ou
+   l'en-tête, jamais par une ligne ; bord droit pour la largeur, minimum 340 px,
+   double-clic pour la largeur automatique ; les deux curseurs de la barrette —,
+   et **trois sorties** : le cadenas, « Terminé », Échap.
+7. ⚠️ **La position part sur le disque telle qu'elle est prise ici**, et le
+   plateau n'a pas la taille de la fenêtre du jeu : une fiche posée en bas à
+   droite du décor retombera plus haut à gauche sur le jeu. L'Overlay reborne ce
+   qu'il dessine, donc elle n'est jamais perdue — mais elle n'est pas placée pour
+   autant, et c'est le prix assumé de régler sans le jeu.
+
+### Sur le jeu : l'Overlay déverrouillé
+
+1. **Le raccourci du verrou est le seul chemin.** La porte ne déverrouille pas :
+   `Ctrl+Alt+L` (par défaut) le fait, et la **barrette** paraît collée au pied de
+   la fenêtre du jeu.
+2. ⚠️ **La poignée de largeur se voit dès qu'il est déverrouillé** : un filet
+   clair au bord droit de la fiche, bleu au survol. Verrouillé, **rien** — la
+   fiche est une affiche que les clics traversent. C'est la réponse au seul
+   reproche que la forme retenue s'était fait à elle-même : une poignée invisible
+   est un geste qui n'existe pas.
+3. **Les deux gestes**, et la largeur se prend **là**, sans passer par les
+   Réglages : glisser la fiche par sa barre de Strat ou son en-tête, attraper son
+   bord droit, double-cliquer pour revenir à la largeur automatique. La barrette
+   lit les chiffres pendant le glisser.
+4. **Les deux curseurs de la barrette** changent la fiche **pendant** qu'on
+   glisse, sur le décor du jeu. C'est là, et là seulement, que l'opacité se juge
+   contre les pixels qu'elle laisse passer.
+5. **Deux sorties, le même état** : le **cadenas** de la fiche et le
+   **« Terminé »** de la barrette reverrouillent tous les deux, la barrette
+   disparaît, la poignée s'efface, et les clics repartent au jeu.
+6. ⚠️ **Reverrouillé, le raccourci est le seul retour.** Le vérifier pour de bon :
+   le cadenas est traversé comme le reste. Sans lui, un Overlay verrouillé le
+   resterait pour toujours.
+7. **Tout survit au redémarrage** : opacité, taille du texte, largeur, position
+   sont dans `reglages.json`. Le **déverrouillage, non** — au lancement les clics
+   vont au jeu, et c'est le bon défaut.
+
+### Les trois raccourcis
+
+1. **Cliquer une touche ouvre la capture** — *appuyez sur une combinaison…* — et
+   la frappe suivante la prend. Vérifier que le raccourci **marche vraiment**,
+   jeu au premier plan.
+2. ⚠️ **Une combinaison nue est refusée** : taper `W` seul ne doit rien capturer,
+   la capture continue d'attendre. Un raccourci global prend la touche à toutes
+   les applications — `W` capturé, c'est la lettre W perdue en pleine discussion
+   dans le jeu.
+3. **Échap annule, un clic ailleurs aussi.**
+4. ⚠️ **Aucun bouton « retirer », sur aucune des trois lignes** : un raccourci se
+   **change**, il ne se vide pas. Celui du verrou ne le pourrait pas — il est le
+   seul retour d'un Overlay verrouillé —, et les deux autres n'y gagnaient qu'une
+   case vide de plus à comprendre. S'il en réapparaît un, c'est une régression.
+5. **Un refus du système se lit sur sa ligne.** Pour le provoquer : donner à deux
+   raccourcis la même combinaison, ou en prendre une que l'environnement de
+   bureau tient déjà (`Ctrl+Alt+T` sous GNOME).
+
+### La largeur, et les deux dossiers
+
+1. **Le seul curseur de la page** est la largeur **minimale d'une fiche dans la
+   Fenêtre principale** — pas celle de l'Overlay. La bouger, puis aller sur
+   l'écran des Strats : le nombre de colonnes change, et la fiche de l'Overlay
+   ne bouge pas d'un pixel.
+2. **Dossier de logs** : *Désigner un dossier…* le fige et suspend la découverte,
+   *retrouver tout seul* la lui rend (ADR `0014`). Le chemin affiché est celui
+   qui est retenu, jamais les deux installations.
+3. **Dossier de données** : *Ouvrir le dossier* ouvre l'explorateur sur les trois
+   fichiers JSON (ADR `0004`).
+
+### Ce que ce lot ne mesure pas
+
+**Rien n'est chronométré** — même réserve qu'aux Lots 4, 5 et 6.
+
+⚠️ Et une réserve qui lui est propre, **atténuée mais pas levée** : la poignée de
+largeur se montre maintenant dès que l'Overlay est déverrouillé, et la porte
+nomme le geste. Reste qu'il faut avoir déverrouillé pour la voir, et que rien
+ici ne mesure si un joueur y arrive seul. Le seul juge est quelqu'un qui n'a pas
+lu ces lignes.
