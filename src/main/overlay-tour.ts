@@ -1,11 +1,11 @@
 /**
- * The Overlay du Tour: the shell, and nothing of the fiche.
+ * The Overlay du Tour: the window, and what it is given to draw.
  *
  * A window with no title bar and no close button, covering the Wakfu window and
- * following it. Its content — the fiche, the Mise en avant, the silence of ADR
- * `0006` — is Lot 4.
+ * following it. The fiche places itself inside — the window is never moved for
+ * it, and never resized.
  *
- * Two rules carry everything:
+ * Three rules carry everything:
  *
  * 1. The four conditions. The Overlay is drawn only if the Affichage is
  *    demande, the logs are found, a Wakfu window exists and a Strat is chosen.
@@ -14,21 +14,55 @@
  *    padlock included, which is why the global shortcut is the only way back.
  *    Unlocked, only the rectangles the surface declares catch clicks; see
  *    `Surjeu.poserZonesCliquables`.
+ * 3. The content is **pulled**, not stored here: `contenu()` is asked at every
+ *    send. This window owns no state of the combat nor of the Strat, so nothing
+ *    can go stale in two places at once.
  */
 
 import { BrowserWindow } from 'electron';
 
+import type { Fiche } from '../suivi/fiche.ts';
 import { CANAL } from './canaux.ts';
 import type { EtatConditions } from './conditions-affichage.ts';
 import { type Bornes, OPTIONS_OVERLAY, type Surjeu } from './surjeu.ts';
 
 const REPOSE_MS = 250;
 
+/** The four aspect settings of ADR `0013`, as the surface needs them. */
+export type Aspect = {
+  readonly opacite: number;
+  readonly tailleTexte: number;
+  readonly largeur: number;
+  readonly x: number;
+  readonly y: number;
+};
+
+export type ContenuOverlay = {
+  /** `null` when no Strat is chosen: then the Overlay draws nothing at all. */
+  readonly fiche: Fiche | null;
+  readonly aspect: Aspect;
+  /** The flat list the Strat bar opens, names free and not unique. */
+  readonly strats: readonly { readonly id: string; readonly nom: string }[];
+};
+
+export type EtatOverlayTour = ContenuOverlay & {
+  readonly verrouille: boolean;
+  readonly dessine: boolean;
+};
+
 export class OverlayTour {
   readonly fenetre: BrowserWindow;
   readonly #etat: EtatConditions;
   readonly #surjeu: Surjeu;
   readonly #surChangement: () => void;
+  readonly #contenu: () => ContenuOverlay;
+
+  /**
+   * The last payload sent, verbatim. The surjeu fires a `moveresize` per pixel
+   * of a window drag, and each one would otherwise repaint the fiche and make it
+   * re-declare its clickable zones.
+   */
+  #dernierEnvoi = '';
 
   /**
    * In memory only: unlocking is a tool gesture, not an aspect of the Overlay,
@@ -46,10 +80,16 @@ export class OverlayTour {
   constructor(
     etat: EtatConditions,
     surjeu: Surjeu,
-    options: { preload: string; page: string; surChangement?: () => void },
+    options: {
+      preload: string;
+      page: string;
+      contenu: () => ContenuOverlay;
+      surChangement?: () => void;
+    },
   ) {
     this.#etat = etat;
     this.#surjeu = surjeu;
+    this.#contenu = options.contenu;
     this.#surChangement = options.surChangement ?? (() => {});
 
     this.fenetre = new BrowserWindow({
@@ -57,7 +97,11 @@ export class OverlayTour {
       webPreferences: { preload: options.preload, contextIsolation: true, sandbox: true },
     });
     void this.fenetre.loadFile(options.page);
-    this.fenetre.webContents.on('did-finish-load', () => this.envoyerEtat());
+    this.fenetre.webContents.on('did-finish-load', () => {
+      // A fresh page knows nothing, whatever we sent to the previous one.
+      this.#dernierEnvoi = '';
+      this.envoyerEtat();
+    });
 
     // Chromium rewrites the window shape on every bounds change and wipes the
     // input region along the way — measured: an empty region becomes a full
@@ -171,16 +215,31 @@ export class OverlayTour {
     this.#poserZones();
   }
 
-  /** Bounds come from the surjeu; the fiche places itself inside (Lot 4). */
+  /**
+   * Bounds come from the surjeu; the fiche places itself inside. The window
+   * covers the whole game, so there is nothing to move and nothing to resize —
+   * the fiche's own position and width are aspect settings, held on the surface
+   * side and persisted through `positionFiche` / `largeurFiche`.
+   */
   suivre(_bornes: Bornes): void {
     this.appliquer();
   }
 
+  /**
+   * The one place the surface hears from. Silent when it would repeat itself:
+   * an out-of-combat fiche is a static image, and repainting it at the rhythm of
+   * the game window's moves would cost the lock its zones.
+   */
   envoyerEtat(): void {
     if (this.fenetre.isDestroyed()) return;
-    this.fenetre.webContents.send(CANAL.overlayTour, {
+    const etat: EtatOverlayTour = {
+      ...this.#contenu(),
       verrouille: this.#verrouille,
       dessine: this.dessine,
-    });
+    };
+    const serialise = JSON.stringify(etat);
+    if (serialise === this.#dernierEnvoi) return;
+    this.#dernierEnvoi = serialise;
+    this.fenetre.webContents.send(CANAL.overlayTour, etat);
   }
 }

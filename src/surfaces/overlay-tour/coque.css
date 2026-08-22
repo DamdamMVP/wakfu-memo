@@ -1,50 +1,346 @@
-/* The surface is transparent: only the fiche shows. Nothing here catches the
+/* The fiche du Tour, as #5 froze it and #6 put it over the game.
+   Transcribed from `prototypes/overlay-combat/` (the Mise en avant, judged on a
+   real Wakfu screenshot) and `prototypes/reglages/` (the Strat bar and the
+   padlock, which rectified the chip of #6).
+
+   The surface is transparent: only the fiche shows. Nothing here catches the
    mouse by itself — the input region set from `data-cliquable` decides. */
+:root {
+  --panel: #171a21;
+  --panel-2: #1d212a;
+  --raise: #232833;
+  --line: #2b3140;
+  --line-2: #363d4d;
+  --txt: #e8eaef;
+  --dim: #8b93a3;
+  --faint: #5c6474;
+  --accent: #5b8cff;
+  --note: #e0b070;
+}
+* {
+  box-sizing: border-box;
+}
 html,
 body {
   height: 100%;
   margin: 0;
   background: transparent;
   overflow: hidden;
-  /* A drag must move the fiche, never select its text. */
+  /* A drag must move the fiche, never select a Consigne. */
   user-select: none;
 }
 body {
-  color: #e8eaef;
+  color: var(--txt);
   font:
-    14px / 1.55 ui-sans-serif,
+    14px / 1.5 ui-sans-serif,
     system-ui,
     "Segoe UI",
     sans-serif;
   -webkit-font-smoothing: antialiased;
 }
-/* Temporary placement: Lot 4 owns the position and width of the fiche, both
-   gestures on the object itself (ADR 0013). */
-.repere {
-  position: absolute;
-  top: 40px;
-  left: 40px;
-  width: 340px;
-  background: rgba(23, 26, 33, 0.86);
-  border: 1px solid #363d4d;
-  border-radius: 10px;
-  padding: 10px 13px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
-  cursor: move;
+button {
+  font: inherit;
+  color: var(--txt);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
 }
-.titre {
-  margin: 0 0 6px;
+
+/* The fiche. Its position, width, text size and opacity are the four aspect
+   settings of ADR 0013, all four given by the main process: three are gestures
+   on the object, and the height is not one of them — it is dictated by the
+   content, which is what keeps every line visible (#5). */
+.fiche {
+  position: absolute;
+  width: 420px;
+  font-size: 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 14px 40px #000000aa;
+  /* Judged against the pixels it lets through, never against a preview. */
+  opacity: 0.85;
+}
+.fiche[hidden] {
+  display: none;
+}
+
+/* The right edge, and the only place the width is set. Nobody guesses this
+   gesture — the porte of the Réglages is the one place that teaches it.
+
+   Astride the edge rather than inside it: the padlock sits at the end of the
+   Strat bar, and a grip laid over the fiche would cover it. It carries
+   `data-cliquable` of its own, being partly outside the fiche's box. */
+.poignee-largeur {
+  position: absolute;
+  right: -3px;
+  top: 0;
+  bottom: 0;
+  width: 9px;
+  z-index: 3;
+  cursor: ew-resize;
+}
+.poignee-largeur:hover:after {
+  content: "";
+  position: absolute;
+  top: 8%;
+  bottom: 8%;
+  left: 3px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+/* THE STRAT BAR, above "T1". It rectified the discreet chip of #6: a chip does
+   not say it can be clicked, whereas the name of the Strat is what you check at
+   a glance before a pull and what you change between two rooms. The padlock got
+   the end of the same line, so the Tour's description keeps its full width. */
+.stratbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 5px;
+  background: #14161c;
+  border-bottom: 1px solid var(--line);
+  border-radius: 13px 13px 0 0;
+  cursor: grab;
+}
+.stratbar .grow {
+  flex: 1;
+}
+.stratpick {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 2px 8px;
+  font-size: 0.92em;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stratpick:hover {
+  background: var(--raise);
+  border-color: var(--line-2);
+}
+/* Drawn, not typed: `▾` does not come out in every system font and reads as a
+   speck of noise. Same reason as the padlock. */
+.stratpick .chev {
+  flex: none;
+  color: var(--dim);
+}
+.stratpick:hover .chev {
+  color: var(--txt);
+}
+.stratmenu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 3px);
+  left: 4px;
+  min-width: 210px;
+  max-width: 320px;
+  background: var(--panel-2);
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  padding: 4px;
+  box-shadow: 0 16px 40px #000c;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.stratmenu[hidden] {
+  display: none;
+}
+.stratmenu button {
+  border-radius: 7px;
+  padding: 5px 9px;
+  font-size: 0.9em;
+  color: var(--dim);
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stratmenu button:hover {
+  background: var(--raise);
+  color: var(--txt);
+}
+.stratmenu button.courante {
+  color: var(--txt);
+  background: #22304d;
+}
+
+/* The padlock. Locked, it is let through like the rest of the fiche — which is
+   why the global shortcut is the only way back. */
+.cadenas {
+  flex: none;
+  align-self: center;
+  padding: 1px 6px;
+  line-height: 1.5;
+  border: 1px solid var(--line-2);
+  border-radius: 7px;
+  color: var(--dim);
+}
+.cadenas:hover {
+  border-color: var(--accent);
+  background: #283040;
+}
+.cadenas.ferme {
+  opacity: 0.55;
+}
+/* In CSS and not in a `style` attribute: `style-src 'self'` blocks an inline
+   style attribute — measured, it silently dropped this very rule. What the
+   script sets through the CSSOM (`element.style`) is not concerned. */
+.cadenas svg {
+  vertical-align: -2px;
+}
+
+.fiche > header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 12px;
+  background: linear-gradient(#1e2330, #1a1e28);
+  border-bottom: 1px solid var(--line);
+  cursor: grab;
+}
+.tnum {
+  flex: none;
+  min-width: 32px;
+  padding: 2px 7px;
+  border-radius: 9px;
+  background: #0c0e12;
+  border: 1px solid var(--line-2);
+  color: var(--accent);
+  font:
+    700 1em / 1.5 ui-monospace,
+    monospace;
+  text-align: center;
+}
+/* The Tour's global description is read: it wraps rather than being cut, the
+   height of the fiche being dictated by its content (#5). */
+.fiche > header .glob {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+  padding-top: 2px;
+}
+
+/* Past the last Tour written: the Strat is finished and the combat is not. The
+   only admission ADR 0006 leaves standing — it is a fact, not a doubt. */
+.audela {
+  margin: 0;
+  padding: 9px 14px;
+  color: var(--faint);
+  font-size: 0.93em;
+  border-bottom: 1px solid var(--line);
+}
+.audela[hidden] {
+  display: none;
+}
+.audela b {
+  color: var(--dim);
   font-weight: 600;
 }
-.etat {
-  margin: 0;
-  color: #5b8cff;
-  font:
-    600 12px / 1.5 ui-monospace,
-    monospace;
+
+.rows {
+  padding: 5px 0;
 }
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 13px 6px 10px;
+}
+.row + .row {
+  border-top: 1px solid #202531;
+}
+.row .cons {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.row .cons.vide {
+  color: var(--faint);
+}
+
+/* The visual unit of #5: a 3 px liseré stuck to the left edge of the square
+   icon, and NO text beside it — no role, no class name, no pseudo (ADR 0003).
+   The whole rendered width goes to the Consigne. */
+.cls {
+  display: flex;
+  align-items: stretch;
+  flex: none;
+}
+/* The liseré keeps its 3 px and gains a 1 px dark filet on its right, added by
+   #21 on a measurement: fourteen portraits out of eighteen have pixels beyond
+   210 of luminance where the liseré touches them. */
+.cls .edge {
+  width: 3px;
+  flex: none;
+  background: var(--c, transparent);
+  box-shadow: 1px 0 0 #0a0c10;
+}
+.cls img {
+  width: 26px;
+  height: 26px;
+  display: block;
+  background: #0c0e12;
+  box-shadow: 0 0 0 1px #ffffff14 inset;
+}
+
+/* THE MISE EN AVANT: the row background, the surface #5 left neutral on purpose.
+   Tinted with the Couleur of the Emplacement and not with a UI colour — the
+   Couleur is the identity of the Emplacement (ADR 0003) — plus a 2 px filet at
+   the left edge. No "plays now" label, ever: after the Frontière de tour of X
+   the Rotation moves to Y at once, even if monsters play in between. The
+   prominence does not promise the instant, it says where the Rotation got to. */
+.row.avant {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--c) 26%, transparent),
+    transparent 82%
+  );
+  box-shadow: inset 2px 0 0 var(--c);
+}
+.row.avant .cons {
+  font-weight: 600;
+}
+/* An inactive Emplacement is GREYED, not hidden, and the two causes — absent
+   and tombé — are indistinguishable on the screen. */
+.row.inactif {
+  opacity: 0.34;
+}
+.row.inactif img,
+.row.inactif .edge {
+  filter: grayscale(1);
+}
+
+/* The free annotation at the foot of the fiche: the "(TP SUR HUPPER)" of the
+   document being replaced. Amber italic is its signature, and it is plain text
+   — the rich text is for the Consignes. */
 .note {
-  margin: 6px 0 0;
-  color: #8b93a3;
-  font-size: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin: 0;
+  padding: 6px 16px 7px 13px;
+  background: #15161c;
+  border-top: 1px dashed var(--line-2);
+  border-radius: 0 0 13px 13px;
+  font-size: 0.9em;
+  font-style: italic;
+  color: var(--note);
+}
+.note[hidden] {
+  display: none;
+}
+.note .fleche {
+  flex: none;
+  font-style: normal;
 }

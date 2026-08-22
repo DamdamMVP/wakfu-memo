@@ -31,7 +31,10 @@ const CANAL: typeof CANAUX = {
   basculerVerrou: 'memo:basculer-verrou',
   ouvrirDossierDonnees: 'memo:ouvrir-dossier-donnees',
   deplacerDemande: 'memo:deplacer-demande',
+  largeurFiche: 'memo:largeur-fiche',
+  positionFiche: 'memo:position-fiche',
   bancDemande: 'memo:banc-demande',
+  bancStrat: 'memo:banc-strat',
 };
 
 const memo = {
@@ -51,7 +54,11 @@ const memo = {
   oublierDossierLogs: () => ipcRenderer.send(CANAL.oublierDossierLogs),
   ouvrirDossierDonnees: () => ipcRenderer.send(CANAL.ouvrirDossierDonnees),
   deplacerDemande: (dx: number, dy: number) => ipcRenderer.send(CANAL.deplacerDemande, dx, dy),
+  /** `null`: back to the automatic width, on a double-click at the right edge. */
+  poserLargeurFiche: (largeur: number | null) => ipcRenderer.send(CANAL.largeurFiche, largeur),
+  poserPositionFiche: (x: number, y: number) => ipcRenderer.send(CANAL.positionFiche, x, y),
   bancDemande: (enAttente: boolean) => ipcRenderer.send(CANAL.bancDemande, enAttente),
+  bancStrat: () => ipcRenderer.send(CANAL.bancStrat),
 };
 
 contextBridge.exposeInMainWorld('memo', memo);

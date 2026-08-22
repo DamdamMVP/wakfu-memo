@@ -24,6 +24,14 @@ export type Reglages = {
   readonly tailleTexte: number;
   /** px — the width of the Overlay's fiche, global: only one fiche is visible. */
   readonly largeurFiche: number;
+  /**
+   * px — the fiche's top-left corner, **inside the game window**: the Overlay
+   * covers the whole window, so the fiche moves within it and no window is
+   * moved. The fourth aspect setting of ADR `0013`, which the frozen inventory
+   * of #11 had left out — the tolerant key bag is what makes adding it free.
+   */
+  readonly ficheX: number;
+  readonly ficheY: number;
   /** px — the other quantity: the minimum fiche width in the Fenêtre principale. */
   readonly ficheMiniFenetre: number;
   /** The three global shortcuts. `null` means cleared; the rules decide the fallback. */
@@ -45,6 +53,8 @@ export const BORNES = {
   tailleTexte: { min: 11, max: 22 },
   /** No maximum: it is a window's width, the screen bounds it. */
   largeurFiche: { min: 340, max: Number.POSITIVE_INFINITY },
+  /** The game window bounds them, and it is not known here. */
+  fichePosition: { min: 0, max: Number.POSITIVE_INFINITY },
   ficheMiniFenetre: { min: 300, max: 700 },
 } as const;
 
@@ -52,6 +62,9 @@ export const REGLAGES_PAR_DEFAUT: Reglages = {
   opacite: 85,
   tailleTexte: 14,
   largeurFiche: 420,
+  // Off the top-left corner, where no game window puts anything vital.
+  ficheX: 40,
+  ficheY: 40,
   ficheMiniFenetre: 400,
   // Not settled — the mockup gives them as examples. What is frozen is that
   // there are three, and `raccourcis-regles.ts` holds the rule that the lock one
@@ -91,6 +104,8 @@ function lire(brut: Brut): Reglages {
     opacite: entier(brut['opacite'], BORNES.opacite, d.opacite),
     tailleTexte: entier(brut['tailleTexte'], BORNES.tailleTexte, d.tailleTexte),
     largeurFiche: entier(brut['largeurFiche'], BORNES.largeurFiche, d.largeurFiche),
+    ficheX: entier(brut['ficheX'], BORNES.fichePosition, d.ficheX),
+    ficheY: entier(brut['ficheY'], BORNES.fichePosition, d.ficheY),
     ficheMiniFenetre: entier(brut['ficheMiniFenetre'], BORNES.ficheMiniFenetre, d.ficheMiniFenetre),
     raccourciOverlay: chaineOuNull(brut['raccourciOverlay'], d.raccourciOverlay),
     raccourciVerrou: chaineOuNull(brut['raccourciVerrou'], d.raccourciVerrou),
