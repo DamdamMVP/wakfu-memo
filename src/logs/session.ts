@@ -155,6 +155,23 @@ export function suivreLaSession(
 }
 
 /**
+ * Whether this file holds a combat still open at its end — the question asked of
+ * each `wakfu.log*` when choosing which one to follow.
+ *
+ * ⚠️ **On its own it is not a proof that the file is the live one.** A rotated
+ * file cut in the middle of a fight answers `true` for ever: its `[_FL_]` burst
+ * is there and its `End fight` went to the file that took over. Measured on the
+ * author's machine — `wakfu.log.2`, untouched for twenty minutes, still declared
+ * fight `1552058722` open. So this is only ever asked of files that are being
+ * written; the freshness is what rules that out, and it is read from the file
+ * system, never from the content (ADR `0008`: the hours order nothing).
+ */
+export function unCombatEstOuvert(contenu: string): boolean {
+  const session = fenetreDeSession(analyser(contenu));
+  return decouperEnCombats(session.evenements).ouvertALaFin !== null;
+}
+
+/**
  * The combat in progress and its state, rebuilt from the content of
  * `wakfu.log`. The launch replay of ADR `0007`.
  */

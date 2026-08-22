@@ -55,6 +55,16 @@ import { VeilleWakfuLog } from './veille-wakfu-log.ts';
 const OZONE_X11 = '--ozone-platform=x11';
 
 /**
+ * How often the choice of log file is reconsidered, out of combat only.
+ *
+ * Not the rhythm of the game and not the rhythm of the fight: it is the rhythm
+ * at which Wakfu may hand over from one file to the next, which happens once in
+ * a session. Five seconds is already far more often than needed, and it is only
+ * paid between two fights.
+ */
+const PERIODE_ROTATION_MS = 5_000;
+
+/**
  * One code path, X11: native on Windows, through XWayland on Linux. Since
  * Electron 38 the default is `auto`, and under native Wayland `setPosition`,
  * `getCursorScreenPoint` and `globalShortcut` all three disappear — the game
@@ -143,6 +153,7 @@ function demarrer(): void {
   let overlayTour: OverlayTour | undefined;
   let overlayDemande: OverlayDemande | undefined;
   let raccourcis: Raccourcis | undefined;
+  let rotation: NodeJS.Timeout | null = null;
 
   /**
    * The combat in progress, as the reader last saw it. `null` is out of combat
@@ -459,6 +470,25 @@ function demarrer(): void {
     veilleCombat.suivre(veilleLogs.trouve ? veilleLogs.chemin : null);
   };
 
+  /**
+   * Wakfu rotates its log files, and in multi-account two of them are written at
+   * once: the one to follow is not settled once and for all at launch.
+   *
+   * ⚠️ **Only out of combat**, and that is the whole safety of it. Changing file
+   * replays the new one from its first byte — nothing of the old one survives,
+   * so no turn is ever counted twice — but a file created mid-fight does not
+   * hold that fight's `[_FL_]`, and switching to it would drop the Mise en avant
+   * in the middle of a pull. So we look elsewhere only when there is nothing to
+   * lose, which is also the moment before the next fight is written.
+   *
+   * The pass costs a `stat` per sibling; a read only reaches the ones being
+   * written, the big rotated ones being ruled out on their date.
+   */
+  const surveillerLaRotation = (): void => {
+    if (combat?.ouvert === true) return;
+    suivreLeFichier();
+  };
+
   const poserDossierLogs = (dossier: string | null): void => {
     persistance.modifierReglages({ dossierLogsManuel: dossier });
     // Clearing it does not turn the condition off: it hands the arbitration back
@@ -521,6 +551,7 @@ function demarrer(): void {
     raccourcis?.retirer();
     veilleCombat.arreter();
     veilleLogs.arreter();
+    if (rotation !== null) clearInterval(rotation);
     persistance.vider();
   });
 
@@ -810,6 +841,9 @@ function demarrer(): void {
       console.warn(`[persistance] ${JSON.stringify(avertissement)}`);
     }
     suivreLeFichier();
+    rotation = setInterval(surveillerLaRotation, PERIODE_ROTATION_MS);
+    // The rotation watch must never be what keeps the app alive.
+    rotation.unref?.();
 
     etat.surChangement(diffuser);
     leTour.appliquer();

@@ -4,18 +4,17 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, describe, it } from 'node:test';
 
-import { VeilleWakfuLog, wakfuLogDe, wakfuLogLisible } from './veille-wakfu-log.ts';
+import { VeilleWakfuLog, wakfuLogLisible } from './veille-wakfu-log.ts';
 
 const dossier = mkdtempSync(join(tmpdir(), 'wakfu-memo-logs-'));
 
 describe('un wakfu.log lisible est trouvé', () => {
-  it('cherche le fichier de l’ADR 0008, pas le dossier', () => {
-    strictEqual(wakfuLogDe('/tmp/logs'), join('/tmp/logs', 'wakfu.log'));
-    strictEqual(wakfuLogDe(null), null);
+  it('un dossier sans fichier de log — Wakfu jamais lancé — ne compte pas', () => {
+    strictEqual(wakfuLogLisible(join(dossier, 'wakfu.log')), false);
   });
 
-  it('un dossier sans wakfu.log — Wakfu jamais lancé — ne compte pas', () => {
-    strictEqual(wakfuLogLisible(wakfuLogDe(dossier)), false);
+  it('rien à surveiller : le chemin n’a pas été trouvé', () => {
+    strictEqual(wakfuLogLisible(null), false);
   });
 
   it('un dossier au lieu d’un fichier ne compte pas', () => {

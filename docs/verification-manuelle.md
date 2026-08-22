@@ -99,7 +99,9 @@ peuvent pas couvrir, étant toutes en `k=2` sur une seule session observée.
 
 La détection remplace le dossier désigné dès qu'aucun n'est désigné (ADR
 `0014`). Sur une machine où Steam et launcher coexistent, elle doit trouver les
-deux et retenir le `wakfu.log` le plus récemment modifié :
+deux et retenir le **fichier de log le plus récemment écrit** — `wakfu.log` ou
+l'un de ses tournés, l'amendement de l'ADR `0008` ayant retiré au nom exact
+`wakfu.log` le pouvoir de désigner le fichier vivant :
 
 ```sh
 npm run build
@@ -123,8 +125,12 @@ l'Overlay ne consomme pas encore le suivi :
 node --experimental-strip-types tools/suivre-en-direct.ts --ordre Premier,Second
 ```
 
-1. **Deux clients depuis la même installation.** C'est ce qui les fait écrire
-   dans un seul `wakfu.log`, et tout l'objet de `k`.
+1. **Deux clients depuis la même installation.** ⚠️ Ça ne garantit **pas** qu'ils
+   écrivent dans un seul fichier : mesuré le 22 août 2026, deux clients d'une
+   même installation launcher tenaient `wakfu.log` et `wakfu.log.1`, écrits à la
+   même seconde. Regarder lequel l'app a retenu (voir « la rotation », plus bas)
+   avant de conclure quoi que ce soit sur `k` — dans un fichier par client, `k`
+   vaut 1, et c'est correct.
 2. **Un combat de trois rounds au moins**, un sort par personnage à chaque tour
    dès le premier — l'ancre qui permet d'apparier tours réels et frontières.
    Compter les tours joués par chacun : c'est la vérité terrain, et le log ne la
@@ -233,8 +239,8 @@ c'est le seul moyen de fabriquer le **débordement** — la phrase du Tour dépa
 
 ### Le protocole, Wakfu lancé
 
-Deux clients depuis la **même installation**, comme pour le Lot 1 : c'est ce qui
-les fait écrire dans un seul `wakfu.log`.
+Deux clients depuis la **même installation**, comme pour le Lot 1 — sans garantie
+qu'ils partagent un fichier, voir la réserve là-haut.
 
 1. **L'entrée en combat n'est qu'un signe.** Au `[_FL_]`, la fiche ne change
    pas : **une ligne s'allume**. C'est le seul indice qu'un combat est vivant, et
@@ -684,6 +690,47 @@ largeur se montre maintenant dès que l'Overlay est déverrouillé, et la porte
 nomme le geste. Reste qu'il faut avoir déverrouillé pour la voir, et que rien
 ici ne mesure si un joueur y arrive seul. Le seul juge est quelqu'un qui n'a pas
 lu ces lignes.
+
+
+## La rotation des fichiers de log
+
+⚠️ Ajouté le 22 août 2026, après un bogue vu en jeu : la fiche restait au Tour 1
+tout un donjon, sans une ligne allumée. Cause — le combat avait commencé onze
+secondes **avant** que le `wakfu.log` suivi n'existe, et sa rafale `[_FL_]` était
+partie dans le fichier voisin. Voir l'amendement de l'ADR `0008`.
+
+### Voir ce que l'app retient
+
+```sh
+npm run build
+node -e "const d=require('./dist/logs/dossier-de-logs.js'), p=require('path');
+  const dossier = d.dossierDeLogs(d.systemeDeFichiersReel(), d.environnementReel());
+  console.log('retenu :', dossier && dossier.fichier);
+  console.log(d.fichiersDeLogs(d.systemeDeFichiersReel(), dossier.dossier, p.posix));"
+```
+
+1. **Plusieurs fichiers vivants, c'est normal en multi-compte.** Deux
+   `wakfu.log*` écrits à la même seconde, chacun tenu par un client. Le nom ne
+   dit pas lequel est le bon.
+2. **Le fichier retenu est celui qui porte le combat**, pas celui dont le nom est
+   le plus court. En combat, relancer la commande : le fichier retenu doit être
+   un de ceux dont la date bouge.
+3. ⚠️ **Un gros fichier tourné et mort ne doit jamais être retenu**, même s'il
+   déclare un combat ouvert — c'est le cas piégeux, et il est fréquent : toute
+   rotation tombée en plein combat en fabrique un.
+4. **Aucun changement de fichier pendant un combat.** C'est la garantie : la
+   question n'est reposée que hors combat. Si la Mise en avant clignote ou
+   disparaît en plein pull, c'est cette règle qui a cédé.
+5. **Un dossier qui n'a que des fichiers tournés reste valide** : la condition
+   des logs doit se cocher même sans fichier nommé exactement `wakfu.log`.
+
+### Ce que ça ne couvre pas
+
+Le seuil de « vivant » — deux minutes de retard sur le plus frais — est le seul
+nombre arbitraire de la règle. Il a été calé sur une mesure unique, où les
+vivants étaient à la même seconde et le mort à douze minutes. **Un client laissé
+tourner dans une zone déserte, chat coupé, est le cas qui le mettrait en défaut**
+— et rien ici ne le teste.
 
 
 ## Lot 8 — l'Overlay de la Demande d'ajout, et l'Échange par clic

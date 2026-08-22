@@ -65,6 +65,16 @@ jamais le **comptage** : le suivi voit toujours la liste entière des événemen
 d'un combat, donc « `k` monte → on rejoue le combat » reste gratuit (ADR
 `0009`).
 
+⚠️ **Le fichier lu n'est pas forcément celui qui s'appelle `wakfu.log`.** Wakfu
+fait tourner ses journaux, et en multi-compte **deux d'entre eux sont écrits à la
+même seconde**, un par client — mesuré. Le nom `wakfu.log` ne veut donc pas dire
+« le fichier courant », il veut dire « le premier pris ». `dossier-de-logs.ts`
+choisit parmi `wakfu.log` et ses tournés : seuls ceux qu'on écrit encore sont
+candidats, celui qui porte un combat ouvert gagne, sinon le plus frais. Et la
+question n'est reposée que **hors combat**, parce qu'un fichier créé en plein
+combat ne porte pas ce combat. Un seul fichier est lu à la fois — le principe de
+l'ADR `0008` ne bouge pas, chaque fichier vivant portant le combat en entier.
+
 `src/logs/`, `src/suivi/` et `src/domaine/` ne connaissent **ni Electron ni
 l'Overlay** : l'entrée est le texte de `wakfu.log`, la sortie un état. C'est ce
 qui les rend vérifiables contre les captures du dépôt, sans lancer le jeu.
