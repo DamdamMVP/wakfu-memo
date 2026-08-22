@@ -43,6 +43,16 @@ export type ContenuOverlay = {
   readonly aspect: Aspect;
   /** The flat list the Strat bar opens, names free and not unique. */
   readonly strats: readonly { readonly id: string; readonly nom: string }[];
+  /**
+   * How many questions are waiting behind a folded Overlay de la Demande
+   * d'ajout, `0` when none is. The **pastille** of the Strat bar, and its only
+   * job: bringing back what « plus tard » put away.
+   *
+   * ⚠️ It never counts a Conflit. A Conflit is not asked about — it is settled
+   * by the lowest Rang and repaired by the Échange par clic — and a badge for a
+   * doubt is exactly what ADR `0006` takes away from this surface.
+   */
+  readonly demandesRepliees: number;
 };
 
 export type EtatOverlayTour = ContenuOverlay & {

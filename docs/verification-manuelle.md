@@ -41,8 +41,8 @@ Tout le reste se déroule à l'identique : la fenêtre visée tient le rôle du 
 La Fenêtre principale est arrivée avec le Lot 5 : les gestes de ce protocole sont
 désormais les siens — l'interrupteur et les quatre conditions dans le **Socle
 d'état**, en pied de la colonne. Le dossier de logs a son écran depuis le Lot 7
-— les **Réglages** ; un seul geste attend encore le sien, dans un **banc d'essai
-nommé** : la Demande d'ajout sur l'écran **Roster** (Lot 8). Le terminal, lui,
+— les **Réglages** —, et depuis le Lot 8 il n'y a plus de banc d'essai nulle
+part : c'est **le combat** qui produit une Demande d'ajout. Le terminal, lui,
 raconte chaque attachement.
 
 1. **Une seconde instance refuse de démarrer.** L'app déjà ouverte, relancer
@@ -76,17 +76,15 @@ raconte chaque attachement.
    Le même raccourci reverrouille. `Ctrl+Alt+W` bascule l'Affichage demandé. Un
    raccourci que le système refuse est signalé dans le terminal, et sur sa ligne
    dans l'écran Réglages, où les trois se changent depuis le Lot 7.
-6. **L'Overlay de la Demande d'ajout.** *Faire surgir la Demande d'ajout*, dans
-   le banc d'essai de l'écran Roster :
-   elle se pose au milieu de la fenêtre du jeu, suit ses déplacements, et
-   **attrape toujours les clics** — le compteur de sa coque le prouve. Le verrou
-   ne la touche jamais, et elle n'a ni barre de titre ni ✕ (ADR `0010`).
+6. **L'Overlay de la Demande d'ajout.** Il se pose au milieu de la fenêtre du
+   jeu quand un combattant joué est inconnu du Roster, suit ses déplacements, et
+   **attrape toujours les clics** — le verrou ne le touche jamais, et il n'a ni
+   barre de titre ni ✕ (ADR `0010`). Son protocole est celui du Lot 8, plus bas.
 7. **Fermer la Fenêtre principale ferme tout.** Le ✕ quitte l'application, les
    deux Overlays compris. Pas de zone de notification.
 
 ### Ce qui n'est pas encore vérifiable
 
-- La **question** de la Demande d'ajout (Lot 8) : ce lot ne pose que la coque.
 - La **fiche** du Tour est arrivée avec le Lot 4, la **Fenêtre principale** avec
   le Lot 5 : les deux ont leur section, plus bas.
 
@@ -444,11 +442,11 @@ doublon, la purge de l'homonyme, les deux cascades — mais **la forme et les
 gestes** ne se rejouent pas sans une fenêtre. Or c'est la forme qui a été
 choisie, sur des mesures, et c'est elle qu'on regarde ici.
 
-⚠️ **Le banc d'essai survit, et il change de sens.** Il ne fait plus surgir la
-coque d'un Overlay : il **sème trois combattants à identifier**, ceux de la
-maquette — `Nozadah` l'ecaflip, `Nozaheal` l'eniripsa, `Pandacoucou` le pandawa.
-Rien d'autre ne peut remplir cette liste tant que le combat ne la produit pas
-(Lot 8).
+⚠️ **Le banc d'essai de ce lot a disparu au Lot 8**, qui l'a remplacé par la
+chose elle-même : la liste « à identifier » se remplit d'un **vrai combat**. Les
+gestes ci-dessous se rejouent donc en jouant, ou sur un `wakfu.log` recopié dans
+le dossier désigné aux Réglages — les combattants seront ceux du log, pas ceux
+de la maquette.
 
 ### Le premier lancement
 
@@ -495,7 +493,7 @@ mv ~/.config/wakfu-memo ~/.config/wakfu-memo.garde && npm start
 
 ### Répondre à une Demande d'ajout
 
-Semer les trois combattants avec le banc :
+Après un combat où des combattants joués sont inconnus du Roster :
 
 1. **La bande « à identifier » est en tête du mur**, ambre, chaque vignette
    marquée d'un `?`. Ambre et non rouge : ce n'est pas une erreur.
@@ -686,3 +684,137 @@ largeur se montre maintenant dès que l'Overlay est déverrouillé, et la porte
 nomme le geste. Reste qu'il faut avoir déverrouillé pour la voir, et que rien
 ici ne mesure si un joueur y arrive seul. Le seul juge est quelqu'un qui n'a pas
 lu ces lignes.
+
+
+## Lot 8 — l'Overlay de la Demande d'ajout, et l'Échange par clic
+
+Le dernier lot fonctionnel, et **le moins vérifiable en CI de tous** : ce qui est
+une règle y est — `npm test` fait passer ce qu'un combat a à demander, les
+Préférences de liaison qui passent devant le Rang le plus bas, et ce qui a un
+partenaire —, mais les deux objets de ce lot sont des **gestes au-dessus du
+jeu**, et l'un d'eux, l'Échange par clic, est un geste dont le résultat est
+**invisible par construction**.
+
+### Avant de commencer
+
+Wakfu en fenêtré, ou `WAKFU_MEMO_TITRE_FENETRE` pour viser une autre fenêtre,
+comme au Lot 2. Il faut ici **un vrai combat à plusieurs**, ou à défaut un
+`wakfu.log` de multi-compte recopié dans un dossier désigné aux Réglages : c'est
+la rafale `[_FL_]` qui produit la question, et rien d'autre ne le peut depuis que
+le banc d'essai est parti.
+
+Pour voir l'Échange par clic, il faut en plus une **Strat à deux Emplacements de
+la même classe**, et deux Personnages de cette classe dans le combat.
+
+### La question, quand elle surgit
+
+1. **Elle surgit à la phase de placement**, au moment où le jeu déclare les
+   combattants — et pas parce qu'on guette une « phase de placement », que le log
+   ne nomme jamais : c'est la rafale `[_FL_]` qui est ce moment-là.
+2. ⚠️ **Ni barre de titre, ni ✕** (ADR `0010`). Une fenêtre a un ✕, un ✕ veut dire
+   non, et il est gelé que ne pas répondre ne vaut pas refus. S'il en apparaît
+   un, c'est une régression du fond, pas de la forme.
+3. **Elle parle la langue de la fiche** : même fond, même rayon, même bordure, et
+   elle suit le **réglage d'opacité** — bouger le curseur de la barrette pendant
+   qu'elle est là doit la faire bouger avec la fiche.
+4. **Tous les inconnus, à plat, en même temps.** Jamais une question à la fois :
+   répondre pour l'un **fabrique** un Conflit pour l'autre, et une file d'attente
+   se recalculerait après chaque réponse (#16).
+5. **Elle attrape toujours les clics**, verrouillé ou non : le verrou de l'Overlay
+   ne s'applique jamais à elle, qu'une question sans réponse possible viderait de
+   son sens.
+6. **Elle passe sous la fiche du Tour**, jamais dessus : une question sur le
+   Roster ne doit pas cacher ce qu'il faut jouer.
+7. **Elle se traîne par son en-tête**, et elle suit la fenêtre du jeu quand on la
+   déplace — le décalage est gardé, pas la position absolue.
+
+### Répondre
+
+1. ⚠️ **Le menu d'« Ajouter à ▾ » est un menu du système**, et il **doit pouvoir
+   déborder du panneau** — qui fait deux ou trois lignes de haut. Le vérifier sur
+   la **dernière** ligne, celle où un menu du DOM serait coupé net. Échap le
+   ferme, un clic ailleurs aussi.
+2. **Le rattachement ne passe devant qu'à classe égale.** Dans le menu, les
+   Personnages saisis à la main de la classe que le log annonce viennent en
+   premier ; les autres suivent, et **disent** la classe saisie contre celle du
+   log. « Rattacher d'abord » appliqué à la lettre mettait l'erreur en tête.
+3. **La classe différente prévient, et « non » annule** (ADR `0002`) : rattacher
+   **écrase** la classe saisie par celle du log, donc « non » annule le geste
+   entier au lieu de garder un mensonge sur un ID attaché.
+4. ⚠️ **La purge silencieuse de l'ADR `0011`**, même contrôle qu'au Lot 6 :
+   identifier un Personnage fait disparaître son homonyme **sans ID d'entité et
+   au caractère près**, sans un mot. Un `Nozahéal` accentué doit survivre à
+   l'arrivée d'un `Nozaheal`.
+5. **« ignorer » est en clair**, pas dans le menu : c'est le seul refus explicite
+   qu'il y ait, et le cacher le rendrait introuvable.
+6. **Répondre au dernier fait disparaître le panneau tout seul.**
+7. **La Fenêtre principale porte la même liste** sur son écran Roster : répondre
+   d'un côté vide la question de l'autre — c'est le même Roster.
+
+### « plus tard », et la pastille
+
+1. **« plus tard ▾ » replie et ne répond pas.** La question reste entière.
+2. **La pastille paraît alors dans la barre de Strat de la fiche**, et compte ce
+   qui attend. Un clic la ramène.
+3. ⚠️ **La pastille n'existe que repliée**, et elle ne compte **jamais** un
+   Conflit — rien n'en demande. Une pastille permanente, ou qui compterait un
+   doute, serait exactement ce que l'ADR `0006` retire à cette surface.
+4. ⚠️ **Il faut déverrouiller pour la cliquer**, comme le cadenas : verrouillé,
+   les clics traversent la fiche. Le raccourci du verrou est donc le vrai chemin
+   de retour, et c'est la contrepartie assumée de « replier ».
+5. **Un combattant jamais vu déplie tout seul.** Finir le combat, en commencer un
+   autre avec un inconnu de plus : le panneau revient. Mettre une question de
+   côté n'est pas mettre la suivante de côté.
+6. **`End fight` ne l'efface pas.** Replier, laisser le combat finir : la question
+   est toujours là. ⚠️ En revanche **fermer l'app l'efface** — la liste vaut pour
+   la session, et l'inconnu revient au prochain combat où il joue (#22).
+
+### L'Échange par clic
+
+Sur une Strat à deux Emplacements de la même classe, l'Overlay **déverrouillé** :
+
+1. **Le survol nomme toute icône**, permutable ou non. Survoler l'Emplacement
+   seul de sa classe : son pseudo paraît, **zéro ligne s'allume**, et le curseur
+   ne change pas. C'est l'état vide, et il doit se voir **avant** le clic.
+2. **Survoler un doublon allume son partenaire** — l'icône cerclée de la Couleur
+   de *son* Emplacement, son liseré en halo — et le curseur devient une main.
+3. **Deux clics permutent.** Le premier saisit la ligne, les autres s'effacent ;
+   le second, sur le partenaire allumé, échange. Cliquer ailleurs relâche.
+4. ⚠️ **La preuve est tout ce qu'il y a.** Un échange réussi est **invisible** :
+   même icône, même liseré, et la Consigne appartient à l'Emplacement, donc elle
+   ne bouge pas. Les deux lignes **clignotent et disent leur pseudo une seconde**
+   — sans ça, le seul correctif d'un démarrage à chaud n'est pas vérifiable.
+5. **Ça tient au combat suivant.** L'échange s'écrit en **Préférence de liaison**
+   dans `roster.json` : rejouer la même Strat doit retrouver le même placement,
+   sans reposer la question. Supprimer un des deux Personnages doit dire où il
+   était engagé (ADR `0005`).
+6. ⚠️ **Le trou du démarrage à chaud, nommé et assumé.** Lancer l'app **pendant**
+   un combat, avec un Roster incomplet : les combattants inconnus sont bien liés
+   et bien nommés au survol, mais **rien ne se permute** — `permutable → rien`.
+   C'est voulu : ce qu'un échange écrit nomme un Personnage, et il n'y en a pas
+   encore. La sortie est la Demande d'ajout, et c'est ce qui lui a valu sa propre
+   surface. Les identifier doit rendre l'échange disponible **aussitôt**, sans
+   relancer.
+7. **Le Conflit ne se demande jamais.** Sur un combat rattrapé à froid, la
+   Liaison est provisoire et tranchée par le **Rang le plus bas** — deux
+   Emplacements candidats actifs insèreraient un arrêt fantôme dans la Rotation
+   et casseraient le compteur. Aucune boîte ne doit s'ouvrir au milieu du combat.
+
+### Ce que ce lot ne mesure pas
+
+**Rien n'est chronométré** — même réserve qu'aux Lots 4 à 7, et c'est celle que
+#16 avait posée en propre : le cas réel a été **joué, pas mesuré**, et le
+compteur du prototype comptait des gestes, pas des secondes. La contrainte « une
+demande au-delà de deux secondes fait fermer l'application » reste donc jugée sur
+la forme.
+
+Deux autres, franches :
+
+- **Le menu natif n'a été éprouvé que sous X11.** Sa capacité à déborder de la
+  fenêtre est la raison même pour laquelle ce n'est pas un `<div>` ; sous un
+  autre gestionnaire de fenêtres, c'est la première chose à revérifier.
+- **Rien ne mesure si un joueur trouve l'Échange par clic tout seul.** Il n'a
+  aucun indice permanent — c'est la contrainte de départ, le fond de ligne étant
+  pris par la Mise en avant et l'ADR `0006` refusant qu'un second signal se
+  dispute l'œil. La porte des Réglages nomme les gestes de la fiche ; celui-là
+  n'y est pas.

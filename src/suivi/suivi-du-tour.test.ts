@@ -239,3 +239,56 @@ describe('la Rotation et le Tour courant', () => {
     deepStrictEqual(parRang(etat.liaison), ['1:PJ9', '2:PJ1']);
   });
 });
+
+describe('les Préférences de liaison, quand un Échange par clic en a écrit', () => {
+  const deuxEcaflips: Composition = [
+    { classe: 'ecaflip', couleur: 'rouge' },
+    { classe: 'ecaflip', couleur: 'jaune' },
+  ];
+  const combat = (forcees: ReadonlyMap<number, string>) =>
+    suivreLeCombat([combattant('PJ9', 'ecaflip'), combattant('PJ1', 'ecaflip')], deuxEcaflips, {
+      liaisonsForcees: forcees,
+    });
+
+  it('passent avant le Rang le plus bas : c’est tout leur objet', () => {
+    // Sans elles, l'ordre d'arrivée donne `1:PJ9`. La Préférence dit le
+    // contraire, et c'est elle qui a raison — quelqu'un l'a posée à la main.
+    deepStrictEqual(parRang(combat(new Map([[1, 'PJ1']])).liaison), ['1:PJ1', '2:PJ9']);
+  });
+
+  it('une seule suffit à permuter la paire : l’autre tombe dans la place qui reste', () => {
+    deepStrictEqual(parRang(combat(new Map([[2, 'PJ9']])).liaison), ['1:PJ1', '2:PJ9']);
+  });
+
+  it('une Préférence sur un Emplacement d’une autre Classe est ignorée, pas obéie', () => {
+    // La Strat a été retouchée sous la Préférence : la référence est morte, pas
+    // fausse, et le Rang le plus bas reprend la main (ADR `0005`).
+    const etat = suivreLeCombat(
+      [combattant('PJ9', 'ecaflip'), combattant('PJ1', 'ecaflip')],
+      [
+        { classe: 'iop', couleur: 'rouge' },
+        { classe: 'ecaflip', couleur: 'jaune' },
+      ],
+      { liaisonsForcees: new Map([[1, 'PJ1']]) },
+    );
+    deepStrictEqual(parRang(etat.liaison), ['2:PJ9']);
+  });
+
+  it('une Préférence nommant quelqu’un qui ne joue pas ne prend pas la place', () => {
+    deepStrictEqual(parRang(combat(new Map([[1, 'ABSENT']])).liaison), ['1:PJ9', '2:PJ1']);
+  });
+
+  it('un combattant forcé n’est pas lié deux fois', () => {
+    deepStrictEqual(
+      parRang(
+        combat(
+          new Map([
+            [1, 'PJ1'],
+            [2, 'PJ1'],
+          ]),
+        ).liaison,
+      ),
+      ['1:PJ1', '2:PJ9'],
+    );
+  });
+});

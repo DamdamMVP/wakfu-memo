@@ -8,7 +8,7 @@
  */
 
 import type { Composition } from '../domaine/composition.ts';
-import { type EtatDuSuivi, suivreLeCombat } from '../suivi/suivi-du-tour.ts';
+import { type EtatDuSuivi, type OptionsDeSuivi, suivreLeCombat } from '../suivi/suivi-du-tour.ts';
 import type { EvenementDeLog } from './evenements.ts';
 import { analyserLigne } from './tokenizer.ts';
 
@@ -138,9 +138,12 @@ export function decouperEnCombats(evenements: readonly EvenementDeLog[]): Decoup
 export function suivreLaSession(
   evenements: readonly EvenementDeLog[],
   composition: Composition,
+  options: OptionsDeSuivi = {},
 ): Pick<Relecture, 'combats' | 'combatEnCours'> {
   const decoupage = decouperEnCombats(evenements);
-  const combats = decoupage.combats.map((combat) => suivreLeCombat(combat.evenements, composition));
+  const combats = decoupage.combats.map((combat) =>
+    suivreLeCombat(combat.evenements, composition, options),
+  );
 
   // Only one combat can be in progress: the one still open at the end of the
   // stream. An older combat left without an `End fight` — client killed, no
@@ -155,7 +158,11 @@ export function suivreLaSession(
  * The combat in progress and its state, rebuilt from the content of
  * `wakfu.log`. The launch replay of ADR `0007`.
  */
-export function relire(contenu: string, composition: Composition): Relecture {
+export function relire(
+  contenu: string,
+  composition: Composition,
+  options: OptionsDeSuivi = {},
+): Relecture {
   const session = fenetreDeSession(analyser(contenu));
-  return { session, ...suivreLaSession(session.evenements, composition) };
+  return { session, ...suivreLaSession(session.evenements, composition, options) };
 }

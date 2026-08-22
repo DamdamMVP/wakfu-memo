@@ -84,9 +84,32 @@ place ni sur l'un ni sur l'autre : trois raccourcis globaux, la largeur minimale
 d'une fiche **dans la Fenêtre principale** — une autre grandeur que celle de
 l'Overlay — et deux dossiers.
 
+**Une question posée pendant le combat n'est pas une fenêtre** (ADR `0010`).
+La **Demande d'ajout** — « ce combattant joue, le Roster ne le connaît pas » — a
+sa propre surface au-dessus du jeu, sans barre de titre et sans ✕ : un ✕ voudrait
+dire non, et ne pas répondre ne vaut pas refus. Elle porte un « plus tard » qui
+**replie**, et une **pastille** dans la barre de Strat de la fiche la ramène. Le
+verrou de l'Overlay ne s'y applique jamais. Les inconnus y sont listés **à plat,
+tous ensemble** : répondre pour l'un fabrique un Conflit pour l'autre, donc une
+file d'attente se recalculerait après chaque réponse. Le menu des réponses est un
+**menu du système** et non un élément du DOM — il doit pouvoir déborder d'un
+panneau qui fait deux lignes de haut.
+
+**Un échange réussi est invisible, et c'est ce qui dessine l'Échange par clic.**
+Deux Emplacements d'une même classe portent la même icône, la Consigne appartient
+à l'Emplacement et ne bouge pas, et l'ADR `0003` interdit le pseudo au repos :
+après la permutation, l'écran est identique. D'où la règle — **le pseudo n'existe
+que pendant le geste**. Le survol nomme toute icône, permutable ou non, allume
+les partenaires quand il y en a, et les deux lignes clignotent une seconde après.
+Ce que le geste écrit est une **Préférence de liaison**, qui nomme un Personnage :
+un combattant que le Roster ne connaît pas n'a donc **rien à permuter** — le trou
+du démarrage à chaud, et la raison pour laquelle la Demande d'ajout a fallu une
+surface où les faire entrer **pendant** le combat.
+
 **Les écrans qui écrivent n'écrivent rien eux-mêmes.** Une surface n'a pas d'API
 Node, donc elle envoie une **intention** — `ajouter-emplacement`,
-`poser-couleur`, `deplacer-emplacement`, `saisir-personnage`, `rattacher` — et
+`poser-couleur`, `deplacer-emplacement`, `saisir-personnage`, `rattacher`,
+`preferer` — et
 `edition-strats.ts` ou `edition-roster.ts` décide : la Couleur libre, l'échange
 d'une Couleur déjà prise, la renumérotation des Rangs, les Consignes qu'un
 Emplacement supprimé emporte ; la canonisation d'un nom tapé, le refus d'un

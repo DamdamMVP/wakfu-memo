@@ -124,7 +124,11 @@ _Avoid_: modale, popup, invite, inconnu
 **Échange par clic** :
 Le geste qui permute les Personnages liés à deux Emplacements de même classe,
 en cliquant leur icône dans la fiche du Tour. Seule réparation d'une Liaison
-pendant un combat, et la seule qui existe sur un combat rattrapé à froid.
+pendant un combat, et la seule qui existe sur un combat rattrapé à froid. Le
+survol **nomme** toute icône, permutable ou non, et **allume** les partenaires
+quand il y en a ; le pseudo n'existe **que** pendant le geste, sans quoi un
+échange réussi serait invisible. Ne s'offre qu'entre deux Personnages du Roster :
+ce qu'il écrit est une Préférence de liaison, qui nomme un Personnage.
 _Avoid_: permutation, swap, correction
 
 **Préférence de liaison** :
@@ -182,6 +186,14 @@ traversé lui aussi, donc ce raccourci est le seul retour. Verrouillé par défa
 Ne s'applique jamais à l'Overlay de la Demande d'ajout, qu'une question sans
 réponse possible viderait de son sens.
 _Avoid_: click-through, transparent aux clics, épinglé, figé
+
+**Pastille** :
+La petite marque de la barre de Strat qui compte ce que « plus tard » a replié,
+et qui le ramène. Elle ne paraît **que** repliée, elle n'a que ce rôle, et elle
+ne compte **jamais** un Conflit — un Conflit ne se demande pas. Elle vit dans
+l'Overlay verrouillé comme le cadenas : le raccourci global est ce qui la rend
+cliquable.
+_Avoid_: badge, compteur, indicateur, notification
 
 **Barrette** :
 La bande d'outil collée au pied de l'Overlay déverrouillé, et du Décor factice :

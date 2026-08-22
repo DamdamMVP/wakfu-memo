@@ -204,6 +204,28 @@ button {
   border-color: var(--accent);
   background: #283040;
 }
+
+/* LA PASTILLE. Elle ne paraît que si « plus tard » a replié la question, et elle
+   ne fait qu'une chose : la ramener. Elle ne compte jamais un Conflit — rien
+   n'en demande — et n'est donc pas un aveu de doute (ADR 0006). */
+.askdot {
+  flex: none;
+  align-self: center;
+  padding: 1px 7px;
+  font-size: 0.8em;
+  line-height: 1.5;
+  color: var(--accent);
+  background: #0c0e12;
+  border: 1px solid var(--accent);
+  border-radius: 7px;
+  white-space: nowrap;
+}
+.askdot[hidden] {
+  display: none;
+}
+.askdot:hover {
+  background: #16203a;
+}
 .cadenas.ferme {
   opacity: 0.55;
 }
@@ -267,6 +289,7 @@ button {
   padding: 5px 0;
 }
 .row {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -462,4 +485,87 @@ button {
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 0 3px #5b8cff33;
+}
+
+/* ================================================== L'ÉCHANGE PAR CLIC ===== */
+/* Le terrain était figé avant que ce geste n'arrive, et il ne laissait presque
+   rien : le fond de ligne est pris par la Mise en avant, et l'ADR 0006 refuse
+   qu'un second signal se dispute l'œil — le chevron du suivant avait été retiré
+   pour ce motif exact. L'en-tête est occupé par la pastille de Tour, la
+   description globale et le sélecteur de Strat. Il reste **l'icône, son liseré,
+   et le bord droit de la ligne**, et c'est tout ce qui est peint ici.
+
+   Rien n'est permanent : la variante retenue en #16 est « deux clics avec
+   pré-éclairage au survol ». Avant le survol, une fiche où rien n'est
+   permutable et une fiche où tout l'est se ressemblent — c'est voulu. */
+
+/* Le seul indice au repos, et il n'apparaît qu'une fois le pointeur dessus. */
+.row.permutable .cls {
+  cursor: pointer;
+}
+
+/* Le partenaire allumé : l'icône cerclée de la Couleur de SON Emplacement, et
+   son liseré qui prend du halo. La Couleur est l'identité de l'Emplacement
+   (ADR 0003), donc c'est elle qui parle, jamais une couleur d'interface. */
+.row.allume .cls img {
+  box-shadow:
+    0 0 0 2px var(--c) inset,
+    0 0 0 1px #ffffff14 inset;
+}
+.row.allume .cls .edge {
+  box-shadow: 0 0 9px var(--c);
+}
+
+/* La ligne saisie, en attendant le second clic. Blanche et non colorée : elle
+   n'est pas un partenaire, elle est le point de départ. */
+.row.source .cls img {
+  box-shadow: 0 0 0 2px #fff inset;
+}
+.row.source .cls {
+  animation: battement 1.1s infinite;
+}
+@keyframes battement {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* Une ligne saisie, les autres s'effacent : le choix restant est celui qui est
+   allumé, et il n'y en a qu'un dans le cas courant. */
+.rows.echange .row:not(.allume):not(.source) {
+  opacity: 0.3;
+}
+
+/* La preuve que la permutation a porté. Une seconde, et c'est fini. */
+.row.clignote {
+  animation: clignotement 0.45s ease-in-out 3;
+}
+@keyframes clignotement {
+  50% {
+    background: color-mix(in srgb, var(--c) 34%, transparent);
+  }
+}
+
+/* LE PSEUDO. Il n'existe QUE pendant le geste — l'ADR 0003 lui interdit le repos
+   sur la fiche, et c'est cette interdiction qui rend un échange réussi
+   invisible : même icône, même liseré, Consigne attachée à l'Emplacement. Le
+   montrer au survol est ce qui rend le geste vérifiable, et il s'en va avec le
+   pointeur. */
+.row .pseudo {
+  position: absolute;
+  right: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.82em;
+  color: #fff;
+  background: #000000b0;
+  border-radius: 6px;
+  padding: 1px 7px;
+  white-space: nowrap;
+  /* Il ne prend jamais le clic : c'est l'icône qui se saisit. */
+  pointer-events: none;
+  display: none;
+}
+.row.nomme .pseudo {
+  display: block;
 }

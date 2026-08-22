@@ -34,8 +34,35 @@ export const CANAL = {
    */
   poserRaccourci: 'memo:poser-raccourci',
   ouvrirDossierDonnees: 'memo:ouvrir-dossier-donnees',
+  /** main → Overlay de la Demande d'ajout: the questions, and who can answer. */
+  overlayDemande: 'memo:overlay-demande',
   /** Demande d'ajout → main: the player dragged the panel, by this much. */
   deplacerDemande: 'memo:deplacer-demande',
+  /**
+   * Demande d'ajout → main: the panel is this tall. The surface is the only one
+   * that knows — the list is one to six lines, and a warning can open under one.
+   */
+  hauteurDemande: 'memo:hauteur-demande',
+  /**
+   * Demande d'ajout → main: « plus tard » folds it, the pastille of the fiche
+   * brings it back. Never a refusal, and never an answer (ADR `0010`).
+   */
+  replierDemande: 'memo:replier-demande',
+  /**
+   * Demande d'ajout → main, as `invoke`: pop the answer menu **natively**, and
+   * give back what was chosen.
+   *
+   * `Menu.popup()` and not a `<div>`, and that is a constraint of the domain and
+   * not a taste: this surface is a short panel of two or three lines, and a list
+   * of profiles laid inside its DOM is cut by its own frame. A system menu
+   * overflows its window — the screen is the only frame left (#16).
+   */
+  menuDeDemande: 'memo:menu-demande',
+  /**
+   * Overlay du Tour → main: the Échange par clic. Two Rangs, and the Liaison of
+   * the two Emplacements permutes.
+   */
+  echangerLiaison: 'memo:echanger-liaison',
   /**
    * Overlay du Tour → main: the two gestures on the object itself (ADR `0013`).
    * A `null` width asks for the automatic one.
@@ -72,9 +99,4 @@ export const CANAL = {
   consequenceSuppressionPersonnage: 'memo:consequence-suppression-personnage',
   /** Idem for a Profil: the Personnages it carries away, and their Préférences. */
   consequenceSuppressionProfil: 'memo:consequence-suppression-profil',
-  /**
-   * Lot 6 test bench: seeds the Demandes d'ajout the log will produce in Lot 8,
-   * and clears them. Nothing else can fill that list until the fight does.
-   */
-  bancDemande: 'memo:banc-demande',
 } as const;

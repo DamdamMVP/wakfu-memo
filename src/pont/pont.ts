@@ -34,7 +34,12 @@ const CANAL: typeof CANAUX = {
   ficheMiniFenetre: 'memo:fiche-mini-fenetre',
   poserRaccourci: 'memo:poser-raccourci',
   ouvrirDossierDonnees: 'memo:ouvrir-dossier-donnees',
+  overlayDemande: 'memo:overlay-demande',
   deplacerDemande: 'memo:deplacer-demande',
+  hauteurDemande: 'memo:hauteur-demande',
+  replierDemande: 'memo:replier-demande',
+  menuDeDemande: 'memo:menu-demande',
+  echangerLiaison: 'memo:echanger-liaison',
   largeurFiche: 'memo:largeur-fiche',
   positionFiche: 'memo:position-fiche',
   editerStrats: 'memo:editer-strats',
@@ -43,7 +48,6 @@ const CANAL: typeof CANAUX = {
   editerRoster: 'memo:editer-roster',
   consequenceSuppressionPersonnage: 'memo:consequence-suppression-personnage',
   consequenceSuppressionProfil: 'memo:consequence-suppression-profil',
-  bancDemande: 'memo:banc-demande',
 };
 
 const memo = {
@@ -70,7 +74,20 @@ const memo = {
   designerDossierLogs: () => ipcRenderer.invoke(CANAL.designerDossierLogs),
   oublierDossierLogs: () => ipcRenderer.send(CANAL.oublierDossierLogs),
   ouvrirDossierDonnees: () => ipcRenderer.send(CANAL.ouvrirDossierDonnees),
+  surOverlayDemande: (rappel: (etat: unknown) => void) => {
+    ipcRenderer.on(CANAL.overlayDemande, (_evenement, etat) => rappel(etat));
+  },
   deplacerDemande: (dx: number, dy: number) => ipcRenderer.send(CANAL.deplacerDemande, dx, dy),
+  /** The panel measures itself: the question is one to six lines tall. */
+  poserHauteurDemande: (hauteur: number) => ipcRenderer.send(CANAL.hauteurDemande, hauteur),
+  /** « plus tard » folds, the pastille of the fiche unfolds. Never an answer. */
+  replierDemande: (replie: boolean) => ipcRenderer.send(CANAL.replierDemande, replie),
+  /** The native answer menu, which has to be able to leave the window (#16). */
+  menuDeDemande: (idEntite: string, x: number, y: number) =>
+    ipcRenderer.invoke(CANAL.menuDeDemande, idEntite, x, y),
+  /** The Échange par clic: the Liaison of two Emplacements permutes. */
+  echangerLiaison: (rangA: number, rangB: number) =>
+    ipcRenderer.send(CANAL.echangerLiaison, rangA, rangB),
   /** `null`: back to the automatic width, on a double-click at the right edge. */
   poserLargeurFiche: (largeur: number | null) => ipcRenderer.send(CANAL.largeurFiche, largeur),
   poserPositionFiche: (x: number, y: number) => ipcRenderer.send(CANAL.positionFiche, x, y),
@@ -90,7 +107,6 @@ const memo = {
     ipcRenderer.invoke(CANAL.consequenceSuppressionPersonnage, personnageId),
   consequenceSuppressionProfil: (profilId: string) =>
     ipcRenderer.invoke(CANAL.consequenceSuppressionProfil, profilId),
-  bancDemande: (enAttente: boolean) => ipcRenderer.send(CANAL.bancDemande, enAttente),
 };
 
 contextBridge.exposeInMainWorld('memo', memo);

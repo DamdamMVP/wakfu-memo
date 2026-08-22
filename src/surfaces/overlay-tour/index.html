@@ -32,6 +32,16 @@
           stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 1.4 4.5 4.7 8 1.4"></path></svg>
       </button>
       <div class="grow"></div>
+      <!--
+        LA PASTILLE. Elle ne sert qu'à ramener l'Overlay de la Demande d'ajout
+        que « plus tard » a replié — c'est le seul rôle qui lui reste depuis #16,
+        et il n'existe que parce que « plus tard » replie sans répondre. Elle ne
+        compte JAMAIS un Conflit : un Conflit ne se demande pas, il se tranche au
+        Rang le plus bas et se répare à l'Échange par clic. Une pastille pour un
+        doute est exactement ce que l'ADR 0006 retire à cette surface.
+      -->
+      <button class="askdot" id="askdot" type="button" hidden
+        title="ramener la question restée sans réponse"></button>
       <button class="cadenas" id="cadenas" type="button">
         <svg width="11" height="13" viewBox="0 0 11 13" fill="none" stroke="currentColor"
           stroke-width="1.3" aria-hidden="true">
