@@ -38,18 +38,29 @@ Tools de Visual Studio.
 
 ```
 src/main/         le processus principal — conditions d'affichage, surjeu,
-                  verrou, raccourcis
+                  verrou, raccourcis, veille du combat
 src/pont/         le preload : ce que les surfaces ont le droit de demander
 src/surfaces/     la Fenêtre principale et les deux Overlays
 src/logs/         le lecteur de wakfu.log — tokenizer, relecture de session,
-                  découverte du dossier
-src/suivi/        le Tour courant et la Rotation, déduits des événements
+                  suivi du fichier qui grandit, découverte du dossier
+src/suivi/        le Tour courant, la Rotation, et la fiche du Tour qu'ils
+                  dessinent avec une Strat
 src/persistance/  les trois fichiers JSON — réglages, roster, strats — et les
                   cascades de suppression
 src/domaine/      les Classes, la Composition d'une Strat, les deux palettes,
                   les segments de texte riche
 src/echantillons/ l'accès aux captures, pour les tests seuls
+icons/            les dix-huit portraits de classe, nommés par clé de classe.
+                  `npm run build` les recopie dans `dist/icons/`, où les
+                  surfaces les demandent
 ```
+
+**La couture du produit tient en trois appels** : `FluxDuLog` lit les octets
+ajoutés à `wakfu.log`, `suivreLaSession` en tire l'état du combat, et
+`ficheDuTour` le pose sur une Strat. Ce qui est incrémental est la **lecture**,
+jamais le **comptage** : le suivi voit toujours la liste entière des événements
+d'un combat, donc « `k` monte → on rejoue le combat » reste gratuit (ADR
+`0009`).
 
 `src/logs/`, `src/suivi/` et `src/domaine/` ne connaissent **ni Electron ni
 l'Overlay** : l'entrée est le texte de `wakfu.log`, la sortie un état. C'est ce
@@ -65,7 +76,7 @@ pas attendre une promesse, donc un vidage asynchrone perdrait la dernière
 
 | | qui l'appelle |
 |---|---|
-| `copie-statique.mjs` | `npm run build` — copie le HTML et le CSS vers `dist/` |
+| `copie-statique.mjs` | `npm run build` — copie le HTML, le CSS et les portraits vers `dist/` |
 | `rustine-surjeu.mjs` | `postinstall` — sans lui, pas de surjeu |
 | `essai-titre.c` | `src/main/surjeu-titre.test.ts`, qui le compile et l'exécute |
 | `entetes-bouchons/uv.h` | le compilateur — un bouchon pour libuv, que l'en-tête rustiné inclut mais que la règle testée ne touche jamais |

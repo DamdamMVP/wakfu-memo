@@ -2,24 +2,59 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'">
 <title>Overlay du Tour</title>
 <link rel="stylesheet" href="coque.css">
 </head>
 <body>
   <!--
-    LOT 2 SHELL. The window covers the whole game window and lets you see
-    through it: what is drawn here is the fiche du Tour, and Lot 4 lays it down.
-    The marker below exists so we can watch the surface follow the game. It
-    carries `data-cliquable`: that is how a surface declares the part of itself
-    that catches clicks once the Overlay is unlocked — everything else lets them
-    through, unlocked or not.
+    La fiche du Tour : un seul Tour à la fois, l'objet qu'on a écrit dans
+    l'éditeur. Ce qui est ici est le squelette ; `coque.js` le remplit à chaque
+    message du processus principal.
+
+    `data-cliquable` sur la fiche : c'est ainsi qu'une surface déclare la part
+    d'elle-même qui attrape les clics quand l'Overlay est déverrouillé. La
+    fenêtre couvre tout le jeu, tout le reste laisse passer — verrouillé ou non.
+    Le menu des Strats et la poignée de largeur le portent aussi :
+    tous deux débordent de la fiche.
+
+    Rien ici n'explique quoi que ce soit (ADR 0006) : pas de compteur douteux,
+    pas d'annonce du Tour suivant, pas d'état « aucune strat ». Ce qui explique
+    vit dans la Fenêtre principale (ADR 0012).
   -->
-  <div class="repere" data-cliquable>
-    <p class="titre">Overlay du Tour — coque</p>
-    <p class="etat" id="etat">…</p>
-    <p class="note">Le Lot 4 pose la fiche ici.</p>
+  <div class="fiche" id="fiche" data-cliquable hidden>
+    <div class="poignee-largeur" id="poignee-largeur" data-cliquable title="glisser : la largeur de la fiche · double-clic : la largeur automatique"></div>
+
+    <div class="stratbar" id="stratbar">
+      <button class="stratpick" id="stratpick" type="button" title="changer de Strat">
+        <span id="strat-nom"></span>
+        <svg class="chev" width="9" height="6" viewBox="0 0 9 6" fill="none"
+          stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 1.4 4.5 4.7 8 1.4"></path></svg>
+      </button>
+      <div class="grow"></div>
+      <button class="cadenas" id="cadenas" type="button">
+        <svg width="11" height="13" viewBox="0 0 11 13" fill="none" stroke="currentColor"
+          stroke-width="1.3" aria-hidden="true">
+          <rect x="0.7" y="5.6" width="9.6" height="6.7" rx="1.4" fill="currentColor"
+            stroke="none" opacity=".85"></rect>
+          <path id="anse" d="M2.9 5.6V3.6a2.6 2.6 0 0 1 5.2 0v2"></path>
+        </svg>
+      </button>
+      <div class="stratmenu" id="stratmenu" data-cliquable hidden></div>
+    </div>
+
+    <header>
+      <span class="tnum" id="tnum">T1</span>
+      <span class="glob" id="glob"></span>
+    </header>
+
+    <p class="audela" id="audela" hidden></p>
+
+    <div class="rows" id="rows"></div>
+
+    <p class="note" id="note" hidden><span class="fleche">↳</span><span id="note-texte"></span></p>
   </div>
+
   <script type="module" src="coque.js"></script>
 </body>
 </html>

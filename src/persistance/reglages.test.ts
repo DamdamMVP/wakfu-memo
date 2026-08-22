@@ -25,6 +25,8 @@ describe('reglages.json — un sac de clés tolérant', () => {
       opacite: 5000,
       tailleTexte: 'gros',
       largeurFiche: 12,
+      ficheX: -80,
+      ficheY: 12.6,
       affichageDemande: 'oui',
       stratChoisie: '   ',
     });
@@ -32,6 +34,10 @@ describe('reglages.json — un sac de clés tolérant', () => {
     strictEqual(reglages.opacite, 100);
     strictEqual(reglages.tailleTexte, REGLAGES_PAR_DEFAUT.tailleTexte);
     strictEqual(reglages.largeurFiche, 340);
+    // La position de la fiche est dans la fenêtre du jeu : rien de négatif, et
+    // pas de demi-pixel. Le haut n'est borné que par la fenêtre, inconnue ici.
+    strictEqual(reglages.ficheX, 0);
+    strictEqual(reglages.ficheY, 13);
     strictEqual(reglages.affichageDemande, false);
     strictEqual(reglages.stratChoisie, null);
   });

@@ -63,7 +63,7 @@ raconte chaque attachement.
    reste collée. Réduire le jeu ou passer à une autre fenêtre l'escamote ; y
    revenir le ramène.
 4. **Les clics traversent l'Overlay verrouillé.** Verrouillé par défaut :
-   cliquer *à travers* le repère de l'Overlay doit atteindre le jeu.
+   cliquer *à travers* la fiche de l'Overlay doit atteindre le jeu.
 5. **Le raccourci le déverrouille.** `Ctrl+Alt+L` par défaut (combinaison non
    tranchée) : la **fiche seule** attrape alors les clics — tout le reste du jeu
    reste cliquable, la fenêtre de l'Overlay ayant beau couvrir l'écran entier.
@@ -79,11 +79,9 @@ raconte chaque attachement.
 
 ### Ce qui n'est pas encore vérifiable
 
-- La **fiche** du Tour (Lot 4), la vraie **Fenêtre principale** et son **Socle
-  d'état** (Lot 5), la **question** de la Demande d'ajout (Lot 8) : ce lot ne
-  pose que les coques.
-- La **fiche** du Tour, alimentée par le suivi du Lot 1 : la coque de l'Overlay
-  ne porte qu'un repère.
+- La vraie **Fenêtre principale** et son **Socle d'état** (Lot 5), la
+  **question** de la Demande d'ajout (Lot 8) : ce lot ne pose que les coques.
+- La **fiche** du Tour est arrivée avec le Lot 4, plus bas.
 
 ## Lot 1 — le lecteur de logs
 
@@ -180,3 +178,73 @@ Le vidage au `before-quit` est le seul point que le bac à sable ne montre pas :
 Puis, une fois, avec `roster.json` rendu illisible avant le lancement : le
 bandeau de la Fenêtre principale doit **le dire**, et nommer le fichier mis de
 côté.
+
+## Lot 4 — l'Overlay du Tour : la fiche, la Mise en avant, et le silence
+
+Tout ce qui se déduit d'un log se vérifie en CI : `npm test` rejoue un combat
+d'échantillon événement par événement et regarde la Mise en avant descendre les
+lignes. Restent à la main **ce qui se regarde** — la lisibilité sur les pixels du
+jeu — et les **trois gestes sur l'objet**, qu'aucun test ne peut juger.
+
+### La Strat d'essai
+
+L'Overlay ne se dessine pas sans Strat choisie (ADR `0006`) et l'éditeur est le
+Lot 5. Le banc d'essai de la Fenêtre principale porte donc *Semer une Strat
+d'essai* : six Emplacements, sept Tours, le contenu fictif des maquettes #5 et
+#6. Semer la choisit d'office, comme le fera la création de la première Strat.
+
+Elle sert deux fois : sept Tours écrits contre un combat qui en fait douze,
+c'est **le débordement** qu'on ne peut pas fabriquer autrement.
+
+### Le protocole, sans combat
+
+1. **Hors combat, la fiche est celle du Tour 1.** La quatrième condition
+   remplie, la fiche paraît : barre de Strat, `T1`, six lignes, la note en
+   ambre. **Aucune ligne teintée, rien de grisé.** C'est l'état qu'on a sous les
+   yeux le plus longtemps.
+2. **Les six Couleurs contre les portraits.** Le liseré de 3 px et son filet
+   sombre doivent séparer la Couleur du portrait pour les six, le `jaune`
+   compris. C'est la mesure de #21 rendue à l'échelle réelle, sur le vrai décor.
+3. **Les trois gestes sur l'objet** (ADR `0013`) — et ils exigent l'Overlay
+   **déverrouillé**, `Ctrl+Alt+L` par défaut :
+   - **déplacer** la fiche en l'attrapant par sa barre de Strat ou son en-tête,
+     jamais par une ligne (les lignes sont au geste d'Échange par clic du Lot 8) ;
+   - **la largeur** au bord droit, minimum 340 px, **double-clic** pour revenir
+     à la largeur automatique ;
+   - les deux survivent au redémarrage : ils sont dans `reglages.json`.
+4. **Le cadenas et le menu des Strats.** Déverrouillé, le cadenas s'ouvre et le
+   nom de la Strat se clique. Verrouiller **replie le menu** s'il était ouvert,
+   et le cadenas est traversé lui aussi — le raccourci global est le seul retour.
+5. **L'opacité et la taille du texte** n'ont pas encore de commande : elles
+   viennent avec la **porte** des Réglages (Lot 7). Pour les regarder tout de
+   même, quitter l'app, changer `opacite` et `tailleTexte` dans
+   `~/.config/wakfu-memo/reglages.json`, relancer.
+6. **Une Strat presque vide se dessine sans un mot.** Dans `strats.json`, vider
+   les `tours` d'une Strat : `T1` et des lignes vides. Vider ses `emplacements` :
+   l'en-tête seul. Aucun message, aucune explication — c'est l'objet du lot.
+
+### Le protocole, Wakfu lancé
+
+Deux clients depuis la **même installation**, comme pour le Lot 1 : c'est ce qui
+les fait écrire dans un seul `wakfu.log`.
+
+1. **L'entrée en combat n'est qu'un signe.** Au `[_FL_]`, la fiche ne change
+   pas : **une ligne s'allume**. C'est le seul indice qu'un combat est vivant, et
+   il n'y a pas un mot de plus.
+2. **La Mise en avant descend d'une ligne par tour joué**, et le `T` change au
+   bouclage. Elle **ne promet pas l'instant** : après la fin du tour d'un
+   personnage elle passe au suivant tout de suite, même si des monstres jouent
+   avant. Ne pas prendre ça pour un bug.
+3. **Un Emplacement que personne ne tient est grisé** dès le début — une strat à
+   six jouée à deux en grise quatre. Un KO en grise un de plus, une réanimation
+   le dégrise. Rien ne distingue les deux causes.
+4. **Au-delà du T7**, la phrase paraît et les lignes restent affichées, vides.
+5. **`End fight` ramène la fiche au Tour 1**, sans teinte. Et sans `End fight` —
+   client tué, kick — le **pull suivant** remet tout à zéro : il n'y a aucun
+   délai d'expiration à attendre.
+6. **Zéro geste entre deux runs.** Enchaîner deux combats sans rien toucher.
+
+⚠️ **Le multi-compte est ce qui se vérifie mal tout seul.** Un `k` mal lu donne
+un overlay **deux fois trop rapide**, muet et faux (ADR `0006`) : la seule vérité
+terrain est de compter les tours joués à la main, comme le Lot 1 le demande.
+

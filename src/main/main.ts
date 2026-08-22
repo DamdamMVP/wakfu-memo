@@ -13,14 +13,25 @@ import {
   environnementReel,
   systemeDeFichiersReel,
 } from '../logs/dossier-de-logs.ts';
-import { type Avertissement, Persistance } from '../persistance/index.ts';
+import {
+  type Avertissement,
+  BORNES,
+  compositionDe,
+  Persistance,
+  REGLAGES_PAR_DEFAUT,
+  type Strat,
+} from '../persistance/index.ts';
+import { ficheDuTour } from '../suivi/fiche.ts';
+import type { EtatDuSuivi } from '../suivi/suivi-du-tour.ts';
+import { stratDEssai } from './banc-strat.ts';
 import { CANAL } from './canaux.ts';
 import { type Conditions, EtatConditions, type NomCondition } from './conditions-affichage.ts';
 import { FenetrePrincipale } from './fenetre-principale.ts';
 import { OverlayDemande } from './overlay-demande.ts';
-import { OverlayTour } from './overlay-tour.ts';
+import { type ContenuOverlay, OverlayTour } from './overlay-tour.ts';
 import { type Poses, Raccourcis } from './raccourcis.ts';
 import { type Bornes, Surjeu, TITRE_FENETRE_WAKFU } from './surjeu.ts';
+import { VeilleDuCombat } from './veille-du-combat.ts';
 import { VeilleWakfuLog } from './veille-wakfu-log.ts';
 
 const OZONE_X11 = '--ozone-platform=x11';
@@ -61,7 +72,11 @@ type Instantane = {
   demandeEnAttente: boolean;
   wakfuLog: string | null;
   dossierLogsManuel: string | null;
+  /** The name, for the sentence the Socle d'état concludes with (ADR `0012`). */
   stratChoisie: string | null;
+  /** The id, because two Strats may bear the same name. */
+  stratChoisieId: string | null;
+  strats: { id: string; nom: string }[];
   raccourcis: Poses | null;
   dossierDonnees: string;
   avertissements: Avertissement[];
@@ -83,8 +98,28 @@ function demarrer(): void {
   let overlayDemande: OverlayDemande | undefined;
   let raccourcis: Raccourcis | undefined;
 
-  const veilleLogs = new VeilleWakfuLog((trouve) => {
+  /**
+   * The combat in progress, as the reader last saw it. `null` is out of combat
+   * **and** a combat we could not rebuild: the two are indistinguishable on
+   * purpose (ADR `0006`).
+   */
+  let combat: EtatDuSuivi | null = null;
+
+  /**
+   * The Tour courant and the Rotation, followed live. Every change repaints the
+   * fiche and nothing else: the Overlay has no other source.
+   */
+  const veilleCombat = new VeilleDuCombat((enCours) => {
+    combat = enCours;
+    overlayTour?.envoyerEtat();
+  });
+
+  const veilleLogs = new VeilleWakfuLog((trouve, chemin) => {
     etat.poser('logsTrouves', trouve);
+    // The file the Overlay follows is the one the condition rules on: losing it
+    // drops the combat state with it, rather than freezing the fiche on a Tour
+    // that nothing will ever move again.
+    veilleCombat.suivre(trouve ? chemin : null);
     diffuser();
   });
 
@@ -102,6 +137,35 @@ function demarrer(): void {
       dossierDesigne: persistance.reglages.lire().dossierLogsManuel ?? undefined,
     })?.fichier ?? null;
 
+  /**
+   * The chosen Strat, or `null` — including when the stored id names a Strat
+   * that no longer exists. A dangling id is not a chosen Strat: it must not let
+   * the condition pass, or the Overlay would have to draw a fiche of nothing,
+   * which is precisely the state ADR `0006` refuses.
+   */
+  const stratChoisie = (): Strat | null => {
+    const id = persistance.reglages.lire().stratChoisie;
+    if (id === null) return null;
+    return persistance.strats.lire().strats.find((strat) => strat.id === id) ?? null;
+  };
+
+  /** What the Overlay is given to draw, pulled at every send. */
+  const contenuOverlay = (): ContenuOverlay => {
+    const strat = stratChoisie();
+    const reglages = persistance.reglages.lire();
+    return {
+      fiche: strat === null ? null : ficheDuTour(strat, combat),
+      aspect: {
+        opacite: reglages.opacite,
+        tailleTexte: reglages.tailleTexte,
+        largeur: reglages.largeurFiche,
+        x: reglages.ficheX,
+        y: reglages.ficheY,
+      },
+      strats: persistance.strats.lire().strats.map((autre) => ({ id: autre.id, nom: autre.nom })),
+    };
+  };
+
   const instantane = (): Instantane => ({
     conditions: etat.valeurs,
     manquantes: etat.manquantes,
@@ -112,7 +176,9 @@ function demarrer(): void {
     demandeEnAttente: overlayDemande?.enAttente ?? false,
     wakfuLog: veilleLogs.chemin,
     dossierLogsManuel: persistance.reglages.lire().dossierLogsManuel,
-    stratChoisie: persistance.reglages.lire().stratChoisie,
+    stratChoisie: stratChoisie()?.nom ?? null,
+    stratChoisieId: stratChoisie()?.id ?? null,
+    strats: persistance.strats.lire().strats.map((strat) => ({ id: strat.id, nom: strat.nom })),
     raccourcis: raccourcis?.poses ?? null,
     dossierDonnees: app.getPath('userData'),
     avertissements: persistance.avertissements,
@@ -141,18 +207,36 @@ function demarrer(): void {
     diffuser();
   };
 
+  /**
+   * The chosen Strat drives two things at once, and they must not drift: the
+   * fourth display condition, and the Composition the Rotation stops on.
+   */
   const poserStratChoisie = (id: string | null): void => {
     persistance.modifierReglages({ stratChoisie: id });
-    etat.poser('stratChoisie', id !== null);
+    const strat = stratChoisie();
+    etat.poser('stratChoisie', strat !== null);
+    veilleCombat.poserComposition(strat === null ? [] : compositionDe(strat));
     overlayTour?.appliquer();
+    overlayTour?.envoyerEtat();
     diffuser();
+  };
+
+  /**
+   * The two watches on the same file, laid down together: the condition of ADR
+   * `0014` only fires when the fact **changes**, so designating another folder
+   * that also holds a readable `wakfu.log` would leave the combat watch on the
+   * old one.
+   */
+  const suivreLeFichier = (): void => {
+    veilleLogs.suivre(cheminWakfuLog());
+    veilleCombat.suivre(veilleLogs.trouve ? veilleLogs.chemin : null);
   };
 
   const poserDossierLogs = (dossier: string | null): void => {
     persistance.modifierReglages({ dossierLogsManuel: dossier });
     // Clearing it does not turn the condition off: it hands the arbitration back
     // to the detection, which is the return the Réglages promise.
-    veilleLogs.suivre(cheminWakfuLog());
+    suivreLeFichier();
     overlayTour?.appliquer();
     diffuser();
   };
@@ -161,6 +245,7 @@ function demarrer(): void {
   app.on('window-all-closed', () => app.quit());
   app.on('before-quit', () => {
     raccourcis?.retirer();
+    veilleCombat.arreter();
     veilleLogs.arreter();
     persistance.vider();
   });
@@ -178,6 +263,40 @@ function demarrer(): void {
   ipcMain.on(CANAL.bancDemande, (_evenement, enAttente: boolean) =>
     overlayDemande?.poserQuestion(enAttente),
   );
+  /**
+   * The width of the fiche, caught at its right edge — a global setting, only
+   * one fiche being visible. `null` is the double-click: back to the automatic
+   * width, which here is the code default, there being no grid to fill.
+   */
+  ipcMain.on(CANAL.largeurFiche, (_evenement, largeur: number | null) => {
+    persistance.modifierReglages({
+      largeurFiche:
+        largeur === null || !Number.isFinite(largeur)
+          ? REGLAGES_PAR_DEFAUT.largeurFiche
+          : Math.max(BORNES.largeurFiche.min, Math.round(largeur)),
+    });
+    overlayTour?.envoyerEtat();
+    diffuser();
+  });
+  ipcMain.on(CANAL.positionFiche, (_evenement, x: number, y: number) => {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    persistance.modifierReglages({
+      ficheX: Math.max(0, Math.round(x)),
+      ficheY: Math.max(0, Math.round(y)),
+    });
+    overlayTour?.envoyerEtat();
+  });
+  /**
+   * LOT 4 TEST BENCH. The Overlay is not drawn without a Strat chosen, and the
+   * editor is Lot 5: without this, the fiche could not be looked at once. Sowing
+   * one chooses it, exactly as creating the first Strat will (ADR `0012`).
+   */
+  ipcMain.on(CANAL.bancStrat, () => {
+    const strat = stratDEssai();
+    const strats = persistance.strats.lire();
+    persistance.strats.ecrire({ strats: [...strats.strats, strat] });
+    poserStratChoisie(strat.id);
+  });
   ipcMain.on(CANAL.oublierDossierLogs, () => poserDossierLogs(null));
   ipcMain.on(CANAL.ouvrirDossierDonnees, () => {
     void shell.openPath(app.getPath('userData'));
@@ -204,6 +323,7 @@ function demarrer(): void {
     const leTour = new OverlayTour(etat, surjeu, {
       preload,
       page: page('overlay-tour'),
+      contenu: contenuOverlay,
       surChangement: diffuser,
     });
     overlayTour = leTour;
@@ -267,7 +387,9 @@ function demarrer(): void {
 
     // The starting state, as the disk knows it.
     etat.poser('affichageDemande', reglages.affichageDemande);
-    etat.poser('stratChoisie', reglages.stratChoisie !== null);
+    const auDemarrage = stratChoisie();
+    etat.poser('stratChoisie', auDemarrage !== null);
+    veilleCombat.poserComposition(auDemarrage === null ? [] : compositionDe(auDemarrage));
 
     // A migration, a file set aside or refused is announced afterwards, never
     // asked about beforehand (ADR `0004`). The Fenêtre principale carries the
@@ -275,7 +397,7 @@ function demarrer(): void {
     for (const avertissement of persistance.avertissements) {
       console.warn(`[persistance] ${JSON.stringify(avertissement)}`);
     }
-    veilleLogs.suivre(cheminWakfuLog());
+    suivreLeFichier();
 
     etat.surChangement(diffuser);
     leTour.appliquer();

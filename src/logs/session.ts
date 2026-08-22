@@ -122,17 +122,24 @@ export function decouperEnCombats(evenements: readonly EvenementDeLog[]): Decoup
 }
 
 /**
- * The combat in progress and its state, rebuilt from the content of
- * `wakfu.log`.
+ * The state of the combats of a session window, and which one is in progress.
+ *
+ * Separated from `relire` because the events reach us two ways — the whole file
+ * read at launch, and the appended bytes of `FluxDuLog` afterwards — and both
+ * must produce the state through the same door. The rule is unchanged either
+ * way: the tracking sees the **whole** event list of a combat, so a rising `k`
+ * replays it (ADR `0009`).
  *
  * The catch-up is allowed to fail, never to approximate: with no rebuildable
  * open combat, the state returned is the out-of-combat one, indistinguishable
  * from "no combat" — ADR `0006` forbids both the guessed position and the
  * confession.
  */
-export function relire(contenu: string, composition: Composition): Relecture {
-  const session = fenetreDeSession(analyser(contenu));
-  const decoupage = decouperEnCombats(session.evenements);
+export function suivreLaSession(
+  evenements: readonly EvenementDeLog[],
+  composition: Composition,
+): Pick<Relecture, 'combats' | 'combatEnCours'> {
+  const decoupage = decouperEnCombats(evenements);
   const combats = decoupage.combats.map((combat) => suivreLeCombat(combat.evenements, composition));
 
   // Only one combat can be in progress: the one still open at the end of the
@@ -141,5 +148,14 @@ export function relire(contenu: string, composition: Composition): Relecture {
   const combatEnCours =
     combats.find((combat) => combat.ouvert && combat.fightId === decoupage.ouvertALaFin) ?? null;
 
-  return { session, combats, combatEnCours };
+  return { combats, combatEnCours };
+}
+
+/**
+ * The combat in progress and its state, rebuilt from the content of
+ * `wakfu.log`. The launch replay of ADR `0007`.
+ */
+export function relire(contenu: string, composition: Composition): Relecture {
+  const session = fenetreDeSession(analyser(contenu));
+  return { session, ...suivreLaSession(session.evenements, composition) };
 }
