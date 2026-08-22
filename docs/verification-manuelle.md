@@ -82,5 +82,59 @@ raconte chaque attachement.
 - La **fiche** du Tour (Lot 4), la vraie **Fenêtre principale** et son **Socle
   d'état** (Lot 5), la **question** de la Demande d'ajout (Lot 8) : ce lot ne
   pose que les coques.
-- La **découverte** du dossier de logs (Lot 1) : ici, seul un dossier désigné à
-  la main alimente la condition.
+- La **fiche** du Tour, alimentée par le suivi du Lot 1 : la coque de l'Overlay
+  ne porte qu'un repère.
+
+## Lot 1 — le lecteur de logs
+
+Tout ce qui se vérifie sans le jeu l'est en CI : `npm test` rejoue les six
+captures de `docs/research/samples/`. Ne restent à la main que la **découverte**
+sur une vraie machine, et le **suivi d'un vrai combat** — que les captures ne
+peuvent pas couvrir, étant toutes en `k=2` sur une seule session observée.
+
+### Sans lancer le jeu
+
+La détection remplace le dossier désigné dès qu'aucun n'est désigné (ADR
+`0014`). Sur une machine où Steam et launcher coexistent, elle doit trouver les
+deux et retenir le `wakfu.log` le plus récemment modifié :
+
+```sh
+npm run build
+node -e "const d=require('./dist/logs/dossier-de-logs.js');
+  console.log(d.candidats(d.systemeDeFichiersReel(), d.environnementReel()));"
+```
+
+Puis, dans l'app : désigner un dossier, vérifier que la condition « les logs de
+Wakfu sont trouvés » se coche, **l'effacer**, et vérifier qu'elle reste cochée —
+la détection a repris la main. C'est la sortie que les Réglages promettent.
+
+⚠️ Sous **Windows**, la racine de Zaap (`%AppData%\zaap`) est *attendue* et
+jamais mesurée : c'est la seule inconnue de la découverte, et elle a son ticket.
+
+### Le protocole, Wakfu lancé
+
+La sonde imprime le Tour courant à chaque changement. Ce n'est pas le produit —
+l'Overlay ne consomme pas encore le suivi :
+
+```sh
+node --experimental-strip-types tools/suivre-en-direct.ts --ordre Premier,Second
+```
+
+1. **Deux clients depuis la même installation.** C'est ce qui les fait écrire
+   dans un seul `wakfu.log`, et tout l'objet de `k`.
+2. **Un combat de trois rounds au moins**, un sort par personnage à chaque tour
+   dès le premier — l'ancre qui permet d'apparier tours réels et frontières.
+   Compter les tours joués par chacun : c'est la vérité terrain, et le log ne la
+   donne pas indépendamment.
+3. **Le rejeu quand `k` monte.** Pendant le combat, la sonde affichera
+   probablement `k=1` et suivra le seul client visible — c'est **juste**, le flux
+   d'un client est complet à lui seul. Le bloc du second arrive minutes après, `k`
+   passe à 2, et le combat se rejoue pour retomber sur le même nombre de tours.
+   Un Tour courant qui **bondit** au lieu de retomber juste est le bug à guetter.
+4. ~~Le client relancé en plein combat.~~ **Fait le 22 août 2026, et le cas est
+   écarté** : les fenêtres du jeu ne sont pas censées se fermer en plein combat.
+   Ce qu'on y a appris — un combat rejoint réémet sa rafale `[_FL_]`, et le suivi
+   repart avec `k` retombé de 2 à 1 — est consigné dans « Points de rupture
+   connus » de la grammaire. Ne pas refaire ce test pour valider un lot.
+5. **Un vrai pseudo.** Un personnage à apostrophe ou tiret, mis KO si possible.
+   Les six captures sont anonymisées en `PJ1`…`PJ4`, courts et sans ponctuation.

@@ -66,7 +66,14 @@ l'envers, ni plafond arbitraire.
   minuit**, ni question du chat log non purgé entre sessions. Les trois cas
   tordus que cet ADR annonçait ont disparu avec le second fichier.
 - Un combat **relancé** avec le client (client fermé puis rouvert pendant le même
-  combat) n'est **pas** couvert : aucun échantillon ne dit si un combat rejoint
-  réémet une rafale `[_FL_]`. Trou assumé sans capture (#9) — l'overlay reste hors
-  combat et se recale au `[_FL_]` suivant, ce qui est exactement le comportement
-  d'échec prévu ci-dessus.
+  combat) n'est **pas** couvert, et ce choix est maintenant délibéré : le cas
+  suppose une fenêtre de jeu fermée en plein combat.
+  ⚠️ **Les deux affirmations que ce point portait sont fausses**, mesurées le
+  22 août 2026 (combat `1552052503`, deux clients — voir « Points de rupture
+  connus » de la grammaire). Un combat rejoint **réémet** bien une rafale
+  `[_FL_]`, donc le trou n'est plus un inconnu. Et le comportement observé n'est
+  **pas** « l'overlay reste hors combat » : le nouveau `log path=` du client
+  relancé déplace la borne de session après l'ouverture du combat, et le suivi
+  repart avec `k` retombé de 2 à 1 — il **approxime** au lieu d'échouer, ce que
+  le premier point de ces conséquences interdit. Le cas est écarté du périmètre,
+  pas résolu.

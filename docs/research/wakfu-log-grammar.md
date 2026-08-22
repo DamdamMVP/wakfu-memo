@@ -719,9 +719,29 @@ log dit — le log est canonique par construction.
   une seule est absorbée exactement. Une seule observée sur 7 combats.
 - Un `k` faux ne se détecte pas tout seul, et depuis l'ADR `0006` rien ne
   l'afficherait. La règle de lecture de `k` du point 4 est la **seule** défense.
-- Non couvert par les échantillons : un client **relancé** pendant un combat déjà
-  ouvert. On ne sait pas si un combat rejoint réémet une rafale `[_FL_]`. Trou
-  assumé — l'overlay ne suivra pas ce combat et se recalera au suivant.
+- Un client **relancé** pendant un combat déjà ouvert : **mesuré le 22 août 2026**,
+  et **écarté du périmètre** — les fenêtres du jeu ne sont pas censées se fermer en
+  plein combat. Ce que la mesure a donné, sur le combat `1552052503`, deux clients :
+
+  1. **Un combat rejoint réémet bien une rafale `[_FL_]` entière**, même `fightId`,
+     roster complet, invocation comprise (14:35:19). La version précédente de cette
+     section disait qu'on ne le savait pas ; on le sait.
+  2. Le client fermé écrit `Reason : {UI Closed}` **et** l'autre continue : le
+     marqueur d'arrêt d'**un** client ne dit rien du combat, alors que la règle du
+     point 2 le referme. Le combat n'a reçu son `End fight` que **29 s plus tard**.
+  3. Le client relancé écrit un **nouveau `log path=`**, qui déplace la borne de
+     session **après** la rafale d'ouverture du combat. Le suivi repart alors de
+     zéro sur la seule rafale du rejoignant : mesuré, `k` retombe de **2 à 1** et
+     le compte de **1 frontière à 0**. C'est la direction dangereuse — les
+     frontières suivantes, écrites deux fois, seraient comptées deux fois.
+
+  Les deux règles qui répareraient ça — compter les marqueurs d'arrêt jusqu'à `k`,
+  et étendre la borne en arrière pour un `fightId` déjà ouvert — sont **notées et
+  non retenues**. Le cas suppose une fenêtre de jeu fermée en combat.
+- `Sending DisconnectionMessage` porte au moins **trois** raisons, et deux ne sont
+  pas des arrêts : `{Dispatch}` à la connexion, `{Quit Request From Client}` puis
+  `{UI Closed}` à la fermeture, les deux dernières à 33 ms d'écart. Seule
+  `{UI Closed}` — avec `Stopping cGz...` — est un marqueur d'arrêt.
 
 ## Conformité
 
