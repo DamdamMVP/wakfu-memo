@@ -138,3 +138,45 @@ node --experimental-strip-types tools/suivre-en-direct.ts --ordre Premier,Second
    connus » de la grammaire. Ne pas refaire ce test pour valider un lot.
 5. **Un vrai pseudo.** Un personnage à apostrophe ou tiret, mis KO si possible.
    Les six captures sont anonymisées en `PJ1`…`PJ4`, courts et sans ponctuation.
+
+## Lot 3 — la persistance
+
+Presque tout se teste en CI. Ce qui n'y tient pas, c'est la promesse de l'ADR
+`0004` : le JSON lisible est un **outil de support**, donc il faut l'ouvrir, le
+casser à la main, et regarder l'app s'en remettre.
+
+Le bac à sable travaille dans un dossier jetable, jamais le vrai :
+
+```sh
+node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/essai-persistance.ts
+```
+
+Premier passage, il sème une Strat et un Personnage. Ensuite, ouvrir
+`/tmp/wakfu-memo-essai/`, casser, relancer, lire le verdict :
+
+| ce qu'on casse | ce qu'on doit voir |
+|---|---|
+| deux Emplacements sur la même `couleur` | le second prend la première teinte libre |
+| un septième Emplacement | coupé à six |
+| une clé de `consignes` qui ne vise aucun `id` | jetée |
+| une `c` de segment inventée | le texte reste, la couleur tombe |
+| `"schema": 9` | `refuse`, et le fichier n'est **pas** réécrit |
+| le JSON tronqué en plein mot | mis de côté en `*.corrompu-<date>.json`, les deux autres intacts |
+| une clé inconnue dans `reglages.json` | conservée telle quelle à la réécriture |
+
+⚠️ La réparation se fait **en mémoire** : le fichier cassé garde son doublon
+jusqu'à la prochaine écriture. C'est voulu — on ne réécrit pas le disque pour une
+lecture.
+
+### Dans l'app, une fois
+
+Le vidage au `before-quit` est le seul point que le bac à sable ne montre pas :
+
+1. `npm start`, basculer l'Affichage demandé, désigner un dossier de logs.
+2. Quitter par le ✕ de la Fenêtre principale.
+3. `cat ~/.config/wakfu-memo/reglages.json` : les deux valeurs y sont.
+4. Relancer : la Fenêtre principale les rouvre telles quelles.
+
+Puis, une fois, avec `roster.json` rendu illisible avant le lancement : le
+bandeau de la Fenêtre principale doit **le dire**, et nommer le fichier mis de
+côté.

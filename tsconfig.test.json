@@ -11,5 +11,10 @@
     "declaration": false,
     "noEmit": true
   },
-  "include": ["src/**/*.test.ts", "src/main/**/*.ts", "tools/suivre-en-direct.ts"]
+  "include": [
+    "src/**/*.test.ts",
+    "src/main/**/*.ts",
+    "tools/suivre-en-direct.ts",
+    "tools/essai-persistance.ts"
+  ]
 }
