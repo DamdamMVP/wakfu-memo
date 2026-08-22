@@ -185,14 +185,18 @@ input:focus {
 /* Le témoin d'une Demande d'ajout sans réponse. Sur l'entrée du Roster, parce
    que c'est là qu'une question restée sans réponse se rattrape (ADR 0010) : un
    témoin qui ne dit pas où aller n'est qu'une inquiétude. */
+/* Et c'est un COMPTE, pas une pastille : « il y en a trois » se lit du coin de
+   l'œil, « il y en a » demande d'aller voir. */
 .rail .items .temoin {
   margin-left: auto;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
   flex: none;
+  font:
+    600 10.5px / 1 ui-monospace,
+    monospace;
+  color: #2a1f08;
   background: var(--note);
-  box-shadow: 0 0 8px #e0b07099;
+  border-radius: 9px;
+  padding: 3px 6px;
 }
 .rail .grow {
   flex: 1;
@@ -492,6 +496,11 @@ input:focus {
   flex-direction: column;
   gap: 2px;
   min-width: 172px;
+  /* Le menu du mur porte des phrases, pas seulement des verbes : sans plafond
+     il s'étalait sur 369 px et recouvrait deux bandes au lieu d'une. */
+  max-width: 232px;
+  max-height: 300px;
+  overflow: auto;
 }
 .menupop button {
   border: 0;
@@ -791,6 +800,285 @@ input:focus {
 .cls.xs img {
   width: 26px;
   height: 26px;
+}
+/* La vignette du mur. 56 px de portrait, plus le cadre : la « vignette de
+   64 px » de #22. */
+.cls.xl img {
+  width: 56px;
+  height: 56px;
+}
+
+/* ============================================ l'écran Roster : le mur ==== */
+/* Une bande par Profil, des vignettes de 64 px, le portrait DEVANT le pseudo.
+   Retenu en #22 sur des mesures : moitié moins de hauteur que la liste groupée
+   au scénario dense. Le prix, assumé, est que la clef de jointure — le pseudo —
+   passe derrière le portrait, et qu'une étiquette sur neuf se casse à 74 px. */
+.wall {
+  padding: 6px 16px 30px;
+}
+.band {
+  padding: 12px 0 4px;
+}
+.band > header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 2px 9px;
+}
+.band > header h3 {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.band > header h3.amb {
+  color: var(--note);
+}
+.band > header .grow {
+  flex: 1;
+}
+/* Les gestes d'une bande n'apparaissent qu'au survol : le mur se regarde plus
+   souvent qu'il ne s'édite. */
+.band > header .acts {
+  display: flex;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.band:hover > header .acts {
+  opacity: 1;
+}
+.band > header input.ren {
+  width: 190px;
+}
+/* Aligné en haut : une étiquette qui se casse sur deux lignes rend sa vignette
+   plus haute que ses voisines, et c'est la ligne des portraits qui doit rester
+   droite. */
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+}
+.tile {
+  width: 74px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+.tile .frame {
+  position: relative;
+  padding: 2px;
+  border: 1px solid transparent;
+}
+.tile:hover .frame {
+  border-color: var(--accent);
+}
+/* ⚠️ `width: 100%` est indispensable : sans lui l'élément flex se rétracte à sa
+   largeur `min-content`, et la coupure de mot fait de cette largeur UNE LETTRE.
+   Les premières mesures de la maquette de #22 étaient fausses pour cette
+   raison. */
+.tile .lab {
+  width: 100%;
+  font-size: 11.5px;
+  text-align: center;
+  line-height: 1.25;
+  overflow-wrap: break-word;
+}
+/* L'asymétrie de parole de l'ADR 0002 : le confirmé est MUET, celui qui attend
+   son premier combat le montre. Un pointillé et une italique, jamais du rouge
+   ni une icône d'alerte — c'est un état normal, et transitoire. La phrase, elle,
+   est en infobulle : sous la vignette elle coûtait deux lignes de plus et
+   cassait l'alignement du mur. */
+.tile.sans-id .frame {
+  border-color: var(--line-2);
+  border-style: dashed;
+}
+.tile.sans-id .lab {
+  font-style: italic;
+  color: var(--dim);
+}
+/* Ambre et non rouge : ce n'est pas une erreur, c'est une question restée sans
+   réponse (ADR 0010). */
+.tile.a-identifier .frame {
+  border-color: #6b5320;
+  background: #231c0b;
+}
+.tile.a-identifier .lab {
+  color: var(--note);
+}
+.tile .mark {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 17px;
+  height: 17px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--note);
+  color: #2a1f08;
+  font:
+    700 12px / 1 ui-sans-serif,
+    system-ui;
+}
+/* La saisie à la main est le secours, pas le chemin nominal : elle finit la
+   bande, en gris, à la taille d'une vignette. */
+.tile.add .frame {
+  width: 60px;
+  height: 60px;
+  display: grid;
+  place-items: center;
+  border: 1px dashed var(--line-2);
+  color: var(--faint);
+  font-size: 19px;
+}
+.tile.add:hover .frame {
+  border-color: var(--accent);
+  color: var(--txt);
+}
+
+/* Le Roster vide, au premier lancement. Il annonce, il ne demande rien : le
+   Roster se remplit tout seul au premier combat (#17). */
+.vide {
+  padding: 48px 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 13px;
+  text-align: center;
+}
+.vide h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+}
+.vide p {
+  margin: 0;
+  max-width: 460px;
+  color: var(--dim);
+  font-size: 13px;
+}
+.vide p.sec {
+  font-size: 12.5px;
+  color: var(--faint);
+}
+.vide .cta {
+  font-size: 13.5px;
+  padding: 8px 16px;
+  text-align: center;
+}
+
+/* Les Personnages ignorés vivent ici, et pas dans les Réglages (#23). Repliés :
+   c'est une liste qu'on ouvre pour défaire un geste, pas pour la lire. */
+.ignores {
+  margin: 24px 2px 0;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.ignores > summary {
+  cursor: pointer;
+  color: var(--dim);
+  font-size: 12.5px;
+}
+.ignores > summary:hover {
+  color: var(--txt);
+}
+.igrow {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 7px 4px;
+  border-top: 1px solid #202531;
+}
+.igrow .nm {
+  color: var(--dim);
+}
+.igrow .grow {
+  flex: 1;
+}
+.ignotes {
+  font-size: 11.5px;
+  color: var(--faint);
+  margin: 8px 4px 0;
+  line-height: 1.5;
+}
+
+/* Le menu ancré du mur : une vignette n'a la place d'aucun bouton, donc il
+   porte tout — y compris ce qu'une vignette ne peut pas dire. */
+.menupop h5 {
+  margin: 2px 4px 5px;
+  font:
+    11px / 1 ui-sans-serif,
+    system-ui;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: var(--faint);
+  overflow-wrap: anywhere;
+}
+.menupop .hint {
+  margin: 3px 6px 4px;
+  font-size: 11.5px;
+  color: var(--faint);
+  line-height: 1.45;
+}
+.menupop .hint.warn {
+  color: var(--note);
+}
+.menupop .why {
+  margin-left: 7px;
+}
+
+/* La saisie manuelle. Le champ canonise pendant la frappe, donc il n'y a plus
+   d'avertissement à loger : celui de #17 est sorti du produit. */
+.form {
+  position: fixed;
+  z-index: 45;
+  width: 266px;
+  padding: 11px;
+  background: var(--panel-2);
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px #000c;
+}
+.form h5 {
+  margin: 0 0 7px;
+  font:
+    11px / 1 ui-sans-serif,
+    system-ui;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.form input {
+  width: 100%;
+}
+.form .warn {
+  margin: 6px 0 8px;
+  font-size: 11px;
+  color: var(--note);
+  line-height: 1.45;
+}
+.form .warn:empty {
+  margin: 4px 0;
+}
+.form .acts {
+  display: flex;
+  gap: 7px;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+.form .acts button {
+  font-size: 12.5px;
+}
+.form .acts button:disabled {
+  opacity: 0.45;
+  cursor: default;
+  border-color: var(--line-2);
+  background: var(--raise);
 }
 
 /* Les fiches remplissent TOUJOURS la largeur. Le seul réglage est leur largeur
