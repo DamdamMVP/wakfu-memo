@@ -143,27 +143,48 @@ export function supprimerEmplacement(
 
 /**
  * A Strat carries away its Tours, its Emplacements and the Préférences aiming at
- * it; if it was the Strat chosen, the choice falls back to "none" — and the
- * Overlay stops having its four conditions.
+ * it. If it was the Strat chosen, **the choice passes to the first Strat left**,
+ * and only dies with it when it was the last.
+ *
+ * Lot 3 dropped the choice to `null` in every case, and ADR `0012` rectifies it:
+ * deleting the chosen Strat must announce *where the choice goes*, or that the
+ * Overlay will no longer be drawn. Falling to "none" while another Strat sat
+ * right there made every deletion a silent extinction of the Overlay — the one
+ * action of the app that puts it out without naming it.
+ *
+ * Everything the confirmation has to say comes back with the state, and nothing
+ * is written until it is confirmed.
  */
 export function supprimerStrat(
   etat: Etat,
   stratId: string,
-): { readonly etat: Etat; readonly tours: number } {
+): {
+  readonly etat: Etat;
+  readonly tours: number;
+  readonly emplacements: number;
+  readonly estChoisie: boolean;
+  /** Where the choice goes. `null` when it was not the chosen one, or the last. */
+  readonly choixPasseA: { readonly id: string; readonly nom: string } | null;
+} {
   const strat = etat.strats.strats.find((candidat) => candidat.id === stratId);
+  const restantes = etat.strats.strats.filter((candidat) => candidat.id !== stratId);
+  const estChoisie = etat.reglages.stratChoisie === stratId;
+  const suivante = estChoisie ? (restantes[0] ?? null) : null;
   return {
     etat: {
-      reglages:
-        etat.reglages.stratChoisie === stratId
-          ? { ...etat.reglages, stratChoisie: null }
-          : etat.reglages,
+      reglages: estChoisie
+        ? { ...etat.reglages, stratChoisie: suivante?.id ?? null }
+        : etat.reglages,
       roster: {
         ...etat.roster,
         preferences: etat.roster.preferences.filter((preference) => preference.stratId !== stratId),
       },
-      strats: { strats: etat.strats.strats.filter((candidat) => candidat.id !== stratId) },
+      strats: { strats: restantes },
     },
     tours: strat?.tours.length ?? 0,
+    emplacements: strat?.emplacements.length ?? 0,
+    estChoisie,
+    choixPasseA: suivante === null ? null : { id: suivante.id, nom: suivante.nom },
   };
 }
 

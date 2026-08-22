@@ -142,10 +142,17 @@ describe('les suppressions', () => {
     );
   });
 
-  it('une Strat emporte ses Tours, ses Préférences, et la sélection avec elle', () => {
-    const { etat: apres, tours } = supprimerStrat(etat(), 'ombre');
+  it('une Strat emporte ses Tours, ses Préférences, et passe le choix à la suivante', () => {
+    const {
+      etat: apres,
+      tours,
+      emplacements,
+      estChoisie,
+      choixPasseA,
+    } = supprimerStrat(etat(), 'ombre');
 
     strictEqual(tours, 2);
+    strictEqual(emplacements, 2);
     deepStrictEqual(
       apres.strats.strats.map((strat) => strat.id),
       ['dragon'],
@@ -154,11 +161,28 @@ describe('les suppressions', () => {
       apres.roster.preferences.map((preference) => preference.stratId),
       ['dragon'],
     );
+    // ADR 0012 : le choix ne tombe pas dans le vide tant qu'une Strat reste,
+    // sans quoi la suppression éteindrait l'Overlay sans le nommer.
+    strictEqual(estChoisie, true);
+    deepStrictEqual(choixPasseA, { id: 'dragon', nom: 'Dragon Cochon' });
+    strictEqual(apres.reglages.stratChoisie, 'dragon');
+  });
+
+  it('la dernière Strat supprimée laisse le choix vide, et le dit', () => {
+    const uneSeule = supprimerStrat(etat(), 'dragon').etat;
+    const { etat: apres, estChoisie, choixPasseA } = supprimerStrat(uneSeule, 'ombre');
+
+    strictEqual(estChoisie, true);
+    strictEqual(choixPasseA, null);
     strictEqual(apres.reglages.stratChoisie, null);
   });
 
   it('ne touchent pas la sélection quand ce n’est pas la Strat choisie', () => {
-    strictEqual(supprimerStrat(etat(), 'dragon').etat.reglages.stratChoisie, 'ombre');
+    const { etat: apres, estChoisie, choixPasseA } = supprimerStrat(etat(), 'dragon');
+
+    strictEqual(apres.reglages.stratChoisie, 'ombre');
+    strictEqual(estChoisie, false);
+    strictEqual(choixPasseA, null);
   });
 
   it('ignorer se pose sur l’ID d’entité, et se retire', () => {
