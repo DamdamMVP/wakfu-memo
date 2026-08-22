@@ -26,7 +26,9 @@ export const CAPTURES_EN_DEUX_FICHIERS = [
   'invoc-2026-08-20',
 ] as const;
 
+/** The two samples that are real `wakfu.log`, usable end to end. */
 export const WAKFU_LOG = 'revive2-2026-08-21-wakfu.log';
+export const WAKFU_LOG_ALTERNANCE = 'alternance-2026-08-22-wakfu.log';
 
 export function lire(nom: string): string {
   return readFileSync(join(SAMPLES, nom), 'utf8');

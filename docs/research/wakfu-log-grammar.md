@@ -470,6 +470,16 @@ Les deux clients écrivent dans **les mêmes fichiers** et y dupliquent
 combat observé produit 10 lignes `[_FL_]` pour 5 combattants, et 8 lignes
 `reportée` pour 4 frontières.
 
+⚠️ **L'espacement des copies n'est pas une propriété stable du fichier.** Deux
+sessions, même installation, mêmes personnages, deux comportements opposés :
+sur `revive2-2026-08-21` les deux clients écrivent par **blocs** — les copies
+d'une frontière à 345 lignes d'écart, une par entité seulement pendant tout le
+combat — et sur `alternance-2026-08-22` ils écrivent **en alternance**, copies à
+1-8 lignes et 3-47 ms. Aucune règle ne doit donc dépendre de la distance entre
+deux copies, ni en lignes ni en millisecondes. Le mécanisme n'est pas établi
+(tampon par appender ?) et les deux sessions se contredisent : c'est l'argument
+le plus fort pour le comptage par `k`, qui ne regarde ni l'une ni l'autre.
+
 > ⚠️ **Aucune fenêtre temporelle fixe ne déduplique correctement.** Les
 > premiers échantillons donnaient un écart de **4 à 106 ms** entre les deux
 > copies, d'où la conclusion — désormais **fausse** — que la fenêtre de 500 ms

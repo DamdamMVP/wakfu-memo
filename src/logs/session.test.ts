@@ -2,8 +2,9 @@ import { deepStrictEqual, ok, partialDeepStrictEqual, strictEqual } from 'node:a
 import { describe, it } from 'node:test';
 
 import type { Composition } from '../domaine/composition.ts';
-import { lire, WAKFU_LOG } from '../echantillons/echantillons.ts';
-import { analyser, fenetreDeSession, relire } from './session.ts';
+import { lire, WAKFU_LOG, WAKFU_LOG_ALTERNANCE } from '../echantillons/echantillons.ts';
+import { suivreLeCombat } from '../suivi/suivi-du-tour.ts';
+import { analyser, decouperEnCombats, fenetreDeSession, relire } from './session.ts';
 
 /** The `revive2` team: PJ4 (Eniripsa) plays first, PJ3 (Enutrof) next. */
 const EQUIPE_REVIVE2: Composition = [
@@ -93,6 +94,68 @@ describe('l’échantillon `revive2` — le seul vrai `wakfu.log`', () => {
       avances: 3,
       tourCourant: 3,
     });
+  });
+});
+
+describe('l’échantillon `alternance` — trois rounds contre une vérité terrain', () => {
+  // The only sample checked against turns counted by hand at the table: three
+  // full rounds, two characters, so six turns. And the only one where the two
+  // clients write in **alternation** — 3 to 47 ms apart — where `revive2` had
+  // them 345 lines apart, in blocks.
+  const EQUIPE: Composition = [
+    { classe: 'eniripsa', couleur: 'rouge' },
+    { classe: 'enutrof', couleur: 'bleu' },
+  ];
+
+  it('douze frontières brutes, `k=2`, six tours joués', () => {
+    const evenements = analyser(lire(WAKFU_LOG_ALTERNANCE));
+    const combat = decouperEnCombats(evenements).combats.find((c) => c.fightId === '1552052456');
+    ok(combat);
+
+    strictEqual(combat.evenements.filter((e) => e.type === 'frontiereDeTour').length, 12);
+    partialDeepStrictEqual(suivreLeCombat(combat.evenements, EQUIPE), {
+      clientsEngages: 2,
+      finsDeTour: 6,
+      avances: 6,
+      tourCourant: 4,
+      ouvert: false,
+    });
+  });
+
+  it('l’Invocation est dans le roster, jamais dans la Rotation', () => {
+    const evenements = analyser(lire(WAKFU_LOG_ALTERNANCE));
+    const combat = decouperEnCombats(evenements).combats.find((c) => c.fightId === '1552052456');
+    ok(combat);
+
+    const etat = suivreLeCombat(combat.evenements, EQUIPE);
+    // Mama Wapin, the two Personnages, and the Phorreur summoned with
+    // `obstacleId : 3` — four in the roster, two Emplacements.
+    strictEqual(etat.roster.length, 4);
+    deepStrictEqual(etat.rangsActifs, [1, 2]);
+  });
+
+  it('`{Quit Request From Client}` n’est pas un marqueur d’arrêt', () => {
+    // The file carries it once, 33 ms before the `{UI Closed}` that is one.
+    // Counting both would close a combat twice.
+    const evenements = analyser(lire(WAKFU_LOG_ALTERNANCE));
+    strictEqual(evenements.filter((e) => e.type === 'marqueurArret').length, 1);
+    strictEqual(evenements.filter((e) => e.type === 'debutDeSession').length, 2);
+    strictEqual(evenements.filter((e) => e.type === 'finDeCombat').length, 4);
+  });
+
+  it('limite connue : un client relancé en plein combat perd le combat', () => {
+    // The case is **out of scope** — game windows are not supposed to close
+    // mid-combat — and this test pins what the reader does instead of pretending
+    // it is right. The relaunched client writes a new `log path=`, which pushes
+    // the session bound past the opening of combat `1552052456`: the catch-up
+    // loses it entirely and keeps only the rejoined one, at `k=1` instead of 2.
+    const relecture = relire(lire(WAKFU_LOG_ALTERNANCE), EQUIPE);
+
+    deepStrictEqual(
+      relecture.combats.map((c) => `${c.fightId}/k=${c.clientsEngages}/${c.finsDeTour}`),
+      ['1552052503/k=1/0'],
+    );
+    strictEqual(relecture.combatEnCours, null);
   });
 });
 

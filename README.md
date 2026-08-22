@@ -120,10 +120,16 @@ Ce qui exige Wakfu lancé se vérifie à la main :
 ## Captures de logs
 
 `docs/research/samples/` contient des extraits de vraies sessions de jeu, sur
-lesquels les décisions de suivi de combat sont vérifiées. Ils sont produits par
-`tools/capture-multi-account.sh`, qui remplace les noms de personnages joués
-par `PJ1`, `PJ2`…, tronque les ID d'entité, et **ne garde que les canaux
-`Information`** — le chat log n'est pas purgé entre sessions et charrie sinon
-les messages publics d'autres joueurs.
+lesquels les décisions de suivi de combat sont vérifiées. Deux d'entre eux sont
+de vrais `wakfu.log` utilisables de bout en bout — `revive2-2026-08-21` et
+`alternance-2026-08-22` ; les cinq autres sont des captures en **deux fichiers**
+d'avant l'ADR `0008`, qui ne servent qu'à tester les règles séparément.
+
+Ils sont produits par `tools/capture-multi-account.sh` (`mark`, puis `cut` après
+le combat, puis `report`), qui remplace les noms de personnages joués par `PJ1`,
+`PJ2`…, donne à chaque **ID d'entité** un jeton distinct et stable, masque les
+chemins et l'IP locale, et filtre les canaux en **liste blanche** — `wakfu.log`
+porte tous les canaux, le logger de chat étant additif, donc sans ce filtre un
+échantillon emporte le commerce et les allées et venues des autres joueurs.
 
 Une capture brute ne doit jamais être commitée telle quelle.
