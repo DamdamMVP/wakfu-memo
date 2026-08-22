@@ -280,11 +280,20 @@ button {
 /* The liseré keeps its 3 px and gains a 1 px dark filet on its right, added by
    #21 on a measurement: fourteen portraits out of eighteen have pixels beyond
    210 of luminance where the liseré touches them. */
+/* 3 px of Couleur, flush against the portrait.
+
+   ⚠️ ADR `0003` added a 1 px dark filet to the liseré's right, on a luminance
+   measurement of the eighteen portraits. Two attempts, and it does not hold on
+   screen: as a `box-shadow` it is painted BEFORE the portrait — a later
+   sibling — so it never shows; as a `border-right` it shows, but it reads as a
+   GAP between the Couleur and the icon, judged on the real app on 2026-08-22.
+   So the liseré touches the portrait, and its boundary is the light inset shadow
+   the icon already carries. The fiche must look the same in both surfaces, so
+   the Fenêtre principale carries the same rule. */
 .cls .edge {
   width: 3px;
   flex: none;
   background: var(--c, transparent);
-  box-shadow: 1px 0 0 #0a0c10;
 }
 .cls img {
   width: 26px;

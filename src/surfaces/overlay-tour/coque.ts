@@ -71,6 +71,28 @@ const memo = (window as unknown as { memo?: PontMemo }).memo;
 /** The minimum width of a fiche, frozen by #5. */
 const LARGEUR_MINI = 340;
 
+/**
+ * The six Couleurs: the word, then the tint that paints it.
+ *
+ * ⚠️ The model carries the **word** — `rouge`, `gris` — never the hex: the disk
+ * stores a tint (ADR `0004`) but in memory it is the name the Rotation and the
+ * players speak, and `persistance/strats.ts` is the boundary that translates. So
+ * a surface always receives the word.
+ *
+ * CSS cannot paint "rouge". Handing `ligne.couleur` straight to `--c` therefore
+ * painted **nothing**: the liseré fell back to `transparent`, and the Mise en
+ * avant lost its tint with it — `color-mix()` on an invalid colour. Copied from
+ * `domaine/palettes.ts`, for painting only.
+ */
+const HEXA_DE_COULEUR: Record<string, string> = {
+  rouge: '#ff5252',
+  jaune: '#ffdd33',
+  vert: '#4ade50',
+  bleu: '#22d3d3',
+  rose: '#ff4fd8',
+  gris: '#a3a8b0',
+};
+
 /** The padlock's shackle: closed above the body, or tipped to the right. */
 const ANSE = {
   ferme: 'M2.9 5.6V3.6a2.6 2.6 0 0 1 5.2 0v2',
@@ -125,13 +147,13 @@ function peindreLesLignes(lignes: LigneDeFiche[]): void {
   for (const ligne of lignes) {
     const div = document.createElement('div');
     div.className = `row${ligne.inactif ? ' inactif' : ''}${ligne.enAvant ? ' avant' : ''}`;
-    div.style.setProperty('--c', ligne.couleur);
+    div.style.setProperty('--c', HEXA_DE_COULEUR[ligne.couleur] ?? 'transparent');
 
     const classe = document.createElement('span');
     classe.className = 'cls';
     const lisere = document.createElement('span');
     lisere.className = 'edge';
-    lisere.style.setProperty('--c', ligne.couleur);
+    lisere.style.setProperty('--c', HEXA_DE_COULEUR[ligne.couleur] ?? 'transparent');
     const portrait = document.createElement('img');
     // The Classe key names the portrait — never the `breed`, whose numbering has
     // a hole (ADR of the model, `classes.ts`).

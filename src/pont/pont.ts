@@ -33,8 +33,10 @@ const CANAL: typeof CANAUX = {
   deplacerDemande: 'memo:deplacer-demande',
   largeurFiche: 'memo:largeur-fiche',
   positionFiche: 'memo:position-fiche',
+  editerStrats: 'memo:editer-strats',
+  consequenceSuppressionStrat: 'memo:consequence-suppression-strat',
+  consequenceSuppressionEmplacement: 'memo:consequence-suppression-emplacement',
   bancDemande: 'memo:banc-demande',
-  bancStrat: 'memo:banc-strat',
 };
 
 const memo = {
@@ -57,8 +59,17 @@ const memo = {
   /** `null`: back to the automatic width, on a double-click at the right edge. */
   poserLargeurFiche: (largeur: number | null) => ipcRenderer.send(CANAL.largeurFiche, largeur),
   poserPositionFiche: (x: number, y: number) => ipcRenderer.send(CANAL.positionFiche, x, y),
+  /**
+   * The only way the Strats screen writes. One command in, the id of what it
+   * created back: the surface never touches `strats.json` and never invents an
+   * id — `edition-strats.ts` owns every rule.
+   */
+  editerStrats: (commande: unknown) => ipcRenderer.invoke(CANAL.editerStrats, commande),
+  consequenceSuppressionStrat: (stratId: string) =>
+    ipcRenderer.invoke(CANAL.consequenceSuppressionStrat, stratId),
+  consequenceSuppressionEmplacement: (stratId: string, emplacementId: string) =>
+    ipcRenderer.invoke(CANAL.consequenceSuppressionEmplacement, stratId, emplacementId),
   bancDemande: (enAttente: boolean) => ipcRenderer.send(CANAL.bancDemande, enAttente),
-  bancStrat: () => ipcRenderer.send(CANAL.bancStrat),
 };
 
 contextBridge.exposeInMainWorld('memo', memo);

@@ -22,8 +22,22 @@ export const CANAL = {
    */
   largeurFiche: 'memo:largeur-fiche',
   positionFiche: 'memo:position-fiche',
+  /**
+   * Strats screen → main, as `invoke`: one edition command, and back the id of
+   * the Strat it created, so the screen can put its name into edition.
+   */
+  editerStrats: 'memo:editer-strats',
+  /**
+   * Strats screen → main, as `invoke`: what deleting this Strat would cost, and
+   * where the choice would go. Asked before the confirmation, so the sentence
+   * ADR `0012` requires is computed by the module that will apply it, once.
+   */
+  consequenceSuppressionStrat: 'memo:consequence-suppression-strat',
+  /**
+   * Idem pour un Emplacement : le nombre de Consignes qu'il emporte dans tous
+   * les Tours. Sans confirmation, un clic effacerait sept Consignes écrites.
+   */
+  consequenceSuppressionEmplacement: 'memo:consequence-suppression-emplacement',
   /** Lot 2 test bench: makes the Demande d'ajout shell appear. */
   bancDemande: 'memo:banc-demande',
-  /** Lot 4 test bench: sows a Strat, until Lot 5 brings the editor. */
-  bancStrat: 'memo:banc-strat',
 } as const;
