@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'">
+<title>Overlay du Tour</title>
+<link rel="stylesheet" href="coque.css">
+</head>
+<body>
+  <!--
+    LOT 2 SHELL. The window covers the whole game window and lets you see
+    through it: what is drawn here is the fiche du Tour, and Lot 4 lays it down.
+    The marker below exists so we can watch the surface follow the game. It
+    carries `data-cliquable`: that is how a surface declares the part of itself
+    that catches clicks once the Overlay is unlocked — everything else lets them
+    through, unlocked or not.
+  -->
+  <div class="repere" data-cliquable>
+    <p class="titre">Overlay du Tour — coque</p>
+    <p class="etat" id="etat">…</p>
+    <p class="note">Le Lot 4 pose la fiche ici.</p>
+  </div>
+  <script type="module" src="coque.js"></script>
+</body>
+</html>

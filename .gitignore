@@ -14,3 +14,7 @@ wakfu_chat.log
 node_modules/
 dist/
 out/
+
+# Chemins absolus de la machine : engendré par tools/commandes-compilation.mjs
+# pour que l'éditeur sache ouvrir tools/essai-titre.c.
+compile_commands.json

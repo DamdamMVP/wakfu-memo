@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'">
+<title>Wakfu Mémo</title>
+<link rel="stylesheet" href="coque.css">
+</head>
+<body>
+  <!--
+    LOT 2 SHELL. Lot 5 replaces this whole file with the real Fenêtre
+    principale: permanent side column, Socle d'état at the foot, Strats screen.
+    What is here exists to verify the surjeu by hand — a test bench, not an
+    interface proposal.
+  -->
+  <p class="bandeau">Coque du Lot 2 — banc d’essai. Le Lot 5 pose la colonne latérale, le Socle d’état et l’écran des Strats.</p>
+
+  <main>
+    <section class="socle">
+      <h1>Les quatre conditions d’affichage</h1>
+      <ul id="conditions"></ul>
+      <p class="conclusion" id="conclusion"></p>
+    </section>
+
+    <section>
+      <h2>Les gestes</h2>
+      <div class="gestes">
+        <button id="affichage" type="button"></button>
+        <button id="verrou" type="button"></button>
+        <button id="demande" type="button"></button>
+      </div>
+      <div class="gestes">
+        <input id="nom-strat" type="text" placeholder="nom d’une Strat" autocomplete="off">
+        <button id="choisir-strat" type="button">Choisir cette Strat</button>
+        <button id="retirer-strat" type="button">Retirer le choix</button>
+      </div>
+      <div class="gestes">
+        <button id="designer-dossier" type="button">Désigner le dossier de logs…</button>
+        <button id="oublier-dossier" type="button">Revenir à la détection</button>
+        <button id="dossier-donnees" type="button">Ouvrir le dossier de données</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Ce que le surjeu voit</h2>
+      <dl id="surjeu"></dl>
+    </section>
+
+    <p class="alerte" id="alerte" hidden></p>
+  </main>
+
+  <script type="module" src="coque.js"></script>
+</body>
+</html>

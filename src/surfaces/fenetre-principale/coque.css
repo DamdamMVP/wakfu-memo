@@ -1,0 +1,148 @@
+/* Tokens taken from the mockups, so the shell does not clash with what comes next. */
+:root {
+  --bg: #0f1115;
+  --panel: #171a21;
+  --raise: #232833;
+  --line: #2b3140;
+  --line-2: #363d4d;
+  --txt: #e8eaef;
+  --dim: #8b93a3;
+  --faint: #5c6474;
+  --accent: #5b8cff;
+  --ok: #3fc07a;
+  --note: #e0b070;
+  --bad: #ef5350;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--txt);
+  font:
+    14px / 1.55 ui-sans-serif,
+    system-ui,
+    "Segoe UI",
+    sans-serif;
+}
+.bandeau {
+  margin: 0;
+  background: #3a2c10;
+  color: #f0cf94;
+  padding: 5px 12px;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+main {
+  padding: 18px 22px 30px;
+  max-width: 860px;
+}
+h1 {
+  font-size: 15px;
+  margin: 0 0 10px;
+}
+h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--dim);
+  margin: 26px 0 10px;
+}
+section.socle {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+li {
+  display: flex;
+  gap: 9px;
+  align-items: baseline;
+  padding: 2px 0;
+}
+li .marque {
+  width: 1em;
+  color: var(--faint);
+}
+li.vraie .marque {
+  color: var(--ok);
+}
+li.vraie {
+  color: var(--txt);
+}
+li {
+  color: var(--dim);
+}
+.conclusion {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-weight: 600;
+}
+.conclusion.dessine {
+  color: var(--ok);
+}
+.gestes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+button,
+input {
+  font: inherit;
+  color: var(--txt);
+  background: var(--raise);
+  border: 1px solid var(--line-2);
+  border-radius: 8px;
+  padding: 6px 12px;
+}
+button {
+  cursor: pointer;
+}
+button:hover {
+  border-color: var(--accent);
+  background: #283040;
+}
+button.on {
+  border-color: var(--accent);
+  background: #28324a;
+}
+input {
+  background: #0c0e12;
+  min-width: 220px;
+}
+dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+  margin: 0;
+  font-size: 13px;
+}
+dt {
+  color: var(--dim);
+}
+dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+dd.non {
+  color: var(--faint);
+}
+dd.refuse {
+  color: var(--bad);
+}
+.alerte {
+  margin-top: 22px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #3a1616;
+  color: #f3b3b0;
+  font-size: 13px;
+}

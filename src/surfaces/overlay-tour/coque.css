@@ -1,0 +1,50 @@
+/* The surface is transparent: only the fiche shows. Nothing here catches the
+   mouse by itself — the input region set from `data-cliquable` decides. */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+  /* A drag must move the fiche, never select its text. */
+  user-select: none;
+}
+body {
+  color: #e8eaef;
+  font:
+    14px / 1.55 ui-sans-serif,
+    system-ui,
+    "Segoe UI",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+/* Temporary placement: Lot 4 owns the position and width of the fiche, both
+   gestures on the object itself (ADR 0013). */
+.repere {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  width: 340px;
+  background: rgba(23, 26, 33, 0.86);
+  border: 1px solid #363d4d;
+  border-radius: 10px;
+  padding: 10px 13px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  cursor: move;
+}
+.titre {
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+.etat {
+  margin: 0;
+  color: #5b8cff;
+  font:
+    600 12px / 1.5 ui-monospace,
+    monospace;
+}
+.note {
+  margin: 6px 0 0;
+  color: #8b93a3;
+  font-size: 12px;
+}
