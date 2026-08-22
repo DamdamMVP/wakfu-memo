@@ -67,3 +67,8 @@ const PAR_BREED = new Map<number, Classe>([
 export function classeDuBreed(breed: number): Classe | null {
   return PAR_BREED.get(breed) ?? null;
 }
+
+/** Whether a stored value names one of the eighteen Classes. */
+export function estClasse(valeur: unknown): valeur is Classe {
+  return typeof valeur === 'string' && (CLASSES as readonly string[]).includes(valeur);
+}

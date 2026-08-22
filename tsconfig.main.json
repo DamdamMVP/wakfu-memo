@@ -14,6 +14,7 @@
     "src/pont/**/*.ts",
     "src/domaine/**/*.ts",
     "src/logs/**/*.ts",
+    "src/persistance/**/*.ts",
     "src/suivi/**/*.ts"
   ],
   "exclude": ["**/*.test.ts"]
