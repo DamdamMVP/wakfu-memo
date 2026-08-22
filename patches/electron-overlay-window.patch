@@ -1,8 +1,125 @@
-diff --git a/src/lib/overlay_window.h b/src/lib/overlay_window.h
-index 063293d..d30e144 100644
+diff --color -u --recursive a/binding.gyp b/binding.gyp
+--- a/binding.gyp
++++ b/binding.gyp
+@@ -29,7 +29,7 @@
+           ],
+           'link_settings': {
+             'libraries': [
+-              '-lxcb', '-lpthread'
++              '-lxcb', '-lxcb-shape', '-lpthread'
+             ]
+           },
+           'cflags': ['-std=c99', '-pedantic', '-Wall', '-pthread'],
+diff --color -u --recursive a/src/lib/addon.c b/src/lib/addon.c
+--- a/src/lib/addon.c
++++ b/src/lib/addon.c
+@@ -201,6 +201,65 @@
+   return NULL;
+ }
+ 
++napi_value AddonSetInputRegion(napi_env env, napi_callback_info info) {
++  napi_status status;
++  size_t info_argc = 1;
++  napi_value info_argv[1];
++  status = napi_get_cb_info(env, info, &info_argc, info_argv, NULL, NULL);
++  NAPI_THROW_IF_FAILED(env, status, NULL);
++
++  /* null: no region at all, the window takes its whole surface back. */
++  bool is_typedarray = false;
++  status = napi_is_typedarray(env, info_argv[0], &is_typedarray);
++  NAPI_THROW_IF_FAILED(env, status, NULL);
++  if (!is_typedarray) {
++    ow_set_input_region(NULL, 0);
++    return NULL;
++  }
++
++  napi_typedarray_type type;
++  size_t length;
++  void* data;
++  status = napi_get_typedarray_info(env, info_argv[0], &type, &length, &data, NULL, NULL);
++  NAPI_THROW_IF_FAILED(env, status, NULL);
++  if (type != napi_int32_array) {
++    napi_throw_type_error(env, NULL, "setInputRegion expects an Int32Array");
++    return NULL;
++  }
++
++  /* An EMPTY array is not the absence of an array: N-API hands back a null
++     pointer, which `ow_set_input_region` would read as "no region" - that is, a
++     window catching everything, the exact opposite of what was asked. So we
++     give it a pointer that is never read, but is not null. */
++  static const int32_t aucun_rectangle = 0;
++  const int32_t* premier = (data != NULL) ? (const int32_t*)data : &aucun_rectangle;
++
++  /* Four integers per rectangle: x, y, width, height. */
++  ow_set_input_region(premier, (uint32_t)(length / 4));
++  return NULL;
++}
++
++napi_value AddonSetOverrideRedirect(napi_env env, napi_callback_info info) {
++  napi_status status;
++  size_t info_argc = 1;
++  napi_value info_argv[1];
++  status = napi_get_cb_info(env, info, &info_argc, info_argv, NULL, NULL);
++  NAPI_THROW_IF_FAILED(env, status, NULL);
++
++  /* The same Buffer `attachByTitle` takes: the X window id, four bytes. */
++  void* window_id = NULL;
++  size_t length = 0;
++  status = napi_get_buffer_info(env, info_argv[0], &window_id, &length);
++  NAPI_THROW_IF_FAILED(env, status, NULL);
++  if (window_id == NULL || length < sizeof(uint32_t)) {
++    napi_throw_type_error(env, NULL, "setOverrideRedirect expects a window handle Buffer");
++    return NULL;
++  }
++
++  ow_set_override_redirect(*((uint32_t*)window_id));
++  return NULL;
++}
++
+ napi_value AddonFocusTarget(napi_env env, napi_callback_info info) {
+   ow_focus_target();
+   return NULL;
+@@ -246,6 +305,16 @@
+   status = napi_set_named_property(env, exports, "focusTarget", export_fn);
+   NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_set_named_property");
+ 
++  status = napi_create_function(env, NULL, 0, AddonSetInputRegion, NULL, &export_fn);
++  NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_create_function");
++  status = napi_set_named_property(env, exports, "setInputRegion", export_fn);
++  NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_set_named_property");
++
++  status = napi_create_function(env, NULL, 0, AddonSetOverrideRedirect, NULL, &export_fn);
++  NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_create_function");
++  status = napi_set_named_property(env, exports, "setOverrideRedirect", export_fn);
++  NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_set_named_property");
++
+   status = napi_create_function(env, NULL, 0, AddonScreenshot, NULL, &export_fn);
+   NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_create_function");
+   status = napi_set_named_property(env, exports, "screenshot", export_fn);
+diff --color -u --recursive a/src/lib/mac.mm b/src/lib/mac.mm
+--- a/src/lib/mac.mm
++++ b/src/lib/mac.mm
+@@ -651,6 +651,16 @@
+   [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+ }
+ 
++void ow_set_override_redirect(uint32_t window_id) {
++  /* No-op: only X11 needs this. */
++  (void)window_id;
++}
++
++void ow_set_input_region(const int32_t* rects, uint32_t count) {
++  /* Sans objet : macOS n'est pas une plateforme de ce produit. */
++  (void)rects; (void)count;
++}
++
+ void ow_focus_target() {
+   if (targetInfo.pid < 0 || !targetInfo.element) {
+     return;
+diff --color -u --recursive a/src/lib/overlay_window.h b/src/lib/overlay_window.h
 --- a/src/lib/overlay_window.h
 +++ b/src/lib/overlay_window.h
-@@ -6,8 +6,36 @@ extern "C" {
+@@ -6,8 +6,36 @@
  #endif
  
  #include <stdint.h>
@@ -39,7 +156,7 @@ index 063293d..d30e144 100644
  enum ow_event_type {
    // target window is found
    OW_ATTACH = 1,
-@@ -68,6 +96,26 @@ void ow_activate_overlay();
+@@ -68,6 +96,45 @@
  
  void ow_focus_target();
  
@@ -63,11 +180,58 @@ index 063293d..d30e144 100644
 + */
 +void ow_set_input_region(const int32_t* rects, uint32_t count);
 +
++/*
++ * wakfu-memo PATCH - take a window out of the window manager's hands.
++ *
++ * A second overlay (the Demande d'ajout) has to sit centred on the game window,
++ * but it is not the window this library drives, so it stays an ordinary managed
++ * window - and Mutter simply refuses to move it. Measured: `setPosition` on it
++ * is a no-op, twice in a row, whatever the delay.
++ *
++ * Override-redirect is what the library already does to its own overlay a few
++ * lines below, and it is the reason that one lands exactly where it is told.
++ * The window manager stops seeing the window at all.
++ *
++ * MUST be called before the window is first mapped, exactly like the library's
++ * own call. Afterwards X ignores the change until the next map.
++ *
++ * No effect outside X11: on Windows and macOS the position is honoured.
++ */
++void ow_set_override_redirect(uint32_t window_id);
++
  void ow_emit_event(struct ow_event* event);
  
  void ow_screenshot(uint8_t* out, uint32_t width, uint32_t height);
-diff --git a/src/lib/x11.c b/src/lib/x11.c
-index 4929ba9..88b1790 100644
+diff --color -u --recursive a/src/lib/windows.c b/src/lib/windows.c
+--- a/src/lib/windows.c
++++ b/src/lib/windows.c
+@@ -173,7 +173,7 @@
+   if (!get_title(hwnd, &title) || title == NULL) {
+     return;
+   }
+-  bool is_equal = (strcmp(title, target_info->title) == 0);
++  bool is_equal = ow_title_matches(title, target_info->title);
+   free(title);
+   if (!is_equal) {
+     return;
+@@ -348,6 +348,16 @@
+   SetForegroundWindow(overlay_info.hwnd);
+ }
+ 
++void ow_set_override_redirect(uint32_t window_id) {
++  /* No-op: only X11 needs this. */
++  (void)window_id;
++}
++
++void ow_set_input_region(const int32_t* rects, uint32_t count) {
++  /* Sans objet : sous Windows, `setIgnoreMouseEvents` d'Electron fonctionne. */
++  (void)rects; (void)count;
++}
++
+ void ow_focus_target() {
+   SetForegroundWindow(target_info.hwnd);
+ }
+diff --color -u --recursive a/src/lib/x11.c b/src/lib/x11.c
 --- a/src/lib/x11.c
 +++ b/src/lib/x11.c
 @@ -3,6 +3,7 @@
@@ -78,7 +242,7 @@ index 4929ba9..88b1790 100644
  #include "overlay_window.h"
  
  static xcb_connection_t* x_conn;
-@@ -169,7 +170,7 @@ static void check_and_handle_window(xcb_window_t wid, struct ow_target_window* t
+@@ -169,7 +170,7 @@
    if (!get_title(wid, &title) || title == NULL) {
      return;
    }
@@ -87,10 +251,46 @@ index 4929ba9..88b1790 100644
    free(title);
    if (!is_equal) {
      return;
-@@ -319,6 +320,38 @@ void ow_activate_overlay() {
+@@ -319,6 +320,74 @@
    xcb_flush(x_conn);
  }
  
++void ow_set_override_redirect(uint32_t window_id) {
++  if (window_id == 0) {
++    return;
++  }
++  /* The hook thread may not have started yet: this is called while the window
++     is still unmapped, which is before `ow_start_hook`. A short-lived
++     connection of our own costs one round trip and removes the ordering
++     constraint entirely. */
++  xcb_connection_t* conn = x_conn;
++  bool own_connection = false;
++  if (conn == NULL) {
++    conn = xcb_connect(NULL, NULL);
++    if (xcb_connection_has_error(conn)) {
++      xcb_disconnect(conn);
++      return;
++    }
++    own_connection = true;
++  }
++
++  /* CHECKED, and not the usual fire-and-forget: `xcb_request_check` waits for
++     the server to have processed the request. Without it, the `xcb_disconnect`
++     below threw the request away before it ever reached the server, and the
++     attribute silently stayed at 0 - measured, and it cost an afternoon. */
++  uint32_t values[] = {1};
++  xcb_void_cookie_t cookie = xcb_change_window_attributes_checked(
++      conn, (xcb_window_t)window_id, XCB_CW_OVERRIDE_REDIRECT, values);
++  xcb_generic_error_t* error = xcb_request_check(conn, cookie);
++  if (error != NULL) {
++    free(error);
++  }
++
++  if (own_connection) {
++    xcb_disconnect(conn);
++  }
++}
++
 +void ow_set_input_region(const int32_t* rects, uint32_t count) {
 +  /* `x_conn` only exists once the watch thread has started, and we can be
 +     called before that, on the Overlay's very first `appliquer()`. */
@@ -126,118 +326,3 @@ index 4929ba9..88b1790 100644
  void ow_focus_target() {
    xcb_set_input_focus(x_conn, XCB_INPUT_FOCUS_PARENT, target_info.window_id, XCB_CURRENT_TIME);
    xcb_flush(x_conn);
-diff --git a/src/lib/windows.c b/src/lib/windows.c
-index 8544712..564d74d 100644
---- a/src/lib/windows.c
-+++ b/src/lib/windows.c
-@@ -173,7 +173,7 @@ static void check_and_handle_window(HWND hwnd, struct ow_target_window* target_i
-   if (!get_title(hwnd, &title) || title == NULL) {
-     return;
-   }
--  bool is_equal = (strcmp(title, target_info->title) == 0);
-+  bool is_equal = ow_title_matches(title, target_info->title);
-   free(title);
-   if (!is_equal) {
-     return;
-@@ -348,6 +348,11 @@ void ow_activate_overlay() {
-   SetForegroundWindow(overlay_info.hwnd);
- }
- 
-+void ow_set_input_region(const int32_t* rects, uint32_t count) {
-+  /* Sans objet : sous Windows, `setIgnoreMouseEvents` d'Electron fonctionne. */
-+  (void)rects; (void)count;
-+}
-+
- void ow_focus_target() {
-   SetForegroundWindow(target_info.hwnd);
- }
-diff --git a/src/lib/mac.mm b/src/lib/mac.mm
-index 9329dfe..47372a9 100644
---- a/src/lib/mac.mm
-+++ b/src/lib/mac.mm
-@@ -651,6 +651,11 @@ void ow_activate_overlay() {
-   [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
- }
- 
-+void ow_set_input_region(const int32_t* rects, uint32_t count) {
-+  /* Sans objet : macOS n'est pas une plateforme de ce produit. */
-+  (void)rects; (void)count;
-+}
-+
- void ow_focus_target() {
-   if (targetInfo.pid < 0 || !targetInfo.element) {
-     return;
-diff --git a/src/lib/addon.c b/src/lib/addon.c
-index ff6bbb0..80d86ac 100644
---- a/src/lib/addon.c
-+++ b/src/lib/addon.c
-@@ -201,6 +201,44 @@ napi_value AddonActivateOverlay(napi_env _env, napi_callback_info _info) {
-   return NULL;
- }
- 
-+napi_value AddonSetInputRegion(napi_env env, napi_callback_info info) {
-+  napi_status status;
-+  size_t info_argc = 1;
-+  napi_value info_argv[1];
-+  status = napi_get_cb_info(env, info, &info_argc, info_argv, NULL, NULL);
-+  NAPI_THROW_IF_FAILED(env, status, NULL);
-+
-+  /* null : pas de region, la fenetre reprend toute sa surface. */
-+  bool is_typedarray = false;
-+  status = napi_is_typedarray(env, info_argv[0], &is_typedarray);
-+  NAPI_THROW_IF_FAILED(env, status, NULL);
-+  if (!is_typedarray) {
-+    ow_set_input_region(NULL, 0);
-+    return NULL;
-+  }
-+
-+  napi_typedarray_type type;
-+  size_t length;
-+  void* data;
-+  status = napi_get_typedarray_info(env, info_argv[0], &type, &length, &data, NULL, NULL);
-+  NAPI_THROW_IF_FAILED(env, status, NULL);
-+  if (type != napi_int32_array) {
-+    napi_throw_type_error(env, NULL, "setInputRegion attend un Int32Array");
-+    return NULL;
-+  }
-+
-+  /* ⚠️ Un tableau VIDE n'est pas l'absence de tableau : N-API rend alors un
-+     pointeur nul, que `ow_set_input_region` lirait comme « pas de region » —
-+     donc comme une fenetre qui attrape tout, l'inverse de ce qu'on demande.
-+     On lui donne un pointeur qui ne sert pas, mais qui n'est pas nul. */
-+  static const int32_t aucun_rectangle = 0;
-+  const int32_t* premier = (data != NULL) ? (const int32_t*)data : &aucun_rectangle;
-+
-+  /* Quatre entiers par rectangle : x, y, largeur, hauteur. */
-+  ow_set_input_region(premier, (uint32_t)(length / 4));
-+  return NULL;
-+}
-+
- napi_value AddonFocusTarget(napi_env env, napi_callback_info info) {
-   ow_focus_target();
-   return NULL;
-@@ -246,6 +284,11 @@ NAPI_MODULE_INIT() {
-   status = napi_set_named_property(env, exports, "focusTarget", export_fn);
-   NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_set_named_property");
- 
-+  status = napi_create_function(env, NULL, 0, AddonSetInputRegion, NULL, &export_fn);
-+  NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_create_function");
-+  status = napi_set_named_property(env, exports, "setInputRegion", export_fn);
-+  NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_set_named_property");
-+
-   status = napi_create_function(env, NULL, 0, AddonScreenshot, NULL, &export_fn);
-   NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_create_function");
-   status = napi_set_named_property(env, exports, "screenshot", export_fn);
-diff --git a/binding.gyp b/binding.gyp
-index a68504f..82b8c16 100644
---- a/binding.gyp
-+++ b/binding.gyp
-@@ -29,7 +29,7 @@
-           ],
-           'link_settings': {
-             'libraries': [
--              '-lxcb', '-lpthread'
-+              '-lxcb', '-lxcb-shape', '-lpthread'
-             ]
-           },
-           'cflags': ['-std=c99', '-pedantic', '-Wall', '-pthread'],

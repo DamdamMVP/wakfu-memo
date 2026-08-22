@@ -52,6 +52,45 @@ memo?.surOverlayTour((etat) => {
   declarerZones();
 });
 
+/**
+ * Dragging the fiche moves it INSIDE the surface, and does not move a window:
+ * the Overlay du Tour covers the whole game, so there is nothing to move. Only
+ * possible while unlocked — locked, the input region is empty and the pointer
+ * never reaches us at all, which is why the fiche seems frozen until
+ * `Ctrl+Alt+L`.
+ *
+ * Lot 4 owns the fiche's real position and its persistence (ADR 0013: the
+ * aspect of the Overlay is set on the Overlay). This is the mechanism, not the
+ * memory of it.
+ */
+const fiche = document.querySelector<HTMLElement>('.repere');
+
+fiche?.addEventListener('pointerdown', (evenement) => {
+  if (evenement.button !== 0) return;
+  if ((evenement.target as HTMLElement).closest('button, a, input')) return;
+
+  const boite = fiche.getBoundingClientRect();
+  const prise = { x: evenement.clientX - boite.x, y: evenement.clientY - boite.y };
+  fiche.setPointerCapture(evenement.pointerId);
+
+  const suivre = (mouvement: PointerEvent): void => {
+    fiche.style.left = `${mouvement.clientX - prise.x}px`;
+    fiche.style.top = `${mouvement.clientY - prise.y}px`;
+    // The fiche moved, so what catches clicks moved with it.
+    declarerZones();
+  };
+  const relacher = (): void => {
+    fiche.removeEventListener('pointermove', suivre);
+    fiche.removeEventListener('pointerup', relacher);
+    fiche.removeEventListener('pointercancel', relacher);
+    declarerZones();
+  };
+
+  fiche.addEventListener('pointermove', suivre);
+  fiche.addEventListener('pointerup', relacher);
+  fiche.addEventListener('pointercancel', relacher);
+});
+
 // What moves the fiche: its content, and the size of the game window.
 new ResizeObserver(declarerZones).observe(document.body);
 window.addEventListener('resize', declarerZones);

@@ -17,7 +17,10 @@ import { OVERLAY_WINDOW_OPTS, OverlayController } from 'electron-overlay-window'
  * The library's own native module, loaded as-is so we share its X connection.
  * `setInputRegion` is added by `patches/electron-overlay-window.patch`.
  */
-type NatifSurjeu = { setInputRegion?: (rects: Int32Array | null) => void };
+type NatifSurjeu = {
+  setInputRegion?: (rects: Int32Array | null) => void;
+  setOverrideRedirect?: (poignee: Buffer) => void;
+};
 
 const natif = require('node-gyp-build')(
   dirname(require.resolve('electron-overlay-window/package.json')),
@@ -127,6 +130,24 @@ export class Surjeu {
       plat[i * 4 + 3] = Math.round(zone.height);
     });
     natif.setInputRegion?.(plat);
+  }
+
+  /**
+   * Takes a window out of the window manager's hands, under X11.
+   *
+   * The Overlay du Tour lands exactly where it is told because the library does
+   * this to it before it is ever mapped. The Overlay de la Demande d'ajout is
+   * not the window the library drives, so without this it stays an ordinary
+   * managed window — and Mutter refuses to move it at all: `setPosition` on it
+   * is a measured no-op, whatever the delay, and the panel lands wherever the
+   * window manager fancies.
+   *
+   * MUST be called before the window is first shown. X ignores the change on a
+   * mapped window until the next mapping.
+   */
+  poserHorsGestionnaire(fenetre: BrowserWindow): void {
+    if (process.platform !== 'linux') return;
+    natif.setOverrideRedirect?.(fenetre.getNativeWindowHandle());
   }
 
   /**

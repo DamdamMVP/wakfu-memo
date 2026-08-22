@@ -81,11 +81,22 @@ disparaissent. En Electron 43, `app.commandLine.appendSwitch` **n'y suffit
 pas** — seul `--ozone-platform=x11` en ligne de commande est lu, donc l'app se
 relance une fois sous Linux pour se le donner.
 
-⚠️ **Une rustine sur `electron-overlay-window`** (`patches/`) : la bibliothèque
-cherchait la fenêtre du jeu à l'égalité stricte du titre, or le client y écrit
-le nom du personnage — « S'Alu-Ca'Va - WAKFU ». Elle accepte désormais le
-suffixe. `tools/rustine-surjeu.mjs` la repose et recompile à chaque
-installation ; l'empaquetage de la V1 devra livrer ce binaire par plateforme.
+⚠️ **Une rustine sur `electron-overlay-window`** (`patches/`), sur trois
+points, tous mesurés :
+
+- **le titre** — la bibliothèque cherchait la fenêtre du jeu à l'égalité stricte,
+  or le client y écrit le nom du personnage (« S'Alu-Ca'Va - WAKFU ») ; elle
+  accepte désormais le suffixe ;
+- **`setInputRegion`** — `setIgnoreMouseEvents` ne fait plus rien sous Linux/X11
+  depuis Electron 43 (electron#52456), donc la région d'entrée se pose à la main
+  via xcb-shape ;
+- **`setOverrideRedirect`** — Mutter refuse de déplacer une fenêtre ordinaire :
+  `setPosition` sur l'Overlay de la Demande d'ajout est sans effet, quel que soit
+  le délai. La sortir des mains du gestionnaire de fenêtres est ce que la
+  bibliothèque fait déjà pour son propre overlay, et la seule chose qui marche.
+
+`tools/rustine-surjeu.mjs` la repose et recompile à chaque installation ;
+l'empaquetage de la V1 devra livrer ce binaire par plateforme.
 
 ⚠️ **`tools/essai-titre.c` a besoin de deux `-I` que seul le dépôt connaît** —
 les sources rustinées sous `node_modules`, et le bouchon libuv. Sans eux, un

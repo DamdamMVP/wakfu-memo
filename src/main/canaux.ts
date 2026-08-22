@@ -14,6 +14,8 @@ export const CANAL = {
   oublierDossierLogs: 'memo:oublier-dossier-logs',
   basculerVerrou: 'memo:basculer-verrou',
   ouvrirDossierDonnees: 'memo:ouvrir-dossier-donnees',
+  /** Demande d'ajout → main: the player dragged the panel, by this much. */
+  deplacerDemande: 'memo:deplacer-demande',
   /** Lot 2 test bench: makes the Demande d'ajout shell appear. */
   bancDemande: 'memo:banc-demande',
 } as const;

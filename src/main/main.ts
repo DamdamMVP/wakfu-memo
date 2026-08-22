@@ -154,6 +154,9 @@ function demarrer(): void {
   ipcMain.on(CANAL.zonesCliquables, (_evenement, zones: Bornes[]) =>
     overlayTour?.declarerZones(zones),
   );
+  ipcMain.on(CANAL.deplacerDemande, (_evenement, dx: number, dy: number) =>
+    overlayDemande?.deplacer(dx, dy),
+  );
   ipcMain.on(CANAL.bancDemande, (_evenement, enAttente: boolean) =>
     overlayDemande?.poserQuestion(enAttente),
   );
@@ -187,7 +190,11 @@ function demarrer(): void {
     });
     overlayTour = leTour;
 
-    const laDemande = new OverlayDemande({ preload, page: page('overlay-demande') });
+    const laDemande = new OverlayDemande(surjeu, {
+      preload,
+      page: page('overlay-demande'),
+      surAffichage: () => leTour.remonter(),
+    });
     overlayDemande = laDemande;
 
     surjeu.demarrer(leTour.fenetre, {

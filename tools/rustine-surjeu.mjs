@@ -1,7 +1,7 @@
 /**
  * Applies the `electron-overlay-window` patch and rebuilds the native module.
  *
- * WHY the patch (`patches/electron-overlay-window.patch`), twice over:
+ * WHY the patch (`patches/electron-overlay-window.patch`), three times over:
  *
  * 1. The title. The library looked for the game window by strict equality, but
  *    the Wakfu client names its window after the connected character —
@@ -12,6 +12,12 @@
  *    Overlay swallows every click meant for the game. Reproduced on 42.9.3 too,
  *    so there is no way out through the version. The patch exposes
  *    `setInputRegion`, which lays the region down by hand through xcb-shape.
+ * 3. Placement. The Overlay de la Demande d'ajout has to sit centred on the
+ *    game window, but it is not the window the library drives, so it stays an
+ *    ordinary managed window - and Mutter refuses to move it: `setPosition` on
+ *    it is a measured no-op, whatever the delay. The patch exposes
+ *    `setOverrideRedirect`, which takes any window out of the window manager's
+ *    hands, exactly as the library already does for its own overlay.
  *
  * WHY REBUILD. The binary shipped by the library carries the old comparison.
  * `node-gyp-build` prefers `build/Release/` over `prebuilds/`, so a local build

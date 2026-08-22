@@ -1,9 +1,13 @@
+/* Same skin as the fiche of the Overlay du Tour: both are the same object seen
+   twice, and a difference in opacity reads as a difference in kind. */
 html,
 body {
   height: 100%;
   margin: 0;
   background: transparent;
   overflow: hidden;
+  /* A drag must move the panel, never select its text. */
+  user-select: none;
 }
 body {
   color: #e8eaef;
@@ -20,11 +24,15 @@ body {
   flex-direction: column;
   gap: 10px;
   align-items: flex-start;
-  background: rgba(23, 26, 33, 0.96);
+  background: rgba(23, 26, 33, 0.86);
   border: 1px solid #363d4d;
   border-radius: 12px;
   padding: 16px 18px;
-  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  cursor: move;
+}
+button {
+  cursor: pointer;
 }
 .titre {
   margin: 0;

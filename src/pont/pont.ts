@@ -30,6 +30,7 @@ const CANAL: typeof CANAUX = {
   oublierDossierLogs: 'memo:oublier-dossier-logs',
   basculerVerrou: 'memo:basculer-verrou',
   ouvrirDossierDonnees: 'memo:ouvrir-dossier-donnees',
+  deplacerDemande: 'memo:deplacer-demande',
   bancDemande: 'memo:banc-demande',
 };
 
@@ -49,6 +50,7 @@ const memo = {
   designerDossierLogs: () => ipcRenderer.invoke(CANAL.designerDossierLogs),
   oublierDossierLogs: () => ipcRenderer.send(CANAL.oublierDossierLogs),
   ouvrirDossierDonnees: () => ipcRenderer.send(CANAL.ouvrirDossierDonnees),
+  deplacerDemande: (dx: number, dy: number) => ipcRenderer.send(CANAL.deplacerDemande, dx, dy),
   bancDemande: (enAttente: boolean) => ipcRenderer.send(CANAL.bancDemande, enAttente),
 };
 

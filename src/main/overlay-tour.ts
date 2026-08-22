@@ -154,6 +154,17 @@ export class OverlayTour {
     this.#surChangement();
   }
 
+  /**
+   * Back above the Demande d'ajout, which has just appeared under it. Raising
+   * reconfigures the window, and Chromium wipes the input region when it does,
+   * so the zones go back down behind it.
+   */
+  remonter(): void {
+    if (this.fenetre.isDestroyed() || !this.fenetre.isVisible()) return;
+    this.fenetre.moveTop();
+    this.#poserZones();
+  }
+
   /** The surface declares what it occupies: it alone knows. */
   declarerZones(zones: readonly Bornes[]): void {
     this.#zones = zones;

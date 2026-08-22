@@ -15,7 +15,7 @@
 
 import { BrowserWindow } from 'electron';
 
-import type { Bornes } from './surjeu.ts';
+import type { Bornes, Surjeu } from './surjeu.ts';
 
 /** Shell size. Lot 8 draws the content and will settle its own. */
 export const TAILLE = { largeur: 460, hauteur: 300 } as const;
@@ -27,7 +27,19 @@ export class OverlayDemande {
   #jeuAFocus = false;
   #bornesJeu: Bornes | null = null;
 
-  constructor(options: { preload: string; page: string }) {
+  /**
+   * What the player's drags have added to the centred spot. Kept as an offset
+   * and not as an absolute position, so the panel keeps following the game
+   * window when it moves. In memory only — Lot 8 decides whether it persists.
+   */
+  #decalage = { x: 0, y: 0 };
+  readonly #surAffichage: () => void;
+
+  constructor(
+    surjeu: Surjeu,
+    options: { preload: string; page: string; surAffichage?: () => void },
+  ) {
+    this.#surAffichage = options.surAffichage ?? (() => {});
     this.fenetre = new BrowserWindow({
       width: TAILLE.largeur,
       height: TAILLE.hauteur,
@@ -41,6 +53,10 @@ export class OverlayDemande {
       webPreferences: { preload: options.preload, contextIsolation: true, sandbox: true },
     });
     void this.fenetre.loadFile(options.page);
+    // Before the first show, and it has to be: X ignores the change on a mapped
+    // window. Without it Mutter places this panel where it likes and then
+    // refuses every `setPosition` we make.
+    surjeu.poserHorsGestionnaire(this.fenetre);
   }
 
   get enAttente(): boolean {
@@ -77,24 +93,26 @@ export class OverlayDemande {
   suivre(bornes: Bornes): void {
     if (bornes.width === 0 || bornes.height === 0) return;
     this.#bornesJeu = bornes;
-    // Only while visible: `appliquer` places it itself right after showing it.
     if (this.fenetre.isVisible()) this.#placer();
     this.appliquer();
   }
 
   /**
-   * Must be replayed after every show, not only when the game moves. This
-   * surface is not driven by the library, so the window manager treats it as an
-   * ordinary window and puts it where it likes at map time — measured under
-   * Mutter, which throws a window asked for elsewhere to the top left of the
-   * desktop. A position set before showing does not survive; one set after does.
+   * The player dragged the panel. The lock never touches this surface, so this
+   * is always allowed.
    */
+  deplacer(dx: number, dy: number): void {
+    this.#decalage = { x: this.#decalage.x + dx, y: this.#decalage.y + dy };
+    this.#placer();
+  }
+
+  /** Centred on the game window. Exact, the window manager being out of it. */
   #placer(): void {
     const bornes = this.#bornesJeu;
     if (bornes === null || this.fenetre.isDestroyed()) return;
     this.fenetre.setPosition(
-      Math.round(bornes.x + (bornes.width - TAILLE.largeur) / 2),
-      Math.round(bornes.y + (bornes.height - TAILLE.hauteur) / 2),
+      Math.round(bornes.x + (bornes.width - TAILLE.largeur) / 2 + this.#decalage.x),
+      Math.round(bornes.y + (bornes.height - TAILLE.hauteur) / 2 + this.#decalage.y),
     );
   }
 
@@ -114,6 +132,10 @@ export class OverlayDemande {
       this.fenetre.showInactive();
       this.fenetre.setAlwaysOnTop(true, 'screen-saver');
       this.#placer();
+      // Both surfaces are override-redirect, so their stacking is plain X order
+      // and the last one raised wins. This one must sit UNDER the fiche du
+      // Tour: a question about the Roster must never hide what to play.
+      this.#surAffichage();
     }
   }
 }

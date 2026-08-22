@@ -6,6 +6,8 @@ body {
   margin: 0;
   background: transparent;
   overflow: hidden;
+  /* A drag must move the fiche, never select its text. */
+  user-select: none;
 }
 body {
   color: #e8eaef;
@@ -28,6 +30,7 @@ body {
   border-radius: 10px;
   padding: 10px 13px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+  cursor: move;
 }
 .titre {
   margin: 0 0 6px;
