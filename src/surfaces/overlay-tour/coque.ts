@@ -62,6 +62,8 @@ type PontMemo = {
   declarerZonesCliquables: (zones: Rectangle[]) => void;
   choisirStrat: (id: string | null) => void;
   basculerVerrou: () => void;
+  poserVerrou: (verrouille: boolean) => void;
+  poserAspect: (aspect: { opacite?: number; tailleTexte?: number }) => void;
   poserLargeurFiche: (largeur: number | null) => void;
   poserPositionFiche: (x: number, y: number) => void;
 };
@@ -116,6 +118,13 @@ const audela = par<HTMLElement>('audela');
 const rows = par<HTMLElement>('rows');
 const note = par<HTMLElement>('note');
 const noteTexte = par<HTMLElement>('note-texte');
+const barrette = par<HTMLElement>('barrette');
+const curseurOpacite = par<HTMLInputElement>('opacite');
+const curseurTaille = par<HTMLInputElement>('taille-texte');
+const valOpacite = par<HTMLElement>('val-opacite');
+const valTaille = par<HTMLElement>('val-taille');
+const mesures = par<HTMLElement>('mesures');
+const fin = par<HTMLButtonElement>('fin');
 
 let dernier: EtatOverlayTour | null = null;
 /** The Strat menu is unfolded. Local: a menu is not a state of the app. */
@@ -198,6 +207,25 @@ function appliquerLAspect(aspect: Aspect): void {
   fiche.style.fontSize = `${aspect.tailleTexte}px`;
   fiche.style.opacity = String(aspect.opacite / 100);
   poser(aspect.x, aspect.y);
+  peindreLaBarrette(aspect);
+}
+
+/**
+ * Les deux curseurs, et ce que les gestes viennent d'écrire. Reposer la valeur
+ * d'un curseur qu'on tient ne le fait pas sauter : c'est la sienne qui revient,
+ * le processus principal n'ayant fait que la borner.
+ */
+function peindreLaBarrette(aspect: Aspect): void {
+  curseurOpacite.value = String(aspect.opacite);
+  curseurTaille.value = String(aspect.tailleTexte);
+  valOpacite.textContent = `${aspect.opacite} %`;
+  valTaille.textContent = `${aspect.tailleTexte} px`;
+  direLesMesures();
+}
+
+/** Les deux grandeurs qui n'ont pas de curseur : elles se lisent, elles se prennent à la souris. */
+function direLesMesures(): void {
+  mesures.textContent = `largeur ${Math.round(fiche.offsetWidth)} px · x ${Math.round(fiche.offsetLeft)} · y ${Math.round(fiche.offsetTop)}`;
 }
 
 function peindre(etat: EtatOverlayTour): void {
@@ -210,12 +238,20 @@ function peindre(etat: EtatOverlayTour): void {
   // and not a sentence (ADR `0006`).
   if (!etat.dessine || etat.fiche === null) {
     fiche.hidden = true;
+    barrette.hidden = true;
     declarerZones();
     return;
   }
 
   const contenu = etat.fiche;
   fiche.hidden = false;
+  // Unlocked, the width grip SHOWS itself. It is the one gesture nobody guesses,
+  // and it is taken here, on the object — so it must not wait for the pointer to
+  // pass over it to admit it exists.
+  fiche.classList.toggle('libre', !etat.verrouille);
+  // Régler et déverrouiller sont le même état (ADR `0013`): no mode of its own
+  // to name, and nothing left over once the padlock closes.
+  barrette.hidden = etat.verrouille;
   appliquerLAspect(etat.aspect);
 
   stratNom.textContent = contenu.nom;
@@ -308,6 +344,8 @@ function glisser(
     suivre(mouvement);
     // What catches clicks moved with the fiche.
     declarerZones();
+    // The two figures the barrette reads out are the ones being dragged.
+    direLesMesures();
   };
   const finir = (): void => {
     saisie.removeEventListener('pointermove', bouger);
@@ -401,6 +439,32 @@ stratmenu.addEventListener('click', (evenement) => {
 });
 
 cadenas.addEventListener('click', () => memo?.basculerVerrou());
+
+/* ============================================================= la barrette = */
+
+/**
+ * The two sliders write at every notch, and they write **through** the main
+ * process: it holds the bounds and the file. What comes back is the fiche
+ * already repainted — the judgement is made on the game's pixels, live, which is
+ * the whole point of not putting these two on a page (ADR `0013`).
+ */
+curseurOpacite.addEventListener('input', () => {
+  const opacite = Number(curseurOpacite.value);
+  fiche.style.opacity = String(opacite / 100);
+  valOpacite.textContent = `${opacite} %`;
+  memo?.poserAspect({ opacite });
+});
+
+curseurTaille.addEventListener('input', () => {
+  const tailleTexte = Number(curseurTaille.value);
+  fiche.style.fontSize = `${tailleTexte}px`;
+  valTaille.textContent = `${tailleTexte} px`;
+  direLesMesures();
+  memo?.poserAspect({ tailleTexte });
+});
+
+/** The same exit as the padlock, spelled out: the barrette is the tool surface. */
+fin.addEventListener('click', () => memo?.poserVerrou(true));
 
 memo?.surOverlayTour(peindre);
 

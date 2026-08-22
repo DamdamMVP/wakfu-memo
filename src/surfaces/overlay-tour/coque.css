@@ -66,7 +66,8 @@ button {
 }
 
 /* The right edge, and the only place the width is set. Nobody guesses this
-   gesture — the porte of the Réglages is the one place that teaches it.
+   gesture — the porte of the Réglages names it, and the fiche itself shows it as
+   soon as it is unlocked.
 
    Astride the edge rather than inside it: the padlock sits at the end of the
    Strat bar, and a grip laid over the fiche would cover it. It carries
@@ -80,7 +81,8 @@ button {
   z-index: 3;
   cursor: ew-resize;
 }
-.poignee-largeur:hover:after {
+/* Locked, nothing: the fiche is a poster and the pointer goes through it. */
+.poignee-largeur:after {
   content: "";
   position: absolute;
   top: 8%;
@@ -88,6 +90,19 @@ button {
   left: 3px;
   width: 3px;
   border-radius: 2px;
+  background: transparent;
+  transition: 0.12s background;
+}
+/* Unlocked, the handle is THERE, before any hover: the width is taken on the
+   object, and an invisible handle is a gesture that does not exist.
+
+   No hover rule outside `.libre`, and it is not an oversight: locked, the input
+   region is empty and the pointer never reaches this surface at all — there is
+   no hover to answer. */
+.fiche.libre .poignee-largeur:after {
+  background: var(--line-2);
+}
+.fiche.libre .poignee-largeur:hover:after {
   background: var(--accent);
 }
 
@@ -352,4 +367,99 @@ button {
 .note .fleche {
   flex: none;
   font-style: normal;
+}
+
+/* ================================================================ la barrette */
+/* Transcribed from `prototypes/reglages/`, the retained form. Glued to the foot
+   of the window — which is the foot of the game window, the Overlay covering it
+   whole — so it never sits on the fiche being adjusted.
+
+   Its own opacity, not the fiche's: what is being set must not blur the thing
+   setting it. And no `hidden` fallback to worry about — the surface hides it,
+   and a hidden element declares no clickable zone, so a locked Overlay gets its
+   input region back for free. */
+.barrette {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 9px 14px;
+  background: #0c0e12f2;
+  border-top: 1px solid var(--line-2);
+  box-shadow: 0 -10px 30px #0008;
+}
+.barrette[hidden] {
+  display: none;
+}
+.barrette .grp {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.barrette label {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.barrette .val {
+  font:
+    12px ui-monospace,
+    monospace;
+  color: var(--dim);
+  min-width: 44px;
+}
+.barrette .grow {
+  flex: 1;
+}
+/* The two figures with no slider: they are read here, and taken with the mouse
+   on the object — the one gesture nobody guesses (ADR 0013). */
+.barrette .mesures {
+  font:
+    11.5px ui-monospace,
+    monospace;
+  color: var(--faint);
+}
+.barrette .tag {
+  font-size: 10.5px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  padding: 1px 6px;
+  color: var(--accent);
+  border-color: #5b8cff55;
+}
+.barrette .fin {
+  border: 1px solid var(--accent);
+  background: #22304d;
+  border-radius: 8px;
+  padding: 5px 13px;
+}
+.barrette .fin:hover {
+  background: #2b3d62;
+}
+.barrette input[type="range"] {
+  appearance: none;
+  width: 112px;
+  height: 22px;
+  background: transparent;
+  cursor: pointer;
+}
+.barrette input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: #2f3542;
+}
+.barrette input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px #5b8cff33;
 }
