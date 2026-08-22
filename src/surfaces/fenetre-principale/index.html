@@ -2,57 +2,47 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'">
 <title>Wakfu Mémo</title>
 <link rel="stylesheet" href="coque.css">
 </head>
-<body>
+<!--
+  `spellcheck="false"` sur tout le document : les Consignes sont des noms de
+  sorts et des abréviations de donjon — « gobgob », « TP SUR HUPPER », « oeil de
+  taupe » — et le correcteur les soulignait à peu près toutes.
+-->
+<body spellcheck="false">
   <!--
-    LOT 2 SHELL. Lot 5 replaces this whole file with the real Fenêtre
-    principale: permanent side column, Socle d'état at the foot, Strats screen.
-    What is here exists to verify the surjeu by hand — a test bench, not an
-    interface proposal.
+    La Fenêtre principale, la seule des trois surfaces qui soit une fenêtre.
+
+    Le squelette seulement : `coque.js` peint la colonne, le Socle d'état et
+    l'écran courant à chaque message du processus principal. Trois choses tiennent
+    ce fichier, et aucune n'est cosmétique :
+
+    - la COLONNE est permanente, et c'est sa place en pied qui rend le Socle
+      d'état possible — une barre d'onglets n'aurait eu la place que d'une
+      pastille et de six mots (ADR 0012) ;
+    - le SOCLE est le seul endroit de l'app qui explique pourquoi l'Overlay ne se
+      dessine pas. L'ADR 0006 retire ce vocabulaire à l'Overlay, pas à l'app ;
+    - le BANDEAU de la persistance vit au-dessus de tout : un fichier mis de côté
+      se dit avant qu'on cherche ses données (ADR 0004).
   -->
-  <p class="bandeau">Coque du Lot 2 — banc d’essai. Le Lot 5 pose la colonne latérale, le Socle d’état et l’écran des Strats.</p>
+  <p class="alerte" id="alerte" hidden></p>
 
-  <main>
-    <section class="socle">
-      <h1>Les quatre conditions d’affichage</h1>
-      <ul id="conditions"></ul>
-      <p class="conclusion" id="conclusion"></p>
-    </section>
+  <div class="coque">
+    <nav class="rail">
+      <div class="brand">Wakfu Mémo</div>
+      <div class="items" id="entrees"></div>
+      <div class="grow"></div>
+      <div class="socle" id="socle"></div>
+    </nav>
+    <main class="scr" id="ecran"></main>
+  </div>
 
-    <section>
-      <h2>Les gestes</h2>
-      <div class="gestes">
-        <button id="affichage" type="button"></button>
-        <button id="verrou" type="button"></button>
-        <button id="demande" type="button"></button>
-      </div>
-      <!--
-        BANC DU LOT 4. L'Overlay ne se dessine pas sans Strat choisie (ADR 0006)
-        et l'éditeur est le Lot 5 : sans ce bouton, la fiche du Tour ne pourrait
-        pas être regardée une seule fois.
-      -->
-      <div class="gestes" id="strats"></div>
-      <div class="gestes">
-        <button id="semer-strat" type="button">Semer une Strat d’essai</button>
-        <button id="retirer-strat" type="button">Retirer le choix</button>
-      </div>
-      <div class="gestes">
-        <button id="designer-dossier" type="button">Désigner le dossier de logs…</button>
-        <button id="oublier-dossier" type="button">Revenir à la détection</button>
-        <button id="dossier-donnees" type="button">Ouvrir le dossier de données</button>
-      </div>
-    </section>
-
-    <section>
-      <h2>Ce que le surjeu voit</h2>
-      <dl id="surjeu"></dl>
-    </section>
-
-    <p class="alerte" id="alerte" hidden></p>
-  </main>
+  <!-- Les calques : le menu d'une ligne, le panneau d'un Emplacement, la
+       confirmation. Hors du flux, parce que les deux premiers débordent ce qui
+       les ouvre — la colonne serrée n'a la place ni de l'un ni de l'autre. -->
+  <div id="calques"></div>
 
   <script type="module" src="coque.js"></script>
 </body>

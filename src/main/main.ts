@@ -16,14 +16,17 @@ import {
 import {
   type Avertissement,
   BORNES,
+  type CommandeEdition,
   compositionDe,
+  editer,
   Persistance,
   REGLAGES_PAR_DEFAUT,
   type Strat,
+  supprimerEmplacement,
+  supprimerStrat,
 } from '../persistance/index.ts';
 import { ficheDuTour } from '../suivi/fiche.ts';
 import type { EtatDuSuivi } from '../suivi/suivi-du-tour.ts';
-import { stratDEssai } from './banc-strat.ts';
 import { CANAL } from './canaux.ts';
 import { type Conditions, EtatConditions, type NomCondition } from './conditions-affichage.ts';
 import { FenetrePrincipale } from './fenetre-principale.ts';
@@ -76,7 +79,14 @@ type Instantane = {
   stratChoisie: string | null;
   /** The id, because two Strats may bear the same name. */
   stratChoisieId: string | null;
-  strats: { id: string; nom: string }[];
+  /**
+   * The Strats **whole**: the Fenêtre principale is where they are written, so
+   * it gets the model and not a summary. The Overlay still gets `{ id, nom }`
+   * only — all its Strat menu ever needs.
+   */
+  strats: readonly Strat[];
+  /** px — the minimum width of a fiche in the grid of the Strats screen. */
+  ficheMiniFenetre: number;
   raccourcis: Poses | null;
   dossierDonnees: string;
   avertissements: Avertissement[];
@@ -178,7 +188,8 @@ function demarrer(): void {
     dossierLogsManuel: persistance.reglages.lire().dossierLogsManuel,
     stratChoisie: stratChoisie()?.nom ?? null,
     stratChoisieId: stratChoisie()?.id ?? null,
-    strats: persistance.strats.lire().strats.map((strat) => ({ id: strat.id, nom: strat.nom })),
+    strats: persistance.strats.lire().strats,
+    ficheMiniFenetre: persistance.reglages.lire().ficheMiniFenetre,
     raccourcis: raccourcis?.poses ?? null,
     dossierDonnees: app.getPath('userData'),
     avertissements: persistance.avertissements,
@@ -210,15 +221,29 @@ function demarrer(): void {
   /**
    * The chosen Strat drives two things at once, and they must not drift: the
    * fourth display condition, and the Composition the Rotation stops on.
+   *
+   * Called after the choice moves **and after every edition** — renaming the
+   * chosen Strat, adding an Emplacement, typing a Consigne all change what the
+   * Overlay draws, and the Composition is what the Rotation walks. Without it
+   * the Rotation would keep stopping on Emplacements that no longer exist.
+   *
+   * It does NOT call `appliquer()`. What decides whether the Overlay is drawn is
+   * the condition, and `EtatConditions` carries a real change to the Overlay by
+   * itself. Calling it again would lay the surjeu's input region down at every
+   * keystroke, for nothing.
    */
-  const poserStratChoisie = (id: string | null): void => {
-    persistance.modifierReglages({ stratChoisie: id });
+  const rafraichirLaStratChoisie = (): void => {
     const strat = stratChoisie();
     etat.poser('stratChoisie', strat !== null);
     veilleCombat.poserComposition(strat === null ? [] : compositionDe(strat));
-    overlayTour?.appliquer();
     overlayTour?.envoyerEtat();
     diffuser();
+  };
+
+  const poserStratChoisie = (id: string | null): void => {
+    persistance.modifierReglages({ stratChoisie: id });
+    overlayTour?.appliquer();
+    rafraichirLaStratChoisie();
   };
 
   /**
@@ -287,16 +312,40 @@ function demarrer(): void {
     overlayTour?.envoyerEtat();
   });
   /**
-   * LOT 4 TEST BENCH. The Overlay is not drawn without a Strat chosen, and the
-   * editor is Lot 5: without this, the fiche could not be looked at once. Sowing
-   * one chooses it, exactly as creating the first Strat will (ADR `0012`).
+   * Every write of the Strats screen comes through here. The surface sends an
+   * intent, `edition-strats.ts` decides, and only what moved is rewritten. The
+   * id of a Strat just created goes back, so the screen can put its name into
+   * edition — nothing else needs an answer.
    */
-  ipcMain.on(CANAL.bancStrat, () => {
-    const strat = stratDEssai();
-    const strats = persistance.strats.lire();
-    persistance.strats.ecrire({ strats: [...strats.strats, strat] });
-    poserStratChoisie(strat.id);
+  ipcMain.handle(CANAL.editerStrats, (_evenement, commande: CommandeEdition) => {
+    const { etat: apres, stratId } = editer(persistance.etat(), commande ?? { sorte: 'inconnue' });
+    persistance.appliquer(apres);
+    rafraichirLaStratChoisie();
+    return { stratId };
   });
+  /**
+   * What the confirmation says, computed by the very function that will apply
+   * the deletion — it is pure, so asking costs nothing and the sentence cannot
+   * drift from the act (ADR `0012`).
+   */
+  ipcMain.handle(CANAL.consequenceSuppressionStrat, (_evenement, stratId: string) => {
+    const { tours, emplacements, estChoisie, choixPasseA } = supprimerStrat(
+      persistance.etat(),
+      stratId,
+    );
+    return { tours, emplacements, estChoisie, choixPasseA };
+  });
+  ipcMain.handle(
+    CANAL.consequenceSuppressionEmplacement,
+    (_evenement, stratId: string, emplacementId: string) => {
+      const { consignesPerdues, preferencesPerdues } = supprimerEmplacement(
+        persistance.etat(),
+        stratId,
+        emplacementId,
+      );
+      return { consignesPerdues, preferencesPerdues };
+    },
+  );
   ipcMain.on(CANAL.oublierDossierLogs, () => poserDossierLogs(null));
   ipcMain.on(CANAL.ouvrirDossierDonnees, () => {
     void shell.openPath(app.getPath('userData'));

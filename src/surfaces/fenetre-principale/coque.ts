@@ -1,82 +1,57 @@
 /**
- * The Lot 2 test bench. It shows the state the main process pushes, and offers
- * the gestures needed to check the surjeu by hand.
+ * La Fenêtre principale : la colonne, le Socle d'état, et l'écran courant.
  *
- * This is not the Socle d'état: that one is permanent, lives at the foot of the
- * side column, and Lot 5 lays it down. The four sentences below are those of
- * `CONTEXT.md` and ADR `0014`, in their frozen order, because there is no
- * reason to invent others just to verify.
+ * C'est le **seul endroit où l'app s'explique** (ADR `0012`). L'ADR `0006`
+ * retire à l'Overlay tout vocabulaire pour son propre doute, et cette fenêtre
+ * en porte la contrepartie : quatre conditions écrites, cochées ou non, dans un
+ * ordre gelé, et la phrase qui conclut. Ce n'est pas un pari sur le contexte,
+ * c'est un dispositif permanent.
+ *
+ * Ce fichier ne décide rien du modèle. Il peint ce que le processus principal
+ * pousse, et il renvoie des intentions.
  */
 
-type Pose = { combinaison: string | null; etat: 'pris' | 'refuse' | 'absent' };
+import { bouton, element } from './dom.ts';
+import { type Etat, memo } from './pont.ts';
+import { calquesStrats, ecranStrats, validerLeNom } from './strats.ts';
+import { type Ecran, fermerLesCalques, repeindre, surRepeindre, vue } from './vue.ts';
+
+const par = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
 
 /**
- * Mirrors `Avertissement` of `src/persistance/`. Duplicated by hand like the
- * state below: a surface has no Node API, so it cannot import a module that
- * reads files.
- */
-type Avertissement = {
-  sorte: 'migration' | 'mise-de-cote' | 'refus';
-  fichier: string;
-  depuis?: number;
-  sauvegarde?: string;
-  miseDeCote?: string | null;
-};
-
-type Etat = {
-  conditions: Record<string, boolean>;
-  manquantes: string[];
-  dessine: boolean;
-  attache: boolean;
-  titreCible: string;
-  verrouille: boolean;
-  demandeEnAttente: boolean;
-  wakfuLog: string | null;
-  dossierLogsManuel: string | null;
-  stratChoisie: string | null;
-  stratChoisieId: string | null;
-  strats: { id: string; nom: string }[];
-  raccourcis: Record<string, Pose> | null;
-  dossierDonnees: string;
-  avertissements: Avertissement[];
-};
-
-type PontMemo = {
-  etat: () => Promise<Etat>;
-  surEtat: (rappel: (etat: Etat) => void) => void;
-  basculerAffichage: () => void;
-  choisirStrat: (nom: string | null) => void;
-  basculerVerrou: () => void;
-  designerDossierLogs: () => Promise<string | null>;
-  oublierDossierLogs: () => void;
-  ouvrirDossierDonnees: () => void;
-  bancDemande: (enAttente: boolean) => void;
-  bancStrat: () => void;
-};
-
-const memo = (window as unknown as { memo?: PontMemo }).memo;
-
-/**
- * If the bridge is missing, the Fenêtre principale says so. Without this guard
- * it opens empty and mute — which happened, a sandboxed preload being unable to
- * load a neighbouring file. The Fenêtre principale is the only place that
- * explains (ADR `0012`), including when it is the broken one.
+ * Si le pont manque, la fenêtre le dit. Sans cette garde elle s'ouvre vide et
+ * muette — c'est arrivé, un preload en bac à sable ne pouvant pas charger un
+ * fichier voisin. La Fenêtre principale est le seul endroit qui explique, y
+ * compris quand c'est elle qui est cassée.
  */
 if (memo === undefined) {
-  const dire = document.createElement('p');
-  dire.className = 'alerte';
+  const dire = element('p', 'alerte');
   dire.textContent =
     'Le pont vers le processus principal ne s’est pas chargé : cette fenêtre ne peut rien montrer ni rien commander. Voir la console (Ctrl+Maj+I).';
-  document.querySelector('main')?.prepend(dire);
+  dire.hidden = false;
+  document.body.prepend(dire);
   throw new Error('pont absent');
 }
 
-const PHRASES: Record<string, string> = {
-  affichageDemande: 'l’Affichage est demandé',
-  logsTrouves: 'les logs de Wakfu sont trouvés',
-  fenetreWakfu: 'une fenêtre de Wakfu existe',
-  stratChoisie: 'une Strat est choisie',
-};
+/**
+ * Les quatre conditions, dans l'ordre que l'ADR `0014` a gelé : la liste **est**
+ * les conditions, elle ne change pas de forme selon les circonstances, sinon
+ * elle cesse d'être un objet qu'on apprend. Les deux faits qui parlent du jeu se
+ * lisent côte à côte — installé, puis lancé.
+ */
+const PHRASES: readonly (readonly [string, string])[] = [
+  ['affichageDemande', 'l’Affichage est demandé'],
+  ['logsTrouves', 'les logs de Wakfu sont trouvés'],
+  ['fenetreWakfu', 'une fenêtre de Wakfu existe'],
+  ['stratChoisie', 'une Strat est choisie'],
+];
+
+const ENTREES: readonly (readonly [Ecran, string])[] = [
+  ['strats', 'Strats'],
+  ['roster', 'Roster'],
+  ['reglages', 'Réglages'],
+  ['prise-en-main', 'Prise en main'],
+];
 
 const NOMS_RACCOURCIS: Record<string, string> = {
   overlay: 'Afficher / masquer l’overlay',
@@ -84,88 +59,147 @@ const NOMS_RACCOURCIS: Record<string, string> = {
   fenetre: 'Rappeler la fenêtre principale',
 };
 
-const par = <T extends HTMLElement>(id: string): T => document.getElementById(id) as T;
+let dernier: Etat | null = null;
 
-function ligneDefinition(parent: HTMLElement, terme: string, valeur: string, classe = ''): void {
-  const dt = document.createElement('dt');
-  dt.textContent = terme;
-  const dd = document.createElement('dd');
-  dd.textContent = valeur;
-  if (classe) dd.className = classe;
-  parent.append(dt, dd);
+function allerA(ecran: Ecran): void {
+  vue.ecran = ecran;
+  fermerLesCalques();
+  if (ecran === 'strats') vue.ouverteId = null;
+  repeindre();
 }
 
-function peindre(etat: Etat): void {
-  const liste = par<HTMLUListElement>('conditions');
-  liste.replaceChildren();
-  for (const [cle, phrase] of Object.entries(PHRASES)) {
-    const vraie = etat.conditions[cle] === true;
-    const li = document.createElement('li');
-    li.className = vraie ? 'vraie' : '';
-    const marque = document.createElement('span');
-    marque.className = 'marque';
-    marque.textContent = vraie ? '✓' : '·';
-    const texte = document.createElement('span');
-    texte.textContent = phrase;
-    li.append(marque, texte);
-    liste.append(li);
+/* ================================================== la colonne latérale == */
+
+function peindreLeRail(etat: Etat): void {
+  const hote = par('entrees');
+  hote.replaceChildren();
+  for (const [ecran, libelle] of ENTREES) {
+    const entree = bouton(vue.ecran === ecran ? 'cur' : '', libelle, () => allerA(ecran));
+    if (ecran === 'strats') {
+      entree.append(element('span', 'cnt', String(etat.strats.length)));
+    }
+    // Le témoin d'une Demande d'ajout sans réponse : sans lui, une question
+    // posée en combat et laissée de côté n'aurait aucune trace ici. Ne pas
+    // répondre ne vaut pas refus.
+    if (ecran === 'roster' && etat.demandeEnAttente) {
+      const temoin = element('span', 'temoin');
+      temoin.title = 'une Demande d’ajout attend une réponse';
+      entree.append(temoin);
+    }
+    hote.append(entree);
   }
+}
 
-  const conclusion = par<HTMLParagraphElement>('conclusion');
-  conclusion.textContent = etat.dessine
-    ? `l’overlay est dessiné${etat.stratChoisie ? `, sur ${etat.stratChoisie}` : ''}`
-    : 'l’overlay n’est pas dessiné';
-  conclusion.className = `conclusion${etat.dessine ? ' dessine' : ''}`;
+function peindreLeSocle(etat: Etat): void {
+  const hote = par('socle');
+  hote.replaceChildren();
 
-  const affichage = par<HTMLButtonElement>('affichage');
-  affichage.textContent = etat.conditions['affichageDemande']
-    ? 'Ne plus demander l’affichage'
-    : 'Demander l’affichage';
-  affichage.classList.toggle('on', etat.conditions['affichageDemande'] === true);
-
-  const verrou = par<HTMLButtonElement>('verrou');
-  verrou.textContent = etat.verrouille
-    ? 'Déverrouiller l’Overlay du Tour'
-    : 'Verrouiller l’Overlay du Tour';
-  verrou.classList.toggle('on', !etat.verrouille);
-
-  const demande = par<HTMLButtonElement>('demande');
-  demande.textContent = etat.demandeEnAttente
-    ? 'Répondre à la Demande d’ajout'
-    : 'Faire surgir la Demande d’ajout';
-  demande.classList.toggle('on', etat.demandeEnAttente);
-
-  // LOT 4 BENCH. One button per Strat that exists, the chosen one marked. Lot 5
-  // replaces this whole window with the real Strats screen, where choosing is a
-  // pastille that does not force the Strat open.
-  const strats = par<HTMLDivElement>('strats');
-  strats.replaceChildren();
-  for (const strat of etat.strats) {
-    const bouton = document.createElement('button');
-    bouton.type = 'button';
-    bouton.textContent = strat.nom === '' ? '(sans nom)' : strat.nom;
-    bouton.classList.toggle('on', strat.id === etat.stratChoisieId);
-    // `memo?.` and not `memo.`: inside a hoisted function the compiler drops
-    // the narrowing the guard at the top of the file gives.
-    bouton.addEventListener('click', () => memo?.choisirStrat(strat.id));
-    strats.append(bouton);
-  }
-  strats.hidden = etat.strats.length === 0;
-
-  const surjeu = par<HTMLDListElement>('surjeu');
-  surjeu.replaceChildren();
-  ligneDefinition(surjeu, 'fenêtre visée', etat.titreCible);
-  ligneDefinition(
-    surjeu,
-    'attachement',
-    etat.attache ? 'attaché à la fenêtre du jeu' : 'aucune fenêtre trouvée',
-    etat.attache ? '' : 'non',
+  const demande = etat.conditions['affichageDemande'] === true;
+  const interrupteur = bouton(`sw ${demande ? 'on' : ''}`.trim(), '', () =>
+    memo?.basculerAffichage(),
   );
-  ligneDefinition(surjeu, 'wakfu.log', etat.wakfuLog ?? 'aucun', etat.wakfuLog ? '' : 'non');
-  // Which of the two produced the retained folder — **détecté** or **désigné**.
-  // The Réglages screen of Lot 7 owes the same answer, plus the way back.
-  ligneDefinition(
-    surjeu,
+  const piste = element('span', 'track');
+  piste.append(element('i'));
+  interrupteur.append(piste, element('span', 'cap', 'Afficher l’overlay'));
+  hote.append(interrupteur);
+
+  const conditions = element('div', 'conds');
+  for (const [nom, phrase] of PHRASES) {
+    const vraie = etat.conditions[nom] === true;
+    const ligne = element('div', `cond ${vraie ? 'ok' : ''}`.trim());
+    ligne.append(element('em', '', vraie ? '✓' : '·'));
+    // La ligne des logs est la seule à porter une action, et l'asymétrie est
+    // assumée : à qui il manque une Strat sait où aller, personne ne devine
+    // qu'un dossier se désigne dans les Réglages (ADR 0014).
+    if (nom === 'logsTrouves' && !vraie) {
+      ligne.append(bouton('porte', phrase, () => allerA('reglages')));
+    } else {
+      ligne.append(element('span', '', phrase));
+    }
+    conditions.append(ligne);
+  }
+  hote.append(conditions);
+
+  const conclusion = element('p', `why ${etat.dessine ? 'dessine' : ''}`.trim());
+  if (etat.dessine && etat.stratChoisie !== null) {
+    conclusion.append(
+      document.createTextNode('L’overlay est dessiné, sur '),
+      element('b', '', etat.stratChoisie),
+      document.createTextNode('.'),
+    );
+  } else {
+    conclusion.textContent = 'L’overlay n’est pas dessiné.';
+  }
+  hote.append(conclusion);
+}
+
+/* ================================================= les écrans en attente = */
+
+function ligneDeDefinition(hote: HTMLElement, terme: string, valeur: string, classe = ''): void {
+  hote.append(element('dt', '', terme));
+  hote.append(element('dd', classe, valeur));
+}
+
+function ecranEnAttente(titre: string, lot: string, ticket: string): DocumentFragment {
+  const hote = document.createDocumentFragment();
+  const tete = element('div', 'scrhead');
+  tete.append(element('h1', '', titre));
+  hote.append(tete);
+
+  const corps = element('div', 'scrbody');
+  const attente = element('div', 'todo');
+  attente.append(document.createTextNode('Écran '));
+  attente.append(element('b', '', 'volontairement vide'));
+  attente.append(document.createTextNode(` : il appartient au ${lot} (${ticket}).`));
+  attente.append(element('br'));
+  attente.append(
+    document.createTextNode('La colonne doit seulement montrer qu’on y va, et à quel prix.'),
+  );
+  corps.append(attente);
+  hote.append(corps);
+  return hote;
+}
+
+/**
+ * Ce que le Lot 6 remplacera. La Demande d'ajout est celle du Lot 8, et son
+ * témoin sur le rail ne se vérifie pas autrement : c'est la coque du Lot 2 qui
+ * portait ce geste, et il n'a pas encore d'écran à lui.
+ */
+function bancDuRoster(etat: Etat): HTMLElement {
+  const banc = element('div', 'banc');
+  banc.append(element('h2', '', 'Banc d’essai — le Lot 8 le remplace'));
+  const gestes = element('div', 'gestes');
+  gestes.append(
+    bouton(
+      etat.demandeEnAttente ? 'on' : '',
+      etat.demandeEnAttente ? 'Répondre à la Demande d’ajout' : 'Faire surgir la Demande d’ajout',
+      () => memo?.bancDemande(!etat.demandeEnAttente),
+    ),
+  );
+  banc.append(gestes);
+  return banc;
+}
+
+/**
+ * Ce que le Lot 7 remplacera, et ce qui doit survivre en attendant : la
+ * deuxième ligne du Socle d'état mène ici (ADR `0014`), et une explication en
+ * cul-de-sac n'explique pas. Les trois raccourcis y sont aussi, parce qu'un
+ * raccourci que le système refuse doit se lire quelque part.
+ */
+function bancDesReglages(etat: Etat): HTMLElement {
+  const banc = element('div', 'banc');
+  banc.append(element('h2', '', 'Banc d’essai — le Lot 7 le remplace'));
+
+  const gestes = element('div', 'gestes');
+  gestes.append(bouton('', 'Désigner le dossier de logs…', () => void memo?.designerDossierLogs()));
+  gestes.append(bouton('', 'Revenir à la détection', () => memo?.oublierDossierLogs()));
+  gestes.append(bouton('', 'Ouvrir le dossier de données', () => memo?.ouvrirDossierDonnees()));
+  banc.append(gestes);
+
+  const liste = element('dl');
+  // Lequel des deux a produit le dossier retenu — détecté ou désigné.
+  ligneDeDefinition(
+    liste,
     'dossier de logs',
     etat.dossierLogsManuel !== null
       ? `désigné — ${etat.dossierLogsManuel}`
@@ -174,11 +208,13 @@ function peindre(etat: Etat): void {
         : 'aucun',
     etat.wakfuLog !== null ? '' : 'non',
   );
-  ligneDefinition(
-    surjeu,
-    'Strat choisie',
-    etat.stratChoisie ?? 'aucune',
-    etat.stratChoisie ? '' : 'non',
+  ligneDeDefinition(liste, 'wakfu.log', etat.wakfuLog ?? 'aucun', etat.wakfuLog ? '' : 'non');
+  ligneDeDefinition(liste, 'fenêtre visée', etat.titreCible);
+  ligneDeDefinition(
+    liste,
+    'attachement',
+    etat.attache ? 'attaché à la fenêtre du jeu' : 'aucune fenêtre trouvée',
+    etat.attache ? '' : 'non',
   );
   for (const [nom, pose] of Object.entries(etat.raccourcis ?? {})) {
     const dit =
@@ -187,23 +223,45 @@ function peindre(etat: Etat): void {
         : pose.etat === 'refuse'
           ? `${pose.combinaison} — refusé par le système`
           : 'aucun';
-    ligneDefinition(
-      surjeu,
+    ligneDeDefinition(
+      liste,
       NOMS_RACCOURCIS[nom] ?? nom,
       dit,
       pose.etat === 'refuse' ? 'refuse' : '',
     );
   }
-  ligneDefinition(surjeu, 'dossier de données', etat.dossierDonnees);
-
-  // Announced after the fact, one line per file: a migration is silent but not
-  // mute, and a file set aside or refused has to be said (ADR `0004`).
-  const alerte = par<HTMLParagraphElement>('alerte');
-  alerte.textContent = etat.avertissements.map(phraseAvertissement).join(' ');
-  alerte.hidden = etat.avertissements.length === 0;
+  ligneDeDefinition(liste, 'dossier de données', etat.dossierDonnees);
+  banc.append(liste);
+  return banc;
 }
 
-function phraseAvertissement(avertissement: Avertissement): string {
+function ecranCourant(etat: Etat): DocumentFragment {
+  switch (vue.ecran) {
+    case 'roster': {
+      const hote = ecranEnAttente('Roster', 'Lot 6', '#31');
+      hote.querySelector('.scrbody')?.append(bancDuRoster(etat));
+      return hote;
+    }
+    case 'reglages': {
+      const hote = ecranEnAttente('Réglages', 'Lot 7', '#32');
+      hote.querySelector('.scrbody')?.append(bancDesReglages(etat));
+      return hote;
+    }
+    case 'prise-en-main':
+      return ecranEnAttente('Prise en main', 'Lot 9', '#34');
+    default:
+      return ecranStrats(etat);
+  }
+}
+
+/* ==================================================== le rendu, et sa garde */
+
+/**
+ * Le bandeau de la persistance, annoncé après coup et une ligne par fichier :
+ * une migration est silencieuse mais pas muette, et un fichier mis de côté ou
+ * refusé doit se dire, sinon l'utilisateur croit avoir perdu ses données.
+ */
+function phraseAvertissement(avertissement: Etat['avertissements'][number]): string {
   const fichier = avertissement.fichier;
   switch (avertissement.sorte) {
     case 'migration':
@@ -217,25 +275,83 @@ function phraseAvertissement(avertissement: Avertissement): string {
   }
 }
 
-let dernier: Etat | null = null;
+/**
+ * Vrai quand le curseur est dans un champ. Un instantané qui arrive **pendant**
+ * la frappe ne doit pas reconstruire l'écran : le caret sauterait à chaque
+ * lettre, et le champ contient déjà ce qu'on vient d'y taper. La contrepartie
+ * assumée : la liste peut rester une seconde en retard si la Strat choisie
+ * change ailleurs — dans le menu de l'Overlay — pendant qu'on écrit.
+ */
+function saisieEnCours(): boolean {
+  const actif = document.activeElement;
+  return actif instanceof HTMLElement && (actif.isContentEditable || actif.tagName === 'INPUT');
+}
+
+/**
+ * Le défilement est à nous, pas au modèle : un re-rendu ne remonte pas en haut.
+ * Deux boîtes défilent, jamais plus — la liste des Strats, et la grille des
+ * fiches — et elles ne coexistent pas.
+ */
+const defilement = (): number =>
+  document.querySelector<HTMLElement>('.scrbody, .turns')?.scrollTop ?? 0;
+
+function peindre(menager = false): void {
+  const etat = dernier;
+  if (etat === null) return;
+
+  const alerte = par<HTMLParagraphElement>('alerte');
+  alerte.textContent = etat.avertissements.map(phraseAvertissement).join(' ');
+  alerte.hidden = etat.avertissements.length === 0;
+
+  peindreLeRail(etat);
+  peindreLeSocle(etat);
+
+  if (menager) return;
+
+  // Avant de reconstruire : un nom à moitié tapé se perdrait avec son champ.
+  validerLeNom();
+
+  const avant = defilement();
+  document.documentElement.style.setProperty('--fichemin', `${etat.ficheMiniFenetre}px`);
+
+  const ecran = par('ecran');
+  ecran.replaceChildren(ecranCourant(etat));
+
+  const calques = par('calques');
+  calques.replaceChildren(...(vue.ecran === 'strats' ? calquesStrats(etat) : []));
+
+  const apres = document.querySelector<HTMLElement>('.scrbody, .turns');
+  if (apres !== null) apres.scrollTop = avant;
+
+  // Le nom d'une Strat qu'on vient de créer ou de dupliquer part en édition : on
+  // la nomme en la créant, et c'est le seul endroit qui sait renommer.
+  const saisie = document.querySelector<HTMLInputElement>('input.ren');
+  if (saisie !== null && document.activeElement !== saisie) {
+    saisie.focus();
+    saisie.select();
+  }
+}
+
+surRepeindre(() => peindre(false));
 
 const rafraichir = (etat: Etat): void => {
   dernier = etat;
-  peindre(etat);
+  peindre(saisieEnCours());
 };
 
 memo.surEtat(rafraichir);
 void memo.etat().then(rafraichir);
 
-par('affichage').addEventListener('click', () => memo.basculerAffichage());
-par('verrou').addEventListener('click', () => memo.basculerVerrou());
-par('demande').addEventListener('click', () =>
-  memo.bancDemande(!(dernier?.demandeEnAttente ?? false)),
-);
-par('semer-strat').addEventListener('click', () => memo.bancStrat());
-par('retirer-strat').addEventListener('click', () => memo.choisirStrat(null));
-par('designer-dossier').addEventListener('click', () => void memo.designerDossierLogs());
-par('oublier-dossier').addEventListener('click', () => memo.oublierDossierLogs());
-par('dossier-donnees').addEventListener('click', () => memo.ouvrirDossierDonnees());
+// Un clic ailleurs referme le menu d'une ligne et le panneau d'un Emplacement.
+// Ceux qui les ouvrent arrêtent la propagation, sans quoi ils se refermeraient
+// aussitôt.
+document.addEventListener('click', () => {
+  if (fermerLesCalques()) peindre(false);
+});
 
-export {};
+document.addEventListener('keydown', (evenement) => {
+  if (evenement.key !== 'Escape') return;
+  const avaitUnDialogue = vue.aSupprimer !== null;
+  vue.aSupprimer = null;
+  if (fermerLesCalques() || avaitUnDialogue) peindre(false);
+});
