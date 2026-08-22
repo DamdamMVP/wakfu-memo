@@ -36,6 +36,9 @@ const CANAL: typeof CANAUX = {
   editerStrats: 'memo:editer-strats',
   consequenceSuppressionStrat: 'memo:consequence-suppression-strat',
   consequenceSuppressionEmplacement: 'memo:consequence-suppression-emplacement',
+  editerRoster: 'memo:editer-roster',
+  consequenceSuppressionPersonnage: 'memo:consequence-suppression-personnage',
+  consequenceSuppressionProfil: 'memo:consequence-suppression-profil',
   bancDemande: 'memo:banc-demande',
 };
 
@@ -69,6 +72,12 @@ const memo = {
     ipcRenderer.invoke(CANAL.consequenceSuppressionStrat, stratId),
   consequenceSuppressionEmplacement: (stratId: string, emplacementId: string) =>
     ipcRenderer.invoke(CANAL.consequenceSuppressionEmplacement, stratId, emplacementId),
+  /** The Roster screen's only way of writing. Same contract as `editerStrats`. */
+  editerRoster: (commande: unknown) => ipcRenderer.invoke(CANAL.editerRoster, commande),
+  consequenceSuppressionPersonnage: (personnageId: string) =>
+    ipcRenderer.invoke(CANAL.consequenceSuppressionPersonnage, personnageId),
+  consequenceSuppressionProfil: (profilId: string) =>
+    ipcRenderer.invoke(CANAL.consequenceSuppressionProfil, profilId),
   bancDemande: (enAttente: boolean) => ipcRenderer.send(CANAL.bancDemande, enAttente),
 };
 
