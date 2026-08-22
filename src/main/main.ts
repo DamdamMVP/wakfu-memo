@@ -128,6 +128,7 @@ type Instantane = {
   ficheMiniFenetre: number;
   raccourcis: Poses | null;
   dossierDonnees: string;
+  priseEnMainVue: boolean;
   avertissements: Avertissement[];
 };
 
@@ -322,6 +323,7 @@ function demarrer(): void {
     ficheMiniFenetre: persistance.reglages.lire().ficheMiniFenetre,
     raccourcis: raccourcis?.poses ?? null,
     dossierDonnees: app.getPath('userData'),
+    priseEnMainVue: persistance.reglages.lire().onboardingVu,
     avertissements: persistance.avertissements,
   });
 
@@ -564,6 +566,14 @@ function demarrer(): void {
     CANAL.aspectOverlay,
     (_evenement, aspect: { opacite?: number; tailleTexte?: number }) => poserAspect(aspect ?? {}),
   );
+  // Écrit par « Passer » comme par le bout du parcours : idempotent, et sans
+  // retour possible depuis la surface — la Prise en main se rejoue par la
+  // colonne, pas en effaçant le drapeau.
+  ipcMain.on(CANAL.priseEnMainVue, () => {
+    if (persistance.reglages.lire().onboardingVu) return;
+    persistance.modifierReglages({ onboardingVu: true });
+    diffuser();
+  });
   ipcMain.on(CANAL.ficheMiniFenetre, (_evenement, largeur: number) => {
     if (!Number.isFinite(largeur)) return;
     persistance.modifierReglages({

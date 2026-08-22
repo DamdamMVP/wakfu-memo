@@ -34,6 +34,7 @@ const CANAL: typeof CANAUX = {
   ficheMiniFenetre: 'memo:fiche-mini-fenetre',
   poserRaccourci: 'memo:poser-raccourci',
   ouvrirDossierDonnees: 'memo:ouvrir-dossier-donnees',
+  priseEnMainVue: 'memo:prise-en-main-vue',
   overlayDemande: 'memo:overlay-demande',
   deplacerDemande: 'memo:deplacer-demande',
   hauteurDemande: 'memo:hauteur-demande',
@@ -74,6 +75,8 @@ const memo = {
   designerDossierLogs: () => ipcRenderer.invoke(CANAL.designerDossierLogs),
   oublierDossierLogs: () => ipcRenderer.send(CANAL.oublierDossierLogs),
   ouvrirDossierDonnees: () => ipcRenderer.send(CANAL.ouvrirDossierDonnees),
+  /** The Prise en main is seen — « Passer » writes it as the last step does. */
+  marquerPriseEnMainVue: () => ipcRenderer.send(CANAL.priseEnMainVue),
   surOverlayDemande: (rappel: (etat: unknown) => void) => {
     ipcRenderer.on(CANAL.overlayDemande, (_evenement, etat) => rappel(etat));
   },

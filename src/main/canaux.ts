@@ -34,6 +34,12 @@ export const CANAL = {
    */
   poserRaccourci: 'memo:poser-raccourci',
   ouvrirDossierDonnees: 'memo:ouvrir-dossier-donnees',
+  /**
+   * Prise en main → main: seen. Written by « Passer » as by the end of the tour
+   * — a second forced tour is worse than a missed one, and the column entry is
+   * there to replay it.
+   */
+  priseEnMainVue: 'memo:prise-en-main-vue',
   /** main → Overlay de la Demande d'ajout: the questions, and who can answer. */
   overlayDemande: 'memo:overlay-demande',
   /** Demande d'ajout → main: the player dragged the panel, by this much. */

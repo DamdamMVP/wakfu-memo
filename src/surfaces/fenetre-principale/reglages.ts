@@ -166,7 +166,7 @@ function porte(etat: Etat): HTMLElement {
     element(
       'p',
       '',
-      `Sur le jeu, ${verrou ?? 'le raccourci du verrou'} déverrouille l’overlay : glissez la fiche pour la placer, attrapez son bord droit pour la largeur, et la barrette du bas porte les deux mêmes curseurs — c’est là que l’opacité se juge contre les vrais pixels.`,
+      `Sur le jeu, ${verrou ?? 'le raccourci du verrou'} déverrouille l’overlay : glisse la fiche pour la placer, attrape son bord droit pour la largeur, et la barrette du bas porte les deux mêmes curseurs — c’est là que l’opacité se juge contre les vrais pixels.`,
     ),
   );
   hote.append(textes);

@@ -109,6 +109,8 @@ export type Etat = {
   readonly ficheMiniFenetre: number;
   readonly raccourcis: Record<string, Pose> | null;
   readonly dossierDonnees: string;
+  /** La Prise en main a déjà été vue : le premier lancement n'ouvre dessus qu'une fois. */
+  readonly priseEnMainVue: boolean;
   readonly avertissements: readonly Avertissement[];
 };
 
@@ -252,6 +254,8 @@ type PontMemo = {
   designerDossierLogs: () => Promise<string | null>;
   oublierDossierLogs: () => void;
   ouvrirDossierDonnees: () => void;
+  /** La Prise en main est vue : « Passer » comme le bout du parcours. */
+  marquerPriseEnMainVue: () => void;
   editerStrats: (commande: CommandeEdition) => Promise<{ stratId: string | null }>;
   consequenceSuppressionStrat: (stratId: string) => Promise<ConsequenceSuppression>;
   consequenceSuppressionEmplacement: (

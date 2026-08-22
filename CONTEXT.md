@@ -140,9 +140,9 @@ _Avoid_: exception, composition, assignation
 ### Les surfaces — où ça s'affiche
 
 **Fenêtre principale** :
-La fenêtre native de l'application : le Roster, les Strats, les Réglages,
-l'onboarding, et l'interrupteur d'Affichage demandé, atteints depuis une colonne
-latérale. La fermer ferme tout, les Overlays compris. C'est le seul endroit où
+La fenêtre native de l'application : le Roster, les Strats, les Réglages, la
+Prise en main, et l'interrupteur d'Affichage demandé, atteints depuis une
+colonne latérale. La fermer ferme tout, les Overlays compris. C'est le seul endroit où
 l'app s'explique — elle y porte le Socle d'état.
 _Avoid_: application, app, fenêtre de l'app
 

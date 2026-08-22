@@ -13,6 +13,7 @@
 
 import { bouton, element } from './dom.ts';
 import { type Etat, memo } from './pont.ts';
+import { ecranPriseEnMain } from './prise-en-main.ts';
 import { calquesReglages, ecranReglages, gesteSurLeDecor } from './reglages.ts';
 import { calquesRoster, ecranRoster, validerLeNomDeProfil } from './roster.ts';
 import { calquesStrats, ecranStrats, validerLeNom } from './strats.ts';
@@ -67,6 +68,9 @@ function allerA(ecran: Ecran): void {
   // un formulaire de saisie qui ressurgirait au retour serait un revenant.
   vue.saisie = null;
   vue.renommeProfilId = null;
+  // Une visite se reprend au début : revenir dessus par la colonne n'est pas
+  // « reprendre où j'en étais », c'est vouloir la revoir.
+  vue.etape = 0;
   repeindre();
 }
 
@@ -148,28 +152,6 @@ function peindreLeSocle(etat: Etat): void {
   hote.append(conclusion);
 }
 
-/* ================================================= les écrans en attente = */
-
-function ecranEnAttente(titre: string, lot: string, ticket: string): DocumentFragment {
-  const hote = document.createDocumentFragment();
-  const tete = element('div', 'scrhead');
-  tete.append(element('h1', '', titre));
-  hote.append(tete);
-
-  const corps = element('div', 'scrbody');
-  const attente = element('div', 'todo');
-  attente.append(document.createTextNode('Écran '));
-  attente.append(element('b', '', 'volontairement vide'));
-  attente.append(document.createTextNode(` : il appartient au ${lot} (${ticket}).`));
-  attente.append(element('br'));
-  attente.append(
-    document.createTextNode('La colonne doit seulement montrer qu’on y va, et à quel prix.'),
-  );
-  corps.append(attente);
-  hote.append(corps);
-  return hote;
-}
-
 function ecranCourant(etat: Etat): DocumentFragment {
   switch (vue.ecran) {
     case 'roster':
@@ -177,7 +159,7 @@ function ecranCourant(etat: Etat): DocumentFragment {
     case 'reglages':
       return ecranReglages(etat);
     case 'prise-en-main':
-      return ecranEnAttente('Prise en main', 'Lot 9', '#34');
+      return ecranPriseEnMain(etat);
     default:
       return ecranStrats(etat);
   }
@@ -235,6 +217,11 @@ function peindre(menager = false): void {
   peindreLeRail(etat);
   peindreLeSocle(etat);
 
+  // La Prise en main est le SEUL écran qui retire la colonne : il montre des
+  // captures de cette colonne, et l'afficher deux fois brouillait la lecture.
+  // On en sort par « Passer », par « Fermer », ou au bout du parcours.
+  document.querySelector('.coque')?.classList.toggle('visite', vue.ecran === 'prise-en-main');
+
   if (menager) return;
 
   // Avant de reconstruire : un nom à moitié tapé se perdrait avec son champ.
@@ -273,8 +260,25 @@ function peindre(menager = false): void {
 
 surRepeindre(() => peindre(false));
 
+/**
+ * Le premier lancement ouvre sur la Prise en main, et une seule fois.
+ *
+ * Le drapeau vit dans `reglages.json` : « Passer » l'écrit comme le bout du
+ * parcours, donc un second tour forcé n'arrive jamais. Ce test ne se joue qu'au
+ * **premier** instantané — après, l'utilisateur navigue, et un instantané qui
+ * arrive pendant qu'il lit ailleurs ne doit pas le ramener ici.
+ */
+let premierInstantane = true;
+
 const rafraichir = (etat: Etat): void => {
   dernier = etat;
+  if (premierInstantane) {
+    premierInstantane = false;
+    if (!etat.priseEnMainVue) {
+      vue.ecran = 'prise-en-main';
+      vue.etape = 0;
+    }
+  }
   // Un geste sur le décor factice ménage l'écran pour la même raison qu'une
   // frappe : reconstruire arracherait de la main la fiche qu'on est en train de
   // déplacer.

@@ -351,13 +351,6 @@ input:focus {
   padding: 1px 6px;
   flex: none;
 }
-.todo {
-  padding: 48px 26px 20px;
-  text-align: center;
-  color: var(--faint);
-  font-size: 13px;
-  line-height: 1.7;
-}
 .todo b {
   color: var(--dim);
 }
@@ -1589,5 +1582,134 @@ input[type="range"]::-webkit-slider-thumb {
   background: #22304d;
 }
 .decor .barrette .fin:hover {
+  background: #2b3d62;
+}
+
+/* ================================================== LA PRISE EN MAIN ======
+   Six étapes en plein cadre, une capture par étape. Retenue en maquettant les
+   trois formes contre l'app finie (#34) : c'est celle qui sert le mieux la
+   capture, et la seule qui retire la colonne — la visite montre des captures de
+   cette colonne, l'afficher deux fois brouillait la lecture. */
+.coque.visite .rail {
+  display: none;
+}
+.diapo {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #0b0d11;
+}
+.diapo .haut {
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 12px 18px;
+}
+.diapo .haut .grow {
+  flex: 1;
+}
+/* La capture se borne en hauteur : sans ça une grande capture pousse le texte
+   hors du cadre, et c'est le texte qui porte l'étape. */
+.diapo .scene {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 6px 34px;
+}
+.diapo .scene .shot {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 9px;
+  border: 1px solid var(--line-2);
+  box-shadow: 0 12px 34px #0009;
+}
+.diapo .bas {
+  flex: none;
+  padding: 16px 34px 20px;
+  display: flex;
+  align-items: flex-end;
+  gap: 22px;
+}
+.diapo .bas .txt {
+  flex: 1;
+  min-width: 0;
+}
+.diapo .bas h2 {
+  margin: 0 0 4px;
+  font-size: 21px;
+  font-weight: 600;
+}
+.diapo .bas p {
+  margin: 0 0 5px;
+  color: var(--dim);
+  font-size: 13.5px;
+  max-width: 680px;
+}
+.diapo .bas p b {
+  color: var(--txt);
+  font-weight: 600;
+}
+
+/* Sans capture, le bloc de texte se centre — mais la sortie reste en haut à
+   droite, là où elle est sur toutes les autres étapes. Centrer la diapo entière
+   la faisait flotter au milieu de la fenêtre, ce qui n'est nulle part ailleurs. */
+.diapo.sans-capture .bas {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+/* L'encart : ce que l'étape est SEULE à apprendre — le fenêtré, à l'étape 2.
+   Il se distingue parce qu'il n'est pas un commentaire de la capture. */
+.diapo .bas p.encart {
+  margin-top: 9px;
+  padding: 8px 12px;
+  border-left: 2px solid var(--note);
+  background: #1c1a14;
+  font-size: 12.5px;
+}
+.diapo .bas p.encart b {
+  color: var(--note);
+}
+.diapo .nav {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.diapo .rang {
+  font:
+    11px ui-monospace,
+    monospace;
+  color: var(--faint);
+}
+.diapo .points {
+  display: flex;
+  gap: 6px;
+  margin-right: 6px;
+}
+.diapo .points button {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--line-2);
+  border: 0;
+}
+.diapo .points button:hover {
+  background: var(--dim);
+}
+.diapo .points button.on {
+  background: var(--accent);
+}
+.diapo .suiv {
+  border-color: var(--accent);
+  background: #22304d;
+  text-align: center;
+}
+.diapo .suiv:hover {
   background: #2b3d62;
 }

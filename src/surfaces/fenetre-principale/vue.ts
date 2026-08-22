@@ -20,6 +20,11 @@ export type NomRaccourci = 'overlay' | 'verrou' | 'fenetre';
 
 export type Vue = {
   ecran: Ecran;
+  /**
+   * L'étape de la Prise en main. Ne se persiste pas : rejouer la visite la
+   * reprend au début, ce qui est ce qu'on veut d'une visite.
+   */
+  etape: number;
   /** La Strat descendue dans l'éditeur. `null` : la liste plein écran. */
   ouverteId: string | null;
   /** Le nom en cours de saisie. Ne vit que dans la liste (#21). */
@@ -102,6 +107,7 @@ export type ADemander =
 
 export const vue: Vue = {
   ecran: 'strats',
+  etape: 0,
   ouverteId: null,
   renommeId: null,
   menu: null,
