@@ -40,13 +40,14 @@ Tools de Visual Studio.
 src/main/         le processus principal — conditions d'affichage, surjeu,
                   verrou, raccourcis, veille du combat
 src/pont/         le preload : ce que les surfaces ont le droit de demander
-src/surfaces/     la Fenêtre principale et les deux Overlays
+src/surfaces/     la Fenêtre principale — sa colonne, son Socle d'état, l'écran
+                  des Strats — et les deux Overlays
 src/logs/         le lecteur de wakfu.log — tokenizer, relecture de session,
                   suivi du fichier qui grandit, découverte du dossier
 src/suivi/        le Tour courant, la Rotation, et la fiche du Tour qu'ils
                   dessinent avec une Strat
-src/persistance/  les trois fichiers JSON — réglages, roster, strats — et les
-                  cascades de suppression
+src/persistance/  les trois fichiers JSON — réglages, roster, strats — les
+                  cascades de suppression, et le réducteur qui édite une Strat
 src/domaine/      les Classes, la Composition d'une Strat, les deux palettes,
                   les segments de texte riche
 src/echantillons/ l'accès aux captures, pour les tests seuls
@@ -67,6 +68,14 @@ l'Overlay** : l'entrée est le texte de `wakfu.log`, la sortie un état. C'est c
 qui les rend vérifiables contre les captures du dépôt, sans lancer le jeu.
 `src/persistance/` non plus : le dossier de données lui est **donné** — ce sera
 `app.getPath('userData')` — donc il se teste dans un dossier temporaire.
+
+**L'écran des Strats n'écrit rien lui-même.** Une surface n'a pas d'API Node,
+donc elle envoie une **intention** — `ajouter-emplacement`, `poser-couleur`,
+`deplacer-emplacement` — et `edition-strats.ts` décide : la Couleur libre,
+l'échange d'une Couleur déjà prise, la renumérotation des Rangs, les Consignes
+qu'un Emplacement supprimé emporte. Tous les invariants de `strats.json` ont
+donc **un seul gardien**, et il se teste sans Electron. La surface ne fait que
+peindre et demander.
 
 ⚠️ Tout y est **synchrone**, et ce n'est pas de la paresse : `before-quit` ne sait
 pas attendre une promesse, donc un vidage asynchrone perdrait la dernière
