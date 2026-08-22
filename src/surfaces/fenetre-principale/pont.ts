@@ -34,6 +34,35 @@ export type Strat = {
   readonly tours: readonly Tour[];
 };
 
+/* ------------------------------------------------------------- le Roster - */
+
+export type Profil = {
+  readonly id: string;
+  readonly nom: string;
+  readonly estMoi: boolean;
+};
+
+export type Personnage = {
+  readonly id: string;
+  readonly profilId: string;
+  readonly nom: string;
+  readonly classe: string;
+  /** `null` tant qu'aucun combat ne l'a confirmé : il est encore une hypothèse. */
+  readonly idEntite: string | null;
+};
+
+export type PersonnageIgnore = {
+  readonly idEntite: string;
+  readonly nomVu: string;
+};
+
+/** Un combattant joué que le Roster ne connaît pas, et qu'on n'a pas classé. */
+export type DemandeDAjout = {
+  readonly idEntite: string;
+  readonly nom: string;
+  readonly classe: string;
+};
+
 /** Miroir de `Avertissement` de `src/persistance/`. */
 export type Avertissement = {
   readonly sorte: 'migration' | 'mise-de-cote' | 'refus';
@@ -62,6 +91,10 @@ export type Etat = {
   readonly stratChoisie: string | null;
   readonly stratChoisieId: string | null;
   readonly strats: readonly Strat[];
+  readonly profils: readonly Profil[];
+  readonly personnages: readonly Personnage[];
+  readonly ignores: readonly PersonnageIgnore[];
+  readonly aIdentifier: readonly DemandeDAjout[];
   readonly ficheMiniFenetre: number;
   readonly raccourcis: Record<string, Pose> | null;
   readonly dossierDonnees: string;
@@ -126,6 +159,41 @@ export type CommandeEdition =
       readonly note: string;
     };
 
+/** Miroir de `CommandeRoster`. Même contrat, et même gardien de l'autre côté. */
+export type CommandeRoster =
+  | { readonly sorte: 'creer-profil' }
+  | { readonly sorte: 'renommer-profil'; readonly profilId: string; readonly nom: string }
+  | { readonly sorte: 'supprimer-profil'; readonly profilId: string }
+  | {
+      readonly sorte: 'saisir-personnage';
+      readonly profilId: string;
+      readonly nom: string;
+      readonly classe: string;
+    }
+  | {
+      readonly sorte: 'corriger-personnage';
+      readonly personnageId: string;
+      readonly nom: string;
+      readonly classe: string;
+    }
+  | { readonly sorte: 'supprimer-personnage'; readonly personnageId: string }
+  | {
+      readonly sorte: 'ajouter-personnage';
+      readonly profilId: string;
+      readonly idEntite: string;
+      readonly nom: string;
+      readonly classe: string;
+    }
+  | {
+      readonly sorte: 'rattacher';
+      readonly personnageId: string;
+      readonly idEntite: string;
+      readonly nom: string;
+      readonly classe: string;
+    }
+  | { readonly sorte: 'ignorer'; readonly idEntite: string; readonly nomVu: string }
+  | { readonly sorte: 'ne-plus-ignorer'; readonly idEntite: string };
+
 /** Ce que la confirmation d'une suppression a besoin de dire (ADR 0012). */
 export type ConsequenceSuppression = {
   readonly tours: number;
@@ -138,6 +206,26 @@ export type ConsequenceSuppression = {
 export type ConsequenceSuppressionEmplacement = {
   readonly consignesPerdues: number;
   readonly preferencesPerdues: number;
+};
+
+/**
+ * Ce qu'emporte la suppression d'un Personnage. `idEntite` à `null` **est** la
+ * seconde forme de la confirmation : sans ID d'entité il n'y a rien à retenir de
+ * lui, donc « ignorer » n'a pas de bouton — et la boîte ne l'explique pas.
+ */
+export type ConsequenceSuppressionPersonnage = {
+  readonly idEntite: string | null;
+  readonly engagements: readonly { readonly stratNom: string; readonly couleur: string }[];
+};
+
+/** Idem pour un Profil : ses Personnages partent avec lui (#11). */
+export type ConsequenceSuppressionProfil = {
+  readonly personnages: readonly {
+    readonly nom: string;
+    readonly classe: string;
+    readonly aUnIdEntite: boolean;
+  }[];
+  readonly preferences: number;
 };
 
 type PontMemo = {
@@ -155,6 +243,11 @@ type PontMemo = {
     stratId: string,
     emplacementId: string,
   ) => Promise<ConsequenceSuppressionEmplacement>;
+  editerRoster: (commande: CommandeRoster) => Promise<{ profilId: string | null }>;
+  consequenceSuppressionPersonnage: (
+    personnageId: string,
+  ) => Promise<ConsequenceSuppressionPersonnage>;
+  consequenceSuppressionProfil: (profilId: string) => Promise<ConsequenceSuppressionProfil>;
 };
 
 export const memo = (window as unknown as { memo?: PontMemo }).memo;
@@ -226,4 +319,8 @@ export const pluriel = (compte: number, mot: string): string =>
 
 export function editer(commande: CommandeEdition): Promise<{ stratId: string | null }> {
   return memo?.editerStrats(commande) ?? Promise.resolve({ stratId: null });
+}
+
+export function editerLeRoster(commande: CommandeRoster): Promise<{ profilId: string | null }> {
+  return memo?.editerRoster(commande) ?? Promise.resolve({ profilId: null });
 }

@@ -417,12 +417,10 @@ Strat choisie :
 
 1. **Le marqueur de l'écran courant est une barre droite de 3 px**, à bouts
    carrés : le fond arrondi passe derrière elle.
-2. **Le témoin ambre.** *Faire surgir la Demande d'ajout*, dans le banc de
-   l'écran Roster : une pastille ambre paraît sur l'entrée **Roster** de la
-   colonne, et c'est là que la question se rattrapera (ADR `0010`). Y répondre
-   l'éteint.
-3. **Roster, Réglages et Prise en main sont volontairement vides** — Lots 6, 7
-   et 9. La colonne doit seulement montrer qu'on y va.
+2. **Le témoin ambre.** ⚠️ Depuis le Lot 6 ce n'est plus une pastille mais un
+   **compte** : voir la section du Lot 6.
+3. **Réglages et Prise en main sont volontairement vides** — Lots 7 et 9. La
+   colonne doit seulement montrer qu'on y va. Le Roster, lui, est le Lot 6.
 4. **Le bandeau de la persistance** est toujours au-dessus de tout : rendre
    `strats.json` illisible avant le lancement, il doit le dire et nommer le
    fichier mis de côté.
@@ -436,3 +434,121 @@ existantes portent sur des pixels et des degrés. C'est ici, sur l'app finie, qu
 ça se tranche : **saisir une strat de donjon entière, en une fois, en se
 chronométrant.** Si c'est plus pénible que le doc partagé, personne n'abandonnera
 son doc.
+
+
+## Lot 6 — l'écran Roster : le mur de portraits
+
+Même partage qu'au Lot 5, et pour la même raison : les règles sont en CI —
+`npm test` fait passer au réducteur du Roster la canonisation, le refus du
+doublon, la purge de l'homonyme, les deux cascades — mais **la forme et les
+gestes** ne se rejouent pas sans une fenêtre. Or c'est la forme qui a été
+choisie, sur des mesures, et c'est elle qu'on regarde ici.
+
+⚠️ **Le banc d'essai survit, et il change de sens.** Il ne fait plus surgir la
+coque d'un Overlay : il **sème trois combattants à identifier**, ceux de la
+maquette — `Nozadah` l'ecaflip, `Nozaheal` l'eniripsa, `Pandacoucou` le pandawa.
+Rien d'autre ne peut remplir cette liste tant que le combat ne la produit pas
+(Lot 8).
+
+### Le premier lancement
+
+Sur un dossier de données vide :
+
+```sh
+mv ~/.config/wakfu-memo ~/.config/wakfu-memo.garde && npm start
+```
+
+1. **Le Roster dit « Le Roster est vide, et c'est normal »**, explique qu'il se
+   remplit tout seul au premier combat, et range la saisie à la main **en
+   dessous, en gris**, comme un recours.
+2. **Aucun « ＋ Nouveau profil »** en tête d'écran : un bouton pour créer un
+   contenant vide là où rien n'existe encore était l'élément le plus voyant de
+   la maquette.
+3. **Aucun avertissement sur le nom.** Celui de #17 — « tape exactement le nom en
+   jeu » — est **sorti du produit** : le champ canonise, donc il n'a plus
+   d'objet. S'il réapparaît quelque part, c'est une régression.
+
+### Le mur
+
+1. **Une bande par Profil**, des vignettes de 64 px, le portrait devant le
+   pseudo. À sept Personnages tout tient sans défiler — c'est ce qui a fait
+   gagner cette forme.
+2. **L'asymétrie de parole** (ADR `0002`) : un Personnage confirmé par le log est
+   **muet** ; celui qui attend son premier combat a le **cadre en pointillé** et
+   le **pseudo en italique**. ⚠️ Ni rouge, ni icône d'alerte : si ça ressemble à
+   une erreur, c'est raté. La phrase « jamais vu en combat » est en
+   **infobulle**, et dans le menu de la vignette — écrite sous le pseudo elle
+   ajoutait deux lignes à la vignette et cassait l'alignement du mur, pour un
+   état que le pointillé dit déjà.
+3. **Aucun liseré de Couleur nulle part** : un Personnage n'en a pas (ADR
+   `0003`). Une teinte sur un portrait ici serait un bogue.
+4. **Le prix de la forme, à regarder en face** : `Damdamnesique` casse son
+   étiquette sur deux lignes. C'est la mesure de #22 — une sur neuf à 74 px — et
+   c'est assumé, pas à corriger en douce.
+5. **Tout geste passe par un menu**, y compris le plus banal : cliquer une
+   vignette ouvre le menu, il n'y a pas de bouton dessus. Sept gestes contre cinq
+   pour la liste, et le menu **recouvre** la bande d'à côté.
+6. **Renommer un profil** se fait dans l'en-tête de sa bande — Entrée valide,
+   Échap annule, perdre le focus valide. **« moi » n'a pas de bouton Supprimer**,
+   et c'est la seule chose qui le dit : pas de badge. Le badge « moi » n'apparaît
+   qu'**après** un renommage.
+
+### Répondre à une Demande d'ajout
+
+Semer les trois combattants avec le banc :
+
+1. **La bande « à identifier » est en tête du mur**, ambre, chaque vignette
+   marquée d'un `?`. Ambre et non rouge : ce n'est pas une erreur.
+2. **Le compte est dans la colonne latérale**, sur l'entrée Roster. Personne ne
+   va sur le Roster « au cas où » — sans ce compte une question sans réponse
+   n'aurait aucun témoin.
+3. **Un seul menu ancré** porte les trois réponses : les profils, un profil neuf,
+   *Rattacher*, *Ignorer*.
+4. **Le rattachement ne passe devant qu'à classe égale.** Ouvrir *Rattacher* pour
+   `Nozadah` : `Nozadah` l'ecaflip est en tête ; `Damdamiop` et `Nozahael`
+   viennent après, précédés de l'avertissement.
+5. **La classe différente prévient, et « non » annule** (ADR `0002`) : choisir
+   `Damdamiop` doit dire que le log le donne ecaflip et qu'accepter écrasera la
+   classe saisie.
+6. ⚠️ **La purge silencieuse de l'ADR `0011`.** Ajouter le `Nozadah` du log au
+   profil *Nozadah* : le `Nozadah` saisi à la main **disparaît sans un mot**, et
+   la bande en garde trois. C'est la seule suppression de l'app qui ne demande
+   rien — vérifier qu'elle vise **exactement** l'homonyme, et que `Nozahael`
+   survit à `Nozaheal`.
+7. **Ignorer** `Pandacoucou` le fait tomber dans les *Personnages ignorés*, en
+   pied de mur, d'où *Proposer à nouveau* le fait revenir. ⚠️ Ces lignes n'ont
+   **pas de portrait** : le modèle ne retient d'un ignoré que son ID d'entité et
+   le nom vu.
+
+### La saisie à la main
+
+Le `＋ à la main` en fin de bande :
+
+1. **Le champ canonise pendant la frappe.** Taper `s'alu-ca'va` doit afficher
+   `S'Alu-Ca'Va` **lettre après lettre**, sans que le caret saute. Taper
+   `nozadàh` doit donner `Nozadah` — l'accent tombe.
+2. **Le doublon se dit ici, et éteint le bouton** : `nozadah` alors qu'un
+   `Nozadah` sans ID existe doit nommer son profil et refuser l'ajout.
+3. **Corriger** n'est offert que sur un Personnage **sans** ID. Sur un confirmé,
+   le menu dit que le log fait foi et n'offre rien à corriger.
+
+### Les deux formes de la confirmation
+
+1. **Sur un Personnage confirmé** (`Damdam`) : la phrase d'engagement — « Damdam
+   est **le rouge** dans *Ombre Épaisse* » —, le compte des Préférences qui
+   partent, l'avertissement qu'il reviendra, et **trois** boutons dont
+   *Supprimer et ignorer*.
+2. **Sur un Personnage sans ID** : **deux** boutons. ⚠️ Et **rien ne l'explique** —
+   la phrase qui le disait mettait « ID d'entité » devant le joueur. Si un mot
+   apparaît là, c'est une régression.
+3. **Sur un Profil** : ses Personnages sont nommés un par un, les Préférences
+   comptées, et la phrase dit pourquoi — « un profil, c'est le pote qui farme
+   avec toi ».
+
+### Ce que ce lot ne mesure pas
+
+**Rien n'est chronométré** — même réserve qu'aux Lots 4 et 5. Les mesures de #22
+portent sur des pixels et des comptes de gestes, jamais sur des secondes. Et un
+fait à guetter en usage réel : le mur coûte **sept gestes** là où la liste en
+coûtait cinq. Si répondre à trois inconnus après chaque run devient pénible,
+c'est ce chiffre-là qui aura eu raison de la forme.

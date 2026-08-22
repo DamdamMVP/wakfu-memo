@@ -38,6 +38,23 @@ export const CANAL = {
    * les Tours. Sans confirmation, un clic effacerait sept Consignes écrites.
    */
   consequenceSuppressionEmplacement: 'memo:consequence-suppression-emplacement',
-  /** Lot 2 test bench: makes the Demande d'ajout shell appear. */
+  /**
+   * Roster screen → main, as `invoke`: one edition command, and back the id of
+   * the Profil it created. Same contract as `editerStrats`, and same reason —
+   * `edition-roster.ts` owns every invariant of `roster.json`.
+   */
+  editerRoster: 'memo:editer-roster',
+  /**
+   * What deleting this Personnage would cost: where it is engaged, and whether
+   * it can be ignored at all — « ignorer » holds an ID d'entité, and a
+   * Personnage typed by hand has none.
+   */
+  consequenceSuppressionPersonnage: 'memo:consequence-suppression-personnage',
+  /** Idem for a Profil: the Personnages it carries away, and their Préférences. */
+  consequenceSuppressionProfil: 'memo:consequence-suppression-profil',
+  /**
+   * Lot 6 test bench: seeds the Demandes d'ajout the log will produce in Lot 8,
+   * and clears them. Nothing else can fill that list until the fight does.
+   */
   bancDemande: 'memo:banc-demande',
 } as const;

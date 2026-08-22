@@ -17,18 +17,26 @@ import {
   type Avertissement,
   BORNES,
   type CommandeEdition,
+  type CommandeRoster,
   compositionDe,
   editer,
+  editerRoster,
+  engagements,
   Persistance,
+  type Personnage,
+  type PersonnageIgnore,
+  type Profil,
   REGLAGES_PAR_DEFAUT,
   type Strat,
   supprimerEmplacement,
+  supprimerProfil,
   supprimerStrat,
 } from '../persistance/index.ts';
 import { ficheDuTour } from '../suivi/fiche.ts';
 import type { EtatDuSuivi } from '../suivi/suivi-du-tour.ts';
 import { CANAL } from './canaux.ts';
 import { type Conditions, EtatConditions, type NomCondition } from './conditions-affichage.ts';
+import { type DemandeDAjout, DemandesEnAttente } from './demandes-en-attente.ts';
 import { FenetrePrincipale } from './fenetre-principale.ts';
 import { OverlayDemande } from './overlay-demande.ts';
 import { type ContenuOverlay, OverlayTour } from './overlay-tour.ts';
@@ -38,6 +46,18 @@ import { VeilleDuCombat } from './veille-du-combat.ts';
 import { VeilleWakfuLog } from './veille-wakfu-log.ts';
 
 const OZONE_X11 = '--ozone-platform=x11';
+
+/**
+ * The test bench of Lot 6: the three Demandes d'ajout the log will produce in
+ * Lot 8, and nothing else can produce until then. The names and the ID d'entité
+ * are those of the mockup of #22 — a doublon of Classe, a typo to catch by
+ * rattachement, and a passer-by nobody wants.
+ */
+const BANC_A_IDENTIFIER: readonly DemandeDAjout[] = [
+  { idEntite: '5513', nom: 'Nozadah', classe: 'ecaflip' },
+  { idEntite: '5514', nom: 'Nozaheal', classe: 'eniripsa' },
+  { idEntite: '5515', nom: 'Pandacoucou', classe: 'pandawa' },
+];
 
 /**
  * One code path, X11: native on Windows, through XWayland on Linux. Since
@@ -85,6 +105,12 @@ type Instantane = {
    * only — all its Strat menu ever needs.
    */
   strats: readonly Strat[];
+  /** Idem for the Roster, and for the same reason: the screen writes it. */
+  profils: readonly Profil[];
+  personnages: readonly Personnage[];
+  ignores: readonly PersonnageIgnore[];
+  /** The Demandes d'ajout still unanswered. Session only — never on disk. */
+  aIdentifier: readonly DemandeDAjout[];
   /** px — the minimum width of a fiche in the grid of the Strats screen. */
   ficheMiniFenetre: number;
   raccourcis: Poses | null;
@@ -102,6 +128,13 @@ function demarrer(): void {
 
   const etat = new EtatConditions();
   const surjeu = new Surjeu();
+
+  /**
+   * The unanswered Demandes d'ajout, for this session and no longer (#22). Two
+   * surfaces read the same list — the Roster screen, and from Lot 8 the Overlay
+   * de la Demande d'ajout — so answering on one empties it for the other.
+   */
+  const aIdentifier = new DemandesEnAttente();
 
   let fenetre: FenetrePrincipale | undefined;
   let overlayTour: OverlayTour | undefined;
@@ -183,12 +216,16 @@ function demarrer(): void {
     attache: surjeu.attache,
     titreCible: TITRE_FENETRE_WAKFU,
     verrouille: overlayTour?.verrouille ?? true,
-    demandeEnAttente: overlayDemande?.enAttente ?? false,
+    demandeEnAttente: aIdentifier.enAttente,
     wakfuLog: veilleLogs.chemin,
     dossierLogsManuel: persistance.reglages.lire().dossierLogsManuel,
     stratChoisie: stratChoisie()?.nom ?? null,
     stratChoisieId: stratChoisie()?.id ?? null,
     strats: persistance.strats.lire().strats,
+    profils: persistance.roster.lire().profils,
+    personnages: persistance.roster.lire().personnages,
+    ignores: persistance.roster.lire().ignores,
+    aIdentifier: aIdentifier.liste,
     ficheMiniFenetre: persistance.reglages.lire().ficheMiniFenetre,
     raccourcis: raccourcis?.poses ?? null,
     dossierDonnees: app.getPath('userData'),
@@ -240,6 +277,17 @@ function demarrer(): void {
     diffuser();
   };
 
+  /**
+   * A question appeared or was answered. The Overlay de la Demande d'ajout is
+   * the same fact seen from the game — it surges while something is unanswered,
+   * and folds when the list empties — and the rail of the Fenêtre principale
+   * carries the count, because nobody visits the Roster "just in case".
+   */
+  const rafraichirLesDemandes = (): void => {
+    overlayDemande?.poserQuestion(aIdentifier.enAttente);
+    diffuser();
+  };
+
   const poserStratChoisie = (id: string | null): void => {
     persistance.modifierReglages({ stratChoisie: id });
     overlayTour?.appliquer();
@@ -285,9 +333,11 @@ function demarrer(): void {
   ipcMain.on(CANAL.deplacerDemande, (_evenement, dx: number, dy: number) =>
     overlayDemande?.deplacer(dx, dy),
   );
-  ipcMain.on(CANAL.bancDemande, (_evenement, enAttente: boolean) =>
-    overlayDemande?.poserQuestion(enAttente),
-  );
+  ipcMain.on(CANAL.bancDemande, (_evenement, enAttente: boolean) => {
+    if (enAttente) aIdentifier.poser(BANC_A_IDENTIFIER);
+    else aIdentifier.vider();
+    rafraichirLesDemandes();
+  });
   /**
    * The width of the fiche, caught at its right edge — a global setting, only
    * one fiche being visible. `null` is the double-click: back to the automatic
@@ -346,6 +396,59 @@ function demarrer(): void {
       return { consignesPerdues, preferencesPerdues };
     },
   );
+  /**
+   * Every write of the Roster screen comes through here — the Profils, the
+   * Personnages, and the three answers to a Demande d'ajout. Answering removes
+   * the question from the pending list, and that is the only thing that does:
+   * not answering is not a refusal (ADR `0010`).
+   */
+  ipcMain.handle(CANAL.editerRoster, (_evenement, commande: CommandeRoster) => {
+    const {
+      etat: apres,
+      profilId,
+      repondu,
+    } = editerRoster(persistance.etat(), commande ?? { sorte: 'inconnue' });
+    persistance.appliquer(apres);
+    aIdentifier.repondre(repondu);
+    rafraichirLesDemandes();
+    return { profilId };
+  });
+  /**
+   * What the confirmation has to say, computed from the state that will be
+   * written. Two shapes, and the second one keeps quiet: « ignorer » holds an ID
+   * d'entité, a Personnage typed by hand has none, so its confirmation simply
+   * lacks the button rather than explaining why (#22).
+   */
+  ipcMain.handle(CANAL.consequenceSuppressionPersonnage, (_evenement, personnageId: string) => {
+    const courant = persistance.etat();
+    const personnage = courant.roster.personnages.find((candidat) => candidat.id === personnageId);
+    return {
+      idEntite: personnage?.idEntite ?? null,
+      engagements: engagements(courant, personnageId).map((engagement) => ({
+        stratNom: engagement.stratNom,
+        couleur: engagement.couleur,
+      })),
+    };
+  });
+  ipcMain.handle(CANAL.consequenceSuppressionProfil, (_evenement, profilId: string) => {
+    const courant = persistance.etat();
+    const profil = courant.roster.profils.find((candidat) => candidat.id === profilId);
+    // « moi » is not deletable: the screen does not offer it, so a question
+    // about it has no honest answer to give.
+    if (profil === undefined || profil.estMoi) return { personnages: [], preferences: 0 };
+    const { personnages } = supprimerProfil(courant, profilId);
+    return {
+      personnages: personnages.map((personnage) => ({
+        nom: personnage.nom,
+        classe: personnage.classe,
+        aUnIdEntite: personnage.idEntite !== null,
+      })),
+      preferences: personnages.reduce(
+        (compte, personnage) => compte + engagements(courant, personnage.id).length,
+        0,
+      ),
+    };
+  });
   ipcMain.on(CANAL.oublierDossierLogs, () => poserDossierLogs(null));
   ipcMain.on(CANAL.ouvrirDossierDonnees, () => {
     void shell.openPath(app.getPath('userData'));

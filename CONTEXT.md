@@ -16,9 +16,19 @@ _Avoid_: compte, utilisateur
 **Personnage** :
 Un personnage jouable enregistré localement, appartenant à un Profil de joueur.
 Naît d'une saisie manuelle — nom et classe tapés, sans ID d'entité — ou d'une
-Demande d'ajout. Dès qu'un ID d'entité s'y attache, le log fait foi sur son nom
-en jeu et sa classe, qui ne sont plus éditables.
+Demande d'ajout. Son nom est toujours un Nom canonique. Dès qu'un ID d'entité
+s'y attache, le log fait foi sur son nom en jeu et sa classe, qui ne sont plus
+éditables.
 _Avoid_: perso, joueur, PJ
+
+**Nom canonique** :
+La seule orthographe qu'une suite de lettres peut prendre en jeu : lettres,
+tiret et apostrophe, pas d'accent, majuscule forcée en tête et après chaque
+séparateur. La casse n'est donc pas une information, elle est **dérivée** —
+l'app canonise **à la saisie**, jamais ce que dit le log, qui l'est déjà. Deux
+Personnages sans ID d'entité ne peuvent pas porter le même, donc le doublon se
+voit à la saisie.
+_Avoid_: pseudo normalisé, slug, clef de comparaison
 
 **Personnage ignoré** :
 Un combattant joué que l'utilisateur a refusé d'enregistrer. Retenu par son ID
@@ -105,8 +115,11 @@ La question posée pour chaque combattant joué que le Roster ne connaît pas :
 l'ajouter à un Profil de joueur, le rattacher à un Personnage sans ID d'entité,
 ou en faire un Personnage ignoré. Groupée pour tout un combat, elle surgit en
 phase de placement sur son propre Overlay et reste tant qu'on n'y a pas
-répondu. Ne pas répondre ne vaut pas refus.
-_Avoid_: modale, popup, invite
+répondu. Ne pas répondre ne vaut pas refus. Se rattrape en tête du Roster, où
+c'est la même liste et la même réponse. ⚠️ Elle survit au combat, **pas à la
+fermeture de l'app** : aucune clef de `roster.json` ne la retient, et l'inconnu
+revient au prochain combat où il joue.
+_Avoid_: modale, popup, invite, inconnu
 
 **Échange par clic** :
 Le geste qui permute les Personnages liés à deux Emplacements de même classe,

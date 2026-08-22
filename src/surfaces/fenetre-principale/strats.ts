@@ -277,7 +277,9 @@ function menuDeLigne(etat: Etat): HTMLElement | null {
  */
 function dialogueDeSuppression(): HTMLElement | null {
   const cible = vue.aSupprimer;
-  if (cible === null) return null;
+  // Le Roster a ses deux sortes à lui, et sa propre boîte : une confirmation
+  // dit ce qui part, et ce qui part n'est pas de la même nature.
+  if (cible === null || (cible.sorte !== 'strat' && cible.sorte !== 'emplacement')) return null;
 
   const voile = element('div', 'scrim');
   const boite = element('div', 'dlg');

@@ -7,7 +7,11 @@
  * l'Overlay du Tour tient le même raisonnement pour son menu des Strats.
  */
 
-import type { ConsequenceSuppression } from './pont.ts';
+import type {
+  ConsequenceSuppression,
+  ConsequenceSuppressionPersonnage,
+  ConsequenceSuppressionProfil,
+} from './pont.ts';
 
 export type Ecran = 'strats' | 'roster' | 'reglages' | 'prise-en-main';
 
@@ -21,12 +25,40 @@ export type Vue = {
   /** Le panneau d'un Emplacement. `emplacementId` à `null` : c'est un ajout. */
   panneau: { stratId: string; emplacementId: string | null; x: number; y: number } | null;
   /**
-   * Ce qu'une confirmation attend. Deux sortes, et une seule boîte : ce qui se
+   * Ce qu'une confirmation attend. Quatre sortes, et une seule boîte : ce qui se
    * supprime ici emporte toujours du travail écrit, et le compte de ce qui part
    * est ce qui rend la question honnête.
    */
   aSupprimer: ADemander | null;
+  /* ---------------------------------------------------------- le Roster -- */
+  /** Le Profil dont le nom est en cours de saisie, dans l'en-tête de sa bande. */
+  renommeProfilId: string | null;
+  /**
+   * Le menu ancré du mur : une vignette n'a la place d'aucun bouton, donc tout
+   * geste du Roster passe par là. C'est le prix de la forme, mesuré en #22 —
+   * sept gestes contre cinq pour la liste — et il se paie ici.
+   */
+  menuRoster: MenuRoster | null;
+  /** La saisie manuelle. `personnageId` non nul : c'est une correction. */
+  saisie: {
+    profilId: string;
+    personnageId: string | null;
+    nom: string;
+    classe: string;
+    x: number;
+    y: number;
+  } | null;
 };
+
+export type MenuRoster = { x: number; y: number } & (
+  | { sorte: 'personnage'; personnageId: string }
+  | { sorte: 'profil'; profilId: string }
+  /** Les trois réponses à une Demande d'ajout, sur un seul menu (#16). */
+  | { sorte: 'ajouter'; idEntite: string }
+  | { sorte: 'rattacher'; idEntite: string }
+  /** L'avertissement de l'ADR `0002` : « non » annule le rattachement. */
+  | { sorte: 'classe-differente'; idEntite: string; personnageId: string }
+);
 
 export type ADemander =
   | {
@@ -42,6 +74,18 @@ export type ADemander =
       /** « l'emplacement Iop rouge » : un Emplacement n'a pas d'autre nom. */
       designation: string;
       consignes: number;
+    }
+  | {
+      sorte: 'personnage';
+      personnageId: string;
+      nom: string;
+      consequence: ConsequenceSuppressionPersonnage;
+    }
+  | {
+      sorte: 'profil';
+      profilId: string;
+      nom: string;
+      consequence: ConsequenceSuppressionProfil;
     };
 
 export const vue: Vue = {
@@ -51,13 +95,22 @@ export const vue: Vue = {
   menu: null,
   panneau: null,
   aSupprimer: null,
+  renommeProfilId: null,
+  menuRoster: null,
+  saisie: null,
 };
 
-/** Vrai s'il y avait quelque chose à fermer : un clic ailleurs referme. */
+/**
+ * Vrai s'il y avait quelque chose à fermer : un clic ailleurs referme.
+ *
+ * La saisie manuelle n'en est pas : un formulaire à moitié rempli ne se ferme
+ * pas sur un clic de travers — il a son « Annuler » et sa touche Échap.
+ */
 export function fermerLesCalques(): boolean {
-  const ouvert = vue.menu !== null || vue.panneau !== null;
+  const ouvert = vue.menu !== null || vue.panneau !== null || vue.menuRoster !== null;
   vue.menu = null;
   vue.panneau = null;
+  vue.menuRoster = null;
   return ouvert;
 }
 

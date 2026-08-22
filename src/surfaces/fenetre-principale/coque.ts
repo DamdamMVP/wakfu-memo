@@ -13,6 +13,7 @@
 
 import { bouton, element } from './dom.ts';
 import { type Etat, memo } from './pont.ts';
+import { calquesRoster, ecranRoster, validerLeNomDeProfil } from './roster.ts';
 import { calquesStrats, ecranStrats, validerLeNom } from './strats.ts';
 import { type Ecran, fermerLesCalques, repeindre, surRepeindre, vue } from './vue.ts';
 
@@ -65,6 +66,10 @@ function allerA(ecran: Ecran): void {
   vue.ecran = ecran;
   fermerLesCalques();
   if (ecran === 'strats') vue.ouverteId = null;
+  // Changer d'écran abandonne ce qui était commencé sur celui qu'on quitte :
+  // un formulaire de saisie qui ressurgirait au retour serait un revenant.
+  vue.saisie = null;
+  vue.renommeProfilId = null;
   repeindre();
 }
 
@@ -78,12 +83,23 @@ function peindreLeRail(etat: Etat): void {
     if (ecran === 'strats') {
       entree.append(element('span', 'cnt', String(etat.strats.length)));
     }
-    // Le témoin d'une Demande d'ajout sans réponse : sans lui, une question
-    // posée en combat et laissée de côté n'aurait aucune trace ici. Ne pas
-    // répondre ne vaut pas refus.
-    if (ecran === 'roster' && etat.demandeEnAttente) {
-      const temoin = element('span', 'temoin');
-      temoin.title = 'une Demande d’ajout attend une réponse';
+    if (ecran === 'roster') {
+      // Le témoin d'une Demande d'ajout sans réponse, et c'est un COMPTE : sans
+      // lui, une question posée en combat et laissée de côté n'aurait aucune
+      // trace ici — personne ne va sur le Roster « au cas où ». Ne pas répondre
+      // ne vaut pas refus. Sinon, le nombre de Personnages, comme les Strats.
+      const reste = etat.aIdentifier.length;
+      const temoin = element(
+        'span',
+        reste > 0 ? 'temoin' : 'cnt',
+        String(reste > 0 ? reste : etat.personnages.length),
+      );
+      if (reste > 0) {
+        temoin.title =
+          reste === 1
+            ? 'un combattant attend d’être identifié'
+            : `${reste} combattants attendent d’être identifiés`;
+      }
       entree.append(temoin);
     }
     hote.append(entree);
@@ -161,9 +177,9 @@ function ecranEnAttente(titre: string, lot: string, ticket: string): DocumentFra
 }
 
 /**
- * Ce que le Lot 6 remplacera. La Demande d'ajout est celle du Lot 8, et son
- * témoin sur le rail ne se vérifie pas autrement : c'est la coque du Lot 2 qui
- * portait ce geste, et il n'a pas encore d'écran à lui.
+ * Le banc du Lot 6, et il ne survivra qu'au Lot 8 : rien d'autre ne peut
+ * fabriquer une Demande d'ajout tant que le combat ne la produit pas. Il sème
+ * les trois combattants de la maquette de #22, et les retire.
  */
 function bancDuRoster(etat: Etat): HTMLElement {
   const banc = element('div', 'banc');
@@ -172,7 +188,9 @@ function bancDuRoster(etat: Etat): HTMLElement {
   gestes.append(
     bouton(
       etat.demandeEnAttente ? 'on' : '',
-      etat.demandeEnAttente ? 'Répondre à la Demande d’ajout' : 'Faire surgir la Demande d’ajout',
+      etat.demandeEnAttente
+        ? 'Retirer les combattants à identifier'
+        : 'Semer trois combattants à identifier',
       () => memo?.bancDemande(!etat.demandeEnAttente),
     ),
   );
@@ -238,7 +256,7 @@ function bancDesReglages(etat: Etat): HTMLElement {
 function ecranCourant(etat: Etat): DocumentFragment {
   switch (vue.ecran) {
     case 'roster': {
-      const hote = ecranEnAttente('Roster', 'Lot 6', '#31');
+      const hote = ecranRoster(etat);
       hote.querySelector('.scrbody')?.append(bancDuRoster(etat));
       return hote;
     }
@@ -310,6 +328,7 @@ function peindre(menager = false): void {
 
   // Avant de reconstruire : un nom à moitié tapé se perdrait avec son champ.
   validerLeNom();
+  validerLeNomDeProfil();
 
   const avant = defilement();
   document.documentElement.style.setProperty('--fichemin', `${etat.ficheMiniFenetre}px`);
@@ -318,14 +337,21 @@ function peindre(menager = false): void {
   ecran.replaceChildren(ecranCourant(etat));
 
   const calques = par('calques');
-  calques.replaceChildren(...(vue.ecran === 'strats' ? calquesStrats(etat) : []));
+  const dessus =
+    vue.ecran === 'strats'
+      ? calquesStrats(etat)
+      : vue.ecran === 'roster'
+        ? calquesRoster(etat)
+        : [];
+  calques.replaceChildren(...dessus);
 
   const apres = document.querySelector<HTMLElement>('.scrbody, .turns');
   if (apres !== null) apres.scrollTop = avant;
 
-  // Le nom d'une Strat qu'on vient de créer ou de dupliquer part en édition : on
-  // la nomme en la créant, et c'est le seul endroit qui sait renommer.
-  const saisie = document.querySelector<HTMLInputElement>('input.ren');
+  // Le nom d'une Strat ou d'un Profil qu'on vient de créer part en édition : on
+  // le nomme en le créant. Et le champ de la saisie manuelle prend le focus dès
+  // qu'il s'ouvre, sinon il faut cliquer dedans pour taper.
+  const saisie = document.querySelector<HTMLInputElement>('input.ren, input.fnom');
   if (saisie !== null && document.activeElement !== saisie) {
     saisie.focus();
     saisie.select();
@@ -351,7 +377,11 @@ document.addEventListener('click', () => {
 
 document.addEventListener('keydown', (evenement) => {
   if (evenement.key !== 'Escape') return;
-  const avaitUnDialogue = vue.aSupprimer !== null;
+  // La saisie manuelle répond déjà pour elle-même quand son champ a le focus.
+  // Ce filet est pour l'autre cas : on vient de cliquer une icône de classe, le
+  // focus a quitté le champ, et Échap n'aurait plus rien fermé.
+  const avaitUnCalque = vue.aSupprimer !== null || vue.saisie !== null;
   vue.aSupprimer = null;
-  if (fermerLesCalques() || avaitUnDialogue) peindre(false);
+  vue.saisie = null;
+  if (fermerLesCalques() || avaitUnCalque) peindre(false);
 });
