@@ -336,3 +336,80 @@ describe('répondre à une Demande d’ajout', () => {
     strictEqual(editerRoster(depart, { sorte: 'inconnue' }).etat, depart);
   });
 });
+
+describe('la Préférence de liaison, écrite par l’Échange par clic', () => {
+  const preferences = (apres: Etat): string[] =>
+    apres.roster.preferences.map(
+      (preference) => `${preference.personnageId}@${preference.emplacementId}`,
+    );
+
+  it('pose un Personnage sur un Emplacement, et chasse celui qui y était', () => {
+    // Le jeu de départ met `c1` ET `c7` sur `e1` : un fichier édité à la main,
+    // ou deux versions du même geste. Le premier écrit dessus règle les deux.
+    const apres = appliquer(etat(), {
+      sorte: 'preferer',
+      stratId: 'ombre',
+      emplacementId: 'e1',
+      personnageId: 'c1',
+    });
+    deepStrictEqual(preferences(apres), ['c1@e1']);
+  });
+
+  it('un Personnage ne tient qu’un Emplacement par Strat', () => {
+    const apres = appliquer(
+      etat(),
+      { sorte: 'preferer', stratId: 'ombre', emplacementId: 'e1', personnageId: 'c1' },
+      { sorte: 'preferer', stratId: 'ombre', emplacementId: 'e2', personnageId: 'c1' },
+    );
+    deepStrictEqual(preferences(apres), ['c1@e2']);
+  });
+
+  it('un échange écrit les deux places, et permute vraiment', () => {
+    // Le geste tel que le processus principal l'envoie : deux commandes, l'une
+    // derrière l'autre, sur l'état que la première a rendu.
+    const apres = appliquer(
+      etat(),
+      { sorte: 'preferer', stratId: 'ombre', emplacementId: 'e1', personnageId: 'c7' },
+      { sorte: 'preferer', stratId: 'ombre', emplacementId: 'e2', personnageId: 'c1' },
+    );
+    deepStrictEqual(preferences(apres), ['c7@e1', 'c1@e2']);
+  });
+
+  it('ne réécrit pas ce qui est déjà écrit', () => {
+    const depart = appliquer(etat(), {
+      sorte: 'preferer',
+      stratId: 'ombre',
+      emplacementId: 'e1',
+      personnageId: 'c1',
+    });
+    const apres = appliquer(depart, {
+      sorte: 'preferer',
+      stratId: 'ombre',
+      emplacementId: 'e1',
+      personnageId: 'c1',
+    });
+    // Identique par référence : c'est ce qui dit à la persistance de ne rien
+    // écrire du tout (ADR `0004`).
+    strictEqual(apres.roster, depart.roster);
+  });
+
+  it('refuse une Strat, un Emplacement ou un Personnage qui n’existe pas', () => {
+    const depart = etat();
+    for (const commande of [
+      { sorte: 'preferer', stratId: 'partie', emplacementId: 'e1', personnageId: 'c1' },
+      { sorte: 'preferer', stratId: 'ombre', emplacementId: 'e9', personnageId: 'c1' },
+      { sorte: 'preferer', stratId: 'ombre', emplacementId: 'e1', personnageId: 'c9' },
+    ] as const) {
+      strictEqual(appliquer(depart, commande).roster, depart.roster);
+    }
+  });
+
+  it('une Préférence part avec le Personnage qu’elle nomme', () => {
+    const apres = appliquer(
+      etat(),
+      { sorte: 'preferer', stratId: 'ombre', emplacementId: 'e2', personnageId: 'c7' },
+      { sorte: 'supprimer-personnage', personnageId: 'c7' },
+    );
+    deepStrictEqual(preferences(apres), ['c1@e1']);
+  });
+});

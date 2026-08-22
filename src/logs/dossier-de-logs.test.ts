@@ -174,3 +174,113 @@ describe('la découverte du dossier de logs', () => {
     notStrictEqual(dossierDeLogs(fs, LINUX), null);
   });
 });
+
+/* ============================ le choix du fichier dans un dossier ========= */
+
+/**
+ * Les trois fichiers relevés sur la machine de l'auteur le 22 août 2026, à la
+ * minute où le bogue s'est produit :
+ *
+ *  - `wakfu.log` venait d'être créé et ne portait PAS le combat en cours ;
+ *  - `wakfu.log.1` était écrit à la même seconde et le portait en entier ;
+ *  - `wakfu.log.2`, mort depuis douze minutes, déclarait encore ouvert le combat
+ *    que la rotation avait coupé en deux.
+ */
+const RAFALE = (fightId: string, nom: string) =>
+  ` INFO 21:36:34,283 [AWT-EventQueue-0] (faw:1405) - [_FL_] fightId=${fightId} ${nom} breed : 3 [10910227] isControlledByAI=false obstacleId : -1 join the fight at {Point3 : (9, 1, 1)}\n`;
+const FIN = (fightId: string) =>
+  ` INFO 21:37:49,152 [AWT-EventQueue-0] (aWF:91) - [FIGHT] End fight with id ${fightId}\n`;
+const BAVARDAGE =
+  ' INFO 21:48:43,000 [AWT-EventQueue-0] (aPV:174) - [Communauté (FR)] Siphala : bonjour\n';
+
+describe('quel fichier suivre dans un dossier', () => {
+  const D = LOGS_LAUNCHER;
+  const suivi = (fichiers: Record<string, string>, dates: Record<string, number>) =>
+    dossierDeLogs(faux(fichiers, dates), LINUX, { dossierDesigne: D })?.fichier ?? null;
+
+  it('le combat en cours est dans `wakfu.log.1` : c’est lui qu’on suit, pas `wakfu.log`', () => {
+    // Le bogue exact : le fichier le plus frais est le plus ignorant, parce que
+    // le combat avait commencé onze secondes avant qu'il n'existe.
+    strictEqual(
+      suivi(
+        {
+          [`${D}/wakfu.log`]: BAVARDAGE,
+          [`${D}/wakfu.log.1`]: RAFALE('1552058722', 'Damdamnesique') + BAVARDAGE,
+        },
+        { [`${D}/wakfu.log`]: 2_000, [`${D}/wakfu.log.1`]: 1_000 },
+      ),
+      `${D}/wakfu.log.1`,
+    );
+  });
+
+  it('⚠️ un fichier mort qui déclare un combat ouvert n’est pas cru', () => {
+    // `wakfu.log.2` a été coupé en plein combat par la rotation : sa fin de
+    // combat est partie ailleurs, donc il dira « combat ouvert » pour toujours.
+    // Mesuré : douze minutes après sa dernière écriture, il le disait encore.
+    strictEqual(
+      suivi(
+        {
+          [`${D}/wakfu.log`]: BAVARDAGE,
+          [`${D}/wakfu.log.2`]: RAFALE('1552058722', 'Damdamnesique'),
+        },
+        { [`${D}/wakfu.log`]: 900_000, [`${D}/wakfu.log.2`]: 180_000 },
+      ),
+      `${D}/wakfu.log`,
+    );
+  });
+
+  it('hors combat, le plus frais gagne — c’est là que le prochain s’écrira', () => {
+    strictEqual(
+      suivi(
+        { [`${D}/wakfu.log`]: BAVARDAGE, [`${D}/wakfu.log.1`]: RAFALE('1', 'X') + FIN('1') },
+        { [`${D}/wakfu.log`]: 2_000, [`${D}/wakfu.log.1`]: 1_000 },
+      ),
+      `${D}/wakfu.log`,
+    );
+  });
+
+  it('les deux vivants portent le même combat : le plus frais suffit', () => {
+    // Vérifié sur la machine : les deux fichiers vivants donnent le même tour,
+    // la même Liaison, le même `k`. Il n’y a donc rien à fusionner.
+    const rafale = RAFALE('1552058845', 'Damdamnesique');
+    strictEqual(
+      suivi(
+        { [`${D}/wakfu.log`]: rafale, [`${D}/wakfu.log.1`]: rafale },
+        { [`${D}/wakfu.log`]: 2_000, [`${D}/wakfu.log.1`]: 1_999 },
+      ),
+      `${D}/wakfu.log`,
+    );
+  });
+
+  it('un dossier qui n’a QUE des fichiers tournés reste un dossier de logs', () => {
+    // Avant, l'absence du nom exact `wakfu.log` faisait disparaître la condition
+    // d'affichage, donc l'Overlay tout entier.
+    strictEqual(
+      suivi({ [`${D}/wakfu.log.1`]: BAVARDAGE }, { [`${D}/wakfu.log.1`]: 1_000 }),
+      `${D}/wakfu.log.1`,
+    );
+  });
+
+  it('le suffixe n’ordonne rien : `.1` peut être le fichier vivant', () => {
+    strictEqual(
+      suivi(
+        { [`${D}/wakfu.log`]: BAVARDAGE, [`${D}/wakfu.log.1`]: BAVARDAGE },
+        { [`${D}/wakfu.log`]: 1_000, [`${D}/wakfu.log.1`]: 2_000 },
+      ),
+      `${D}/wakfu.log.1`,
+    );
+  });
+
+  it('le départage entre installations se lit aussi sur les fichiers tournés', () => {
+    const fichiers = { ...STEAM, [`${LOGS_LAUNCHER}/wakfu.log.1`]: BAVARDAGE };
+    const retenu = dossierDeLogs(
+      faux(fichiers, {
+        [`${LOGS_STEAM}/wakfu.log`]: 1_000,
+        [`${LOGS_LAUNCHER}/wakfu.log.1`]: 2_000,
+      }),
+      LINUX,
+    );
+    strictEqual(retenu?.fichier, `${LOGS_LAUNCHER}/wakfu.log.1`);
+    strictEqual(retenu?.installation, 'launcher');
+  });
+});

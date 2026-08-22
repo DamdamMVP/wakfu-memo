@@ -42,6 +42,16 @@ export type OptionsDeSuivi = {
    * two files, whose `[_FL_]` lines sit in the neighbouring file.
    */
   readonly clientsEngages?: number;
+  /**
+   * The Préférences de liaison of the chosen Strat, as **Rang → ID d'entité**.
+   *
+   * They are given already resolved because this module knows nothing of the
+   * Roster and nothing of a Strat's Emplacement ids: a Préférence names a
+   * Personnage and an Emplacement, and translating that pair into a Rang and an
+   * ID d'entité is the caller's job. What arrives here is a fact about the
+   * **log**, which is all this file speaks.
+   */
+  readonly liaisonsForcees?: ReadonlyMap<number, string>;
 };
 
 /**
@@ -111,20 +121,59 @@ function roster(evenements: readonly EvenementDeLog[]): Combattant[] {
  * The Liaison: which Personnage holds which Emplacement, computed by Classe
  * from `[_FL_]`.
  *
- * A Conflit — several Personnages of one Classe for several Emplacements of
- * that Classe — is settled here by the **lowest Rang**, in combat arrival
- * order. That is what ADR `0007` prescribes for a combat caught up cold; on a
- * combat seen from its start, the Demande d'ajout and the Échange par clic catch
- * it, and they are not of this lot.
+ * Two passes, and the order is the whole rule:
+ *
+ * 1. **The Préférences de liaison first.** A Préférence is the memory of an
+ *    Échange par clic — « dans cette Strat, celui-ci tient cette place » — and
+ *    it exists precisely so the question is not asked again. One that names a
+ *    Rang of another Classe is ignored rather than obeyed: the Strat was edited
+ *    under it, and ADR `0005` has the reference die quietly.
+ * 2. **The rest by the lowest free Rang**, in combat arrival order. A Conflit —
+ *    several Personnages of one Classe for several Emplacements of that Classe
+ *    — is settled here and never asked: that is what ADR `0007` prescribes for
+ *    a combat caught up cold, and the Échange par clic is the one repair.
+ *
+ * ⚠️ Everything played is bound, Roster or no Roster. Binding only the known
+ * Personnages would leave an unknown team-mate's Emplacement declared absent
+ * while they play and emit their Frontière de tour — the Rotation would skip a
+ * stop it must make, and the count would drift for the whole combat.
  */
-function lier(composition: Composition, roster: readonly Combattant[]): Map<number, Combattant> {
+function lier(
+  composition: Composition,
+  roster: readonly Combattant[],
+  forcees: ReadonlyMap<number, string>,
+): Map<number, Combattant> {
   const liaison = new Map<number, Combattant>();
   const pris = new Set<number>();
+  // By identity of object, not by ID d'entité: the repo samples are anonymised
+  // down to the IDs, and `[ENTITE]` for everyone would collapse a roster of six
+  // into one. The roster is already deduplicated, so a reference is exact.
+  const places = new Set<Combattant>();
+
+  // Ascending, so two Préférences that fight over one fighter resolve the same
+  // way twice running. They should not, but a hand-edited file may.
+  for (const rang of [...forcees.keys()].sort((a, b) => a - b)) {
+    const emplacement = composition[rang - 1];
+    const idEntite = forcees.get(rang);
+    if (emplacement === undefined || idEntite === undefined) continue;
+    const combattant = roster.find(
+      (candidat) =>
+        !candidat.controleParIA &&
+        candidat.idEntite === idEntite &&
+        candidat.classe === emplacement.classe &&
+        !places.has(candidat),
+    );
+    if (combattant === undefined) continue;
+    pris.add(rang);
+    places.add(combattant);
+    liaison.set(rang, combattant);
+  }
 
   for (const combattant of roster) {
     // `isControlledByAI=false` isolates the played Personnages: the client
     // treats its own Invocations as uncontrolled, so the filter is enough.
     if (combattant.controleParIA || combattant.classe === null) continue;
+    if (places.has(combattant)) continue;
 
     const rang = composition.findIndex(
       (emplacement, index) => emplacement.classe === combattant.classe && !pris.has(index + 1),
@@ -132,10 +181,14 @@ function lier(composition: Composition, roster: readonly Combattant[]): Map<numb
     if (rang === -1) continue;
 
     pris.add(rang + 1);
+    places.add(combattant);
     liaison.set(rang + 1, combattant);
   }
 
-  return liaison;
+  // By ascending Rang, and not in the order the two passes filled it: a Map
+  // keeps its insertion order, and whoever reads this one reads a fiche, whose
+  // lines go 1, 2, 3.
+  return new Map([...liaison].sort(([a], [b]) => a - b));
 }
 
 export function suivreLeCombat(
@@ -145,7 +198,7 @@ export function suivreLeCombat(
 ): EtatDuSuivi {
   const k = options.clientsEngages ?? clientsEngages(evenements);
   const combattants = roster(evenements);
-  const liaison = lier(composition, combattants);
+  const liaison = lier(composition, combattants, options.liaisonsForcees ?? new Map());
 
   const fightId = evenements.find((evenement) => evenement.type === 'combattant')?.fightId ?? '';
 

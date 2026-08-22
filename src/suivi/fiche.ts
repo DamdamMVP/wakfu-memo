@@ -43,6 +43,21 @@ export type LigneDeFiche = {
   readonly inactif: boolean;
   /** The Mise en avant. One line at a time, and the next is not announced. */
   readonly enAvant: boolean;
+  /**
+   * The pseudo of whoever holds this Emplacement in this combat, `null` out of
+   * combat and on an Emplacement nobody plays.
+   *
+   * ⚠️ It is here to be shown **during the gesture only** — the survol of the
+   * Échange par clic — never at rest: ADR `0003` gives an Emplacement its
+   * Couleur for identity and no text beside the icon. The surface owns that
+   * restraint; this field only makes it possible.
+   */
+  readonly pseudo: string | null;
+  /**
+   * The Rangs this one exchanges with. Empty when nothing can be exchanged,
+   * which is the state the Échange par clic must show **before** the click.
+   */
+  readonly partenaires: readonly number[];
 };
 
 export type Fiche = {
@@ -65,8 +80,23 @@ export type Fiche = {
  * given as `null` on purpose: it is indistinguishable from "no combat", which
  * is the only honest option left once ADR `0006` forbids both the guessed
  * position and the confession.
+ *
+ * `connus` holds the ID d'entité of every Personnage of the Roster, and it
+ * decides one thing only: **what can be exchanged**. An Échange par clic is
+ * remembered as a Préférence de liaison, which names a Personnage — so a
+ * fighter the Roster does not know has nothing to write down, and offering the
+ * gesture on them would be offering a click that does nothing. That is the hole
+ * of the cold start, named and assumed in #16: with an incomplete Roster,
+ * `permutable → rien`, and the way out is to identify them first.
+ *
+ * The **pseudo is not gated the same way**: hovering names any icon, known or
+ * not (#16). Learning who is there costs nothing; only a doublon is clickable.
  */
-export function ficheDuTour(strat: Strat, suivi: EtatDuSuivi | null): Fiche {
+export function ficheDuTour(
+  strat: Strat,
+  suivi: EtatDuSuivi | null,
+  connus: ReadonlySet<string> = new Set(),
+): Fiche {
   // A combat only counts while it is alive: an `End fight`, or a client
   // shutdown, brings the fiche back to Tour 1 by this single door — the same
   // door the launch comes through, so there is one code path for both.
@@ -80,6 +110,7 @@ export function ficheDuTour(strat: Strat, suivi: EtatDuSuivi | null): Fiche {
 
   const lignes = strat.emplacements.map((emplacement, index): LigneDeFiche => {
     const rang = index + 1;
+    const lie = vivant?.liaison.get(rang) ?? null;
     return {
       rang,
       classe: emplacement.classe,
@@ -87,6 +118,29 @@ export function ficheDuTour(strat: Strat, suivi: EtatDuSuivi | null): Fiche {
       consigne: ecrit?.consignes[emplacement.id] ?? [],
       inactif: vivant !== null && !vivant.rangsActifs.includes(rang),
       enAvant: vivant?.rangCourant === rang,
+      pseudo: lie?.nom ?? null,
+      // Filled just below: a partner is a fact about two lines, so it cannot be
+      // decided while the first of them is still being built.
+      partenaires: [],
+    };
+  });
+
+  // The doublons. Same Classe, both held, both held by a Personnage the Roster
+  // knows — the three conditions of a swap that can be written down.
+  const echangeable = (ligne: LigneDeFiche): boolean => {
+    const lie = vivant?.liaison.get(ligne.rang);
+    return lie !== undefined && connus.has(lie.idEntite);
+  };
+  const avecPartenaires = lignes.map((ligne): LigneDeFiche => {
+    if (!echangeable(ligne)) return ligne;
+    return {
+      ...ligne,
+      partenaires: lignes
+        .filter(
+          (autre) =>
+            autre.rang !== ligne.rang && autre.classe === ligne.classe && echangeable(autre),
+        )
+        .map((autre) => autre.rang),
     };
   });
 
@@ -96,7 +150,7 @@ export function ficheDuTour(strat: Strat, suivi: EtatDuSuivi | null): Fiche {
     tour,
     global: ecrit?.global ?? [],
     note: ecrit?.note ?? null,
-    lignes,
+    lignes: avecPartenaires,
     audelaDe,
   };
 }

@@ -252,7 +252,6 @@ type PontMemo = {
   designerDossierLogs: () => Promise<string | null>;
   oublierDossierLogs: () => void;
   ouvrirDossierDonnees: () => void;
-  bancDemande: (enAttente: boolean) => void;
   editerStrats: (commande: CommandeEdition) => Promise<{ stratId: string | null }>;
   consequenceSuppressionStrat: (stratId: string) => Promise<ConsequenceSuppression>;
   consequenceSuppressionEmplacement: (

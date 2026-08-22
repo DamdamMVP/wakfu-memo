@@ -9,22 +9,13 @@
  * The condition is live on the retained file: losing the `wakfu.log` we watch
  * turns the Overlay off, mid-game included.
  *
- * This module cannot discover the log folder — arbitrating between the Steam
- * install and the launcher one is Lot 1 (`docs/research/wakfu-log-grammar.md`).
- * It takes a path and watches it; Lot 1 plugs into `suivre()` without touching
- * the rest. Until then only the designated folder of ADR `0014` feeds the
- * condition.
+ * ⚠️ This module does **not** name the file, and it must not: which of
+ * `wakfu.log` and its rotated siblings is the live one is a question of dates
+ * and of content, and `logs/dossier-de-logs.ts` owns it. Here a path arrives
+ * already chosen, and all that is asked is whether it still lets itself be read.
  */
 
 import { accessSync, constants, statSync, unwatchFile, watchFile } from 'node:fs';
-import { join } from 'node:path';
-
-export const NOM_WAKFU_LOG = 'wakfu.log';
-
-/** The file ADR `0008` names as the only one read, in a given folder. */
-export function wakfuLogDe(dossier: string | null): string | null {
-  return dossier ? join(dossier, NOM_WAKFU_LOG) : null;
-}
 
 /** A `stat`, and nothing else: the file exists and lets itself be read. */
 export function wakfuLogLisible(chemin: string | null): boolean {

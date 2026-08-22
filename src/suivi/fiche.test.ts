@@ -255,3 +255,84 @@ describe('un combat rejoué depuis un échantillon', () => {
     ]);
   });
 });
+
+describe('le pseudo et l’Échange par clic', () => {
+  const DEUX_ECAFLIPS: Strat = {
+    id: 's2',
+    nom: 'Deux Ecaflips',
+    emplacements: [
+      { id: 'e1', classe: 'ecaflip', couleur: 'rouge' },
+      { id: 'e2', classe: 'ecaflip', couleur: 'jaune' },
+      { id: 'e3', classe: 'iop', couleur: 'vert' },
+    ],
+    tours: [{ consignes: {} }],
+  };
+
+  const eca = (nom: string): EvenementDeLog => ({
+    type: 'combattant',
+    fightId: '1',
+    nom,
+    breed: 6,
+    classe: 'ecaflip',
+    idEntite: nom,
+    controleParIA: false,
+    obstacleId: -1,
+    position: '0, 0, 0',
+  });
+
+  const combat = suivreLeCombat([eca('Damdam'), eca('Nozadah')], DEUX_ECAFLIPS.emplacements, {
+    clientsEngages: 1,
+  });
+
+  const lu = (connus: string[]) =>
+    ficheDuTour(DEUX_ECAFLIPS, combat, new Set(connus)).lignes.map((ligne) => [
+      ligne.pseudo,
+      ligne.partenaires,
+    ]);
+
+  it('hors combat, personne n’est nommé et rien ne se permute', () => {
+    deepStrictEqual(
+      ficheDuTour(NOZADAH, null).lignes.map((ligne) => [ligne.pseudo, ligne.partenaires]),
+      [
+        [null, []],
+        [null, []],
+        [null, []],
+      ],
+    );
+  });
+
+  it('le survol nomme toute icône, doublon ou non', () => {
+    // Le pseudo est là pour les trois lignes tenues, y compris l'Emplacement Iop
+    // qui n'a rien à permuter. Apprendre qui est là ne coûte rien (#16).
+    const lignes = ficheDuTour(NOZADAH, duo(), new Set()).lignes;
+    deepStrictEqual(
+      lignes.map((ligne) => ligne.pseudo),
+      ['PJ1', 'PJ2', null],
+    );
+  });
+
+  it('seuls les doublons ont un partenaire, et l’Emplacement seul de sa classe n’en a pas', () => {
+    deepStrictEqual(lu(['Damdam', 'Nozadah']), [
+      ['Damdam', [2]],
+      ['Nozadah', [1]],
+      [null, []],
+    ]);
+  });
+
+  it('un combattant que le Roster ne connaît pas ne se permute pas — c’est le trou du démarrage à chaud', () => {
+    // `permutable → rien`. Un Échange par clic s'écrit en Préférence de liaison,
+    // et une Préférence nomme un Personnage : il n'y aurait rien à écrire. La
+    // sortie est la Demande d'ajout, et c'est ce qui lui a valu sa surface (#16).
+    deepStrictEqual(lu([]), [
+      ['Damdam', []],
+      ['Nozadah', []],
+      [null, []],
+    ]);
+    // Un seul des deux connu ne suffit pas non plus : l'échange s'écrit à deux.
+    deepStrictEqual(lu(['Damdam']), [
+      ['Damdam', []],
+      ['Nozadah', []],
+      [null, []],
+    ]);
+  });
+});

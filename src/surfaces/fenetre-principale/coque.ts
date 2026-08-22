@@ -170,35 +170,10 @@ function ecranEnAttente(titre: string, lot: string, ticket: string): DocumentFra
   return hote;
 }
 
-/**
- * Le banc du Lot 6, et il ne survivra qu'au Lot 8 : rien d'autre ne peut
- * fabriquer une Demande d'ajout tant que le combat ne la produit pas. Il sème
- * les trois combattants de la maquette de #22, et les retire.
- */
-function bancDuRoster(etat: Etat): HTMLElement {
-  const banc = element('div', 'banc');
-  banc.append(element('h2', '', 'Banc d’essai — le Lot 8 le remplace'));
-  const gestes = element('div', 'gestes');
-  gestes.append(
-    bouton(
-      etat.demandeEnAttente ? 'on' : '',
-      etat.demandeEnAttente
-        ? 'Retirer les combattants à identifier'
-        : 'Semer trois combattants à identifier',
-      () => memo?.bancDemande(!etat.demandeEnAttente),
-    ),
-  );
-  banc.append(gestes);
-  return banc;
-}
-
 function ecranCourant(etat: Etat): DocumentFragment {
   switch (vue.ecran) {
-    case 'roster': {
-      const hote = ecranRoster(etat);
-      hote.querySelector('.scrbody')?.append(bancDuRoster(etat));
-      return hote;
-    }
+    case 'roster':
+      return ecranRoster(etat);
     case 'reglages':
       return ecranReglages(etat);
     case 'prise-en-main':

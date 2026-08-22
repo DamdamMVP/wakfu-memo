@@ -66,6 +66,17 @@ export type CommandeRoster =
     }
   | { readonly sorte: 'ignorer'; readonly idEntite: string; readonly nomVu: string }
   | { readonly sorte: 'ne-plus-ignorer'; readonly idEntite: string }
+  /**
+   * An Échange par clic, written down: in this Strat, this Personnage holds this
+   * Emplacement. The one thing that produces a Préférence de liaison — the
+   * Conflit itself is never asked, it is settled by the lowest Rang (#16).
+   */
+  | {
+      readonly sorte: 'preferer';
+      readonly stratId: string;
+      readonly emplacementId: string;
+      readonly personnageId: string;
+    }
   | { readonly sorte: 'inconnue' };
 
 export type EditionRoster = {
@@ -290,6 +301,50 @@ function rattacher(
 }
 
 /**
+ * A Préférence de liaison, posed by an Échange par clic.
+ *
+ * Two evictions, and they are the same invariant seen from its two ends: within
+ * one Strat a Personnage holds **at most one** Emplacement, and an Emplacement
+ * is held by **at most one** Personnage. Without the second one, exchanging two
+ * Personnages would leave the one that was there declared on that place too, and
+ * `lier` would obey whichever came first.
+ *
+ * A Strat or an Emplacement that does not exist is refused rather than written:
+ * this is the gesture, and ADR `0005` only forgives a reference that **became**
+ * dead. The Préférence keeps living in `roster.json` and not in `strats.json`,
+ * so a shared Strat carries nobody's name.
+ */
+function preferer(etat: Etat, stratId: string, emplacementId: string, personnageId: string): Etat {
+  if (!etat.roster.personnages.some((candidat) => candidat.id === personnageId)) return etat;
+  const strat = etat.strats.strats.find((candidat) => candidat.id === stratId);
+  if (strat === undefined) return etat;
+  if (!strat.emplacements.some((candidat) => candidat.id === emplacementId)) return etat;
+
+  const restantes = etat.roster.preferences.filter(
+    (preference) =>
+      preference.stratId !== stratId ||
+      (preference.personnageId !== personnageId && preference.emplacementId !== emplacementId),
+  );
+  // Already written, and nothing else was in the way: a stale click costs no
+  // rewrite (ADR `0004`).
+  if (
+    restantes.length === etat.roster.preferences.length - 1 &&
+    etat.roster.preferences.some(
+      (preference) =>
+        preference.stratId === stratId &&
+        preference.personnageId === personnageId &&
+        preference.emplacementId === emplacementId,
+    )
+  ) {
+    return etat;
+  }
+  return avecRoster(etat, {
+    ...etat.roster,
+    preferences: [...restantes, { stratId, personnageId, emplacementId }],
+  });
+}
+
+/**
  * The one door in. `Persistance.appliquer` rewrites only what moved, so a
  * command that changes nothing costs no write at all.
  */
@@ -352,6 +407,8 @@ export function editerRoster(etat: Etat, commande: CommandeRoster): EditionRoste
       };
     case 'ne-plus-ignorer':
       return sans(nePlusIgnorer(etat, commande.idEntite));
+    case 'preferer':
+      return sans(preferer(etat, commande.stratId, commande.emplacementId, commande.personnageId));
     default:
       return sans(etat);
   }

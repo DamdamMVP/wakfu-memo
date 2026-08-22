@@ -35,6 +35,10 @@ type LigneDeFiche = {
   consigne: Segment[];
   inactif: boolean;
   enAvant: boolean;
+  /** Qui tient l'Emplacement dans ce combat. Ne se montre QUE pendant le geste. */
+  pseudo: string | null;
+  /** Les Rangs avec lesquels celui-ci s'échange. Vide : rien à permuter. */
+  partenaires: number[];
 };
 
 type Fiche = {
@@ -55,6 +59,8 @@ type EtatOverlayTour = {
   fiche: Fiche | null;
   aspect: Aspect;
   strats: { id: string; nom: string }[];
+  /** Combien de questions attendent derrière la pastille. `0` : pas de pastille. */
+  demandesRepliees: number;
 };
 
 type PontMemo = {
@@ -66,6 +72,8 @@ type PontMemo = {
   poserAspect: (aspect: { opacite?: number; tailleTexte?: number }) => void;
   poserLargeurFiche: (largeur: number | null) => void;
   poserPositionFiche: (x: number, y: number) => void;
+  echangerLiaison: (rangA: number, rangB: number) => void;
+  replierDemande: (replie: boolean) => void;
 };
 
 const memo = (window as unknown as { memo?: PontMemo }).memo;
@@ -109,6 +117,7 @@ const stratbar = par<HTMLElement>('stratbar');
 const stratpick = par<HTMLButtonElement>('stratpick');
 const stratNom = par<HTMLElement>('strat-nom');
 const stratmenu = par<HTMLElement>('stratmenu');
+const askdot = par<HTMLButtonElement>('askdot');
 const cadenas = par<HTMLButtonElement>('cadenas');
 const anse = document.getElementById('anse') as SVGPathElement | null;
 const entete = document.querySelector<HTMLElement>('.fiche > header');
@@ -136,6 +145,38 @@ let menuOuvert = false;
  */
 let enGeste = false;
 
+/* ================================================== L'ÉCHANGE PAR CLIC ===== */
+/**
+ * Trois états, tous les trois locaux et tous les trois éphémères — le processus
+ * principal n'en sait rien, et c'est voulu : ce sont des moments d'un geste, pas
+ * des états de l'application.
+ *
+ * ⚠️ **Un échange réussi est invisible.** Deux Emplacements d'une même classe
+ * portent la même icône, la Consigne appartient à l'Emplacement et ne bouge pas,
+ * et l'ADR `0003` interdit le pseudo au repos : après la permutation, l'écran est
+ * rigoureusement identique. D'où les trois :
+ *
+ *  - `survol` — le Rang sous le pointeur. Le survol **nomme** la ligne survolée,
+ *    permutable ou non, et **allume** ses partenaires quand il y en a. Apprendre
+ *    qui est là ne coûte donc rien, mais seul un doublon se clique ;
+ *  - `source` — la ligne saisie, en attendant le second clic ;
+ *  - `clignote` — les deux lignes qui viennent de permuter. Elles disent leur
+ *    pseudo une seconde : c'est la seule preuve que le geste a porté.
+ */
+let survol: number | null = null;
+let source: number | null = null;
+let clignote: readonly number[] = [];
+let finDuClignotement: ReturnType<typeof setTimeout> | null = null;
+
+/** Ce que dure la preuve. Assez pour lire deux pseudos, pas assez pour gêner. */
+const CLIGNOTEMENT_MS = 1400;
+
+const laLigne = (rang: number): LigneDeFiche | undefined =>
+  dernier?.fiche?.lignes.find((ligne) => ligne.rang === rang);
+
+/** Permutable : elle est tenue, et un autre Rang de sa classe l'est aussi. */
+const estPermutable = (rang: number): boolean => (laLigne(rang)?.partenaires.length ?? 0) > 0;
+
 /* ============================================================== le rendu === */
 
 /** One `<span>` per segment: a single attribute, so no parser and no HTML. */
@@ -157,6 +198,10 @@ function peindreLesLignes(lignes: LigneDeFiche[]): void {
     const div = document.createElement('div');
     div.className = `row${ligne.inactif ? ' inactif' : ''}${ligne.enAvant ? ' avant' : ''}`;
     div.style.setProperty('--c', HEXA_DE_COULEUR[ligne.couleur] ?? 'transparent');
+    div.dataset['rang'] = String(ligne.rang);
+    // Le curseur est le seul indice permanent : le fond de ligne est pris par la
+    // Mise en avant, et l'ADR 0006 refuse qu'une seconde ligne se dispute l'œil.
+    if (ligne.partenaires.length > 0) div.classList.add('permutable');
 
     const classe = document.createElement('span');
     classe.className = 'cls';
@@ -180,7 +225,48 @@ function peindreLesLignes(lignes: LigneDeFiche[]): void {
     }
 
     div.append(classe, consigne);
+
+    // Le pseudo est TOUJOURS posé, et le CSS le cache tant que la ligne n'est pas
+    // nommée : l'écrire au survol demanderait de recréer un nœud à chaque
+    // mouvement du pointeur, et de redéclarer les zones cliquables avec lui.
+    if (ligne.pseudo !== null) {
+      const pseudo = elementTexte('span', ligne.pseudo);
+      pseudo.className = 'pseudo';
+      div.append(pseudo);
+    }
     rows.append(div);
+  }
+  eclairer();
+}
+
+/**
+ * Ce que le geste ajoute aux lignes déjà peintes : le nom, les partenaires
+ * allumés, la source saisie, et le clignotement qui suit une permutation.
+ *
+ * Séparé du rendu exprès. Un survol ne change rien de ce que la fiche **dit** —
+ * repeindre les lignes à chaque mouvement du pointeur redéclarerait les zones
+ * cliquables douze fois par seconde, et l'Overlay perdrait ses clics le temps
+ * que le processus principal repose la région.
+ */
+function eclairer(): void {
+  // L'ancre du pré-éclairage : la ligne saisie s'il y en a une, sinon la ligne
+  // survolée — et seulement si elle a quelque chose à permuter.
+  const ancre = source ?? (survol !== null && estPermutable(survol) ? survol : null);
+  const partenaires = ancre === null ? [] : (laLigne(ancre)?.partenaires ?? []);
+
+  rows.classList.toggle('echange', source !== null);
+  for (const div of Array.from(rows.querySelectorAll<HTMLElement>('.row'))) {
+    const rang = Number(div.dataset['rang']);
+    const allume = partenaires.includes(rang);
+    div.classList.toggle('allume', allume);
+    div.classList.toggle('source', source === rang);
+    div.classList.toggle('clignote', clignote.includes(rang));
+    // Le survol nomme TOUTE icône, permutable ou non : apprendre qui est là ne
+    // coûte rien. Ce qui est réservé aux doublons, c'est le clic.
+    div.classList.toggle(
+      'nomme',
+      rang === survol || rang === source || allume || clignote.includes(rang),
+    );
   }
 }
 
@@ -233,6 +319,12 @@ function peindre(etat: EtatOverlayTour): void {
   // Locking folds the menu, exactly as it takes back the clicks: the padlock is
   // let through too, so a menu left open could never be closed.
   if (etat.verrouille) menuOuvert = false;
+  // Idem pour l'Échange par clic : verrouillé, le pointeur n'atteint plus cette
+  // surface, donc une ligne saisie ne pourrait plus jamais être relâchée.
+  if (etat.verrouille) {
+    source = null;
+    survol = null;
+  }
 
   // No Strat chosen means the Overlay draws nothing at all — not an empty fiche
   // and not a sentence (ADR `0006`).
@@ -255,6 +347,10 @@ function peindre(etat: EtatOverlayTour): void {
   appliquerLAspect(etat.aspect);
 
   stratNom.textContent = contenu.nom;
+  // La pastille : elle ne paraît que si « plus tard » a replié quelque chose,
+  // et elle ne dit rien de plus que le nombre de questions qui attendent.
+  askdot.hidden = etat.demandesRepliees === 0;
+  askdot.textContent = `${etat.demandesRepliees} à identifier`;
   cadenas.classList.toggle('ferme', etat.verrouille);
   cadenas.title = etat.verrouille
     ? 'verrouillé — les clics vont au jeu. Le raccourci le déverrouille.'
@@ -439,6 +535,100 @@ stratmenu.addEventListener('click', (evenement) => {
 });
 
 cadenas.addEventListener('click', () => memo?.basculerVerrou());
+
+/**
+ * La pastille ramène l'Overlay de la Demande d'ajout que « plus tard » a replié.
+ * Elle ne répond pas, et rien ici ne répond : seule la question elle-même le
+ * peut (ADR `0010`).
+ */
+askdot.addEventListener('click', () => memo?.replierDemande(false));
+
+/* =================================================== L'ÉCHANGE PAR CLIC ==== */
+
+/**
+ * Le survol nomme la ligne, et allume ses partenaires. Deux clics permutent.
+ *
+ * Rien de permanent avant le geste : le fond de ligne est pris par la Mise en
+ * avant, l'en-tête par la pastille de Tour et le sélecteur de Strat, et l'ADR
+ * `0006` refuse qu'un second signal se dispute l'œil. Il ne reste que l'icône,
+ * son liseré, et le bord droit de la ligne — c'est la contrainte de départ de
+ * #16, et c'est exactement ce que ces trois classes peignent.
+ *
+ * Ça ne vit que déverrouillé, et pas par choix : verrouillé, la région d'entrée
+ * est vide et le pointeur ne nous parvient jamais.
+ */
+rows.addEventListener('pointerover', (evenement) => {
+  const cible = evenement.target as HTMLElement;
+  // Sur l'icône, pas sur la Consigne : la Consigne se lit, elle ne se saisit pas.
+  const ligne = cible.closest('.cls') === null ? null : cible.closest<HTMLElement>('.row');
+  const rang = ligne === null ? null : Number(ligne.dataset['rang']);
+  if (rang === survol) return;
+  survol = rang;
+  eclairer();
+});
+
+rows.addEventListener('pointerleave', () => {
+  if (survol === null) return;
+  survol = null;
+  eclairer();
+});
+
+rows.addEventListener('click', (evenement) => {
+  const cible = evenement.target as HTMLElement;
+  const ligne = cible.closest<HTMLElement>('.row');
+  const rang = ligne === null ? null : Number(ligne.dataset['rang']);
+
+  // Un clic à côté d'une icône relâche la ligne saisie. Renoncer doit être aussi
+  // facile que saisir : le geste ne se termine jamais tout seul.
+  if (rang === null || cible.closest('.cls') === null || !estPermutable(rang)) {
+    if (source === null) return;
+    source = null;
+    eclairer();
+    return;
+  }
+
+  if (source === null) {
+    source = rang;
+    eclairer();
+    return;
+  }
+  if (source === rang) {
+    source = null;
+    eclairer();
+    return;
+  }
+  const partenaires = laLigne(source)?.partenaires ?? [];
+  if (!partenaires.includes(rang)) {
+    // Une autre ligne permutable, mais pas de la même classe : on saisit
+    // celle-là plutôt que de refuser sans rien dire.
+    source = rang;
+    eclairer();
+    return;
+  }
+  echanger(source, rang);
+});
+
+/**
+ * La permutation, et sa seule preuve.
+ *
+ * Les deux lignes clignotent et disent leur pseudo une seconde. Sans ça le geste
+ * est **littéralement invisible** — même icône, même liseré, même Consigne — et
+ * #18 en a fait le seul correctif d'un démarrage à chaud : un correctif dont on
+ * ne peut pas vérifier l'effet n'en est pas un.
+ */
+function echanger(rangA: number, rangB: number): void {
+  source = null;
+  survol = null;
+  clignote = [rangA, rangB];
+  eclairer();
+  if (finDuClignotement !== null) clearTimeout(finDuClignotement);
+  finDuClignotement = setTimeout(() => {
+    finDuClignotement = null;
+    clignote = [];
+    eclairer();
+  }, CLIGNOTEMENT_MS);
+  memo?.echangerLiaison(rangA, rangB);
+}
 
 /* ============================================================= la barrette = */
 

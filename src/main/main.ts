@@ -36,9 +36,9 @@ import { ficheDuTour } from '../suivi/fiche.ts';
 import type { EtatDuSuivi } from '../suivi/suivi-du-tour.ts';
 import { CANAL } from './canaux.ts';
 import { type Conditions, EtatConditions, type NomCondition } from './conditions-affichage.ts';
-import { type DemandeDAjout, DemandesEnAttente } from './demandes-en-attente.ts';
+import { type DemandeDAjout, DemandesEnAttente, demandesDuCombat } from './demandes-en-attente.ts';
 import { FenetrePrincipale } from './fenetre-principale.ts';
-import { OverlayDemande } from './overlay-demande.ts';
+import { type ContenuDemande, OverlayDemande } from './overlay-demande.ts';
 import { type Aspect, type ContenuOverlay, OverlayTour } from './overlay-tour.ts';
 import {
   CLE_REGLAGE,
@@ -55,16 +55,14 @@ import { VeilleWakfuLog } from './veille-wakfu-log.ts';
 const OZONE_X11 = '--ozone-platform=x11';
 
 /**
- * The test bench of Lot 6: the three Demandes d'ajout the log will produce in
- * Lot 8, and nothing else can produce until then. The names and the ID d'entité
- * are those of the mockup of #22 — a doublon of Classe, a typo to catch by
- * rattachement, and a passer-by nobody wants.
+ * How often the choice of log file is reconsidered, out of combat only.
+ *
+ * Not the rhythm of the game and not the rhythm of the fight: it is the rhythm
+ * at which Wakfu may hand over from one file to the next, which happens once in
+ * a session. Five seconds is already far more often than needed, and it is only
+ * paid between two fights.
  */
-const BANC_A_IDENTIFIER: readonly DemandeDAjout[] = [
-  { idEntite: '5513', nom: 'Nozadah', classe: 'ecaflip' },
-  { idEntite: '5514', nom: 'Nozaheal', classe: 'eniripsa' },
-  { idEntite: '5515', nom: 'Pandacoucou', classe: 'pandawa' },
-];
+const PERIODE_ROTATION_MS = 5_000;
 
 /**
  * One code path, X11: native on Windows, through XWayland on Linux. Since
@@ -99,6 +97,7 @@ type Instantane = {
   attache: boolean;
   titreCible: string;
   verrouille: boolean;
+  /** Something is still unanswered — the rail of the Fenêtre principale says so. */
   demandeEnAttente: boolean;
   wakfuLog: string | null;
   /** The folder the retained `wakfu.log` sits in — what the Réglages show. */
@@ -154,6 +153,7 @@ function demarrer(): void {
   let overlayTour: OverlayTour | undefined;
   let overlayDemande: OverlayDemande | undefined;
   let raccourcis: Raccourcis | undefined;
+  let rotation: NodeJS.Timeout | null = null;
 
   /**
    * The combat in progress, as the reader last saw it. `null` is out of combat
@@ -168,6 +168,10 @@ function demarrer(): void {
    */
   const veilleCombat = new VeilleDuCombat((enCours) => {
     combat = enCours;
+    // The `[_FL_]` burst is the placement phase, and it is the complete roster of
+    // the fight: this is where the question surges, without anything having to
+    // watch for a phase the log never names.
+    poserLesDemandes();
     overlayTour?.envoyerEtat();
   });
 
@@ -206,21 +210,94 @@ function demarrer(): void {
     return persistance.strats.lire().strats.find((strat) => strat.id === id) ?? null;
   };
 
+  /**
+   * The ID d'entité of every Personnage of the Roster. The fiche needs it for
+   * one thing: an Échange par clic is remembered as a Préférence de liaison, and
+   * a Préférence names a Personnage — so nothing can be exchanged onto a fighter
+   * the Roster has never heard of.
+   */
+  const idsConnus = (): Set<string> => {
+    const connus = new Set<string>();
+    for (const personnage of persistance.roster.lire().personnages) {
+      if (personnage.idEntite !== null) connus.add(personnage.idEntite);
+    }
+    return connus;
+  };
+
+  /** The four aspect settings of ADR `0013`, as both surfaces need them. */
+  const aspectCourant = (): Aspect => {
+    const reglages = persistance.reglages.lire();
+    return {
+      opacite: reglages.opacite,
+      tailleTexte: reglages.tailleTexte,
+      largeur: reglages.largeurFiche,
+      x: reglages.ficheX,
+      y: reglages.ficheY,
+    };
+  };
+
   /** What the Overlay is given to draw, pulled at every send. */
   const contenuOverlay = (): ContenuOverlay => {
     const strat = stratChoisie();
-    const reglages = persistance.reglages.lire();
     return {
-      fiche: strat === null ? null : ficheDuTour(strat, combat),
-      aspect: {
-        opacite: reglages.opacite,
-        tailleTexte: reglages.tailleTexte,
-        largeur: reglages.largeurFiche,
-        x: reglages.ficheX,
-        y: reglages.ficheY,
-      },
+      fiche: strat === null ? null : ficheDuTour(strat, combat, idsConnus()),
+      aspect: aspectCourant(),
       strats: persistance.strats.lire().strats.map((autre) => ({ id: autre.id, nom: autre.nom })),
+      // The pastille exists only to bring back what « plus tard » folded away.
+      // Never a count of Conflits — nothing asks about those (#16).
+      demandesRepliees: overlayDemande?.replie === true ? aIdentifier.liste.length : 0,
     };
+  };
+
+  /**
+   * What the Overlay de la Demande d'ajout is given to draw, pulled the same way.
+   *
+   * A rattachement only lands on a Personnage still waiting for its first fight:
+   * once an ID d'entité is attached the log has the final word, and moving it
+   * would rewrite an identity (ADR `0002`).
+   */
+  const contenuDemande = (): ContenuDemande => {
+    const roster = persistance.roster.lire();
+    return {
+      demandes: aIdentifier.liste,
+      profils: roster.profils.map((profil) => ({ id: profil.id, nom: profil.nom })),
+      rattachables: roster.personnages
+        .filter((personnage) => personnage.idEntite === null)
+        .map((personnage) => ({
+          id: personnage.id,
+          nom: personnage.nom,
+          classe: personnage.classe,
+        })),
+      opacite: persistance.reglages.lire().opacite,
+    };
+  };
+
+  /**
+   * The Préférences de liaison of the chosen Strat, translated into what the
+   * tracking speaks: **Rang → ID d'entité**.
+   *
+   * A Préférence naming a vanished Emplacement, or a Personnage that never
+   * fought, is dropped here rather than purged: it is dead, not wrong, and
+   * `strats.json` may well have been set aside on this very boot (ADR `0005`).
+   */
+  const liaisonsForcees = (): Map<number, string> => {
+    const forcees = new Map<number, string>();
+    const strat = stratChoisie();
+    if (strat === null) return forcees;
+    const roster = persistance.roster.lire();
+    for (const preference of roster.preferences) {
+      if (preference.stratId !== strat.id) continue;
+      const personnage = roster.personnages.find(
+        (candidat) => candidat.id === preference.personnageId,
+      );
+      if (personnage === undefined || personnage.idEntite === null) continue;
+      const index = strat.emplacements.findIndex(
+        (emplacement) => emplacement.id === preference.emplacementId,
+      );
+      if (index === -1) continue;
+      forcees.set(index + 1, personnage.idEntite);
+    }
+    return forcees;
   };
 
   const instantane = (): Instantane => ({
@@ -234,7 +311,7 @@ function demarrer(): void {
     wakfuLog: veilleLogs.chemin,
     dossierLogs: veilleLogs.chemin === null ? null : dirname(veilleLogs.chemin),
     dossierLogsManuel: persistance.reglages.lire().dossierLogsManuel,
-    aspect: contenuOverlay().aspect,
+    aspect: aspectCourant(),
     stratChoisie: stratChoisie()?.nom ?? null,
     stratChoisieId: stratChoisie()?.id ?? null,
     strats: persistance.strats.lire().strats,
@@ -288,20 +365,92 @@ function demarrer(): void {
   const rafraichirLaStratChoisie = (): void => {
     const strat = stratChoisie();
     etat.poser('stratChoisie', strat !== null);
-    veilleCombat.poserComposition(strat === null ? [] : compositionDe(strat));
+    // The Composition and the Préférences travel together: a Préférence names an
+    // Emplacement of THIS Strat, and applying one against the other's
+    // Composition would put a Personnage on somebody else's place.
+    veilleCombat.poserComposition(strat === null ? [] : compositionDe(strat), liaisonsForcees());
     overlayTour?.envoyerEtat();
     diffuser();
   };
 
   /**
+   * The Échange par clic: the Personnages of two Emplacements permute, and it is
+   * written down as a Préférence de liaison so the correction outlives the fight.
+   *
+   * ⚠️ **A successful exchange is invisible** — two Emplacements of one Classe
+   * carry the same icon, the Consigne belongs to the Emplacement and does not
+   * move, and ADR `0003` forbids the pseudo at rest. What proves it landed is
+   * the surface's business: the two lines blink and say their pseudo for a
+   * second. Here, only the Liaison changes.
+   *
+   * Refused when either side is unknown to the Roster: there would be nothing to
+   * write down. The fiche does not offer the click in that case, and the way out
+   * is the Demande d'ajout — which is what gave that question its own surface.
+   */
+  const echangerLaLiaison = (rangA: number, rangB: number): void => {
+    const strat = stratChoisie();
+    if (strat === null || combat === null || rangA === rangB) return;
+    const a = combat.liaison.get(rangA);
+    const b = combat.liaison.get(rangB);
+    const emplacementA = strat.emplacements[rangA - 1];
+    const emplacementB = strat.emplacements[rangB - 1];
+    if (a === undefined || b === undefined) return;
+    if (emplacementA === undefined || emplacementB === undefined) return;
+    // Same Classe, or it is not an exchange: a Strat is written against Classes.
+    if (emplacementA.classe !== emplacementB.classe) return;
+
+    const roster = persistance.roster.lire();
+    const parEntite = (idEntite: string) =>
+      roster.personnages.find((personnage) => personnage.idEntite === idEntite);
+    const versA = parEntite(b.idEntite);
+    const versB = parEntite(a.idEntite);
+    if (versA === undefined || versB === undefined) return;
+
+    let apres = persistance.etat();
+    for (const [emplacement, personnage] of [
+      [emplacementA, versA],
+      [emplacementB, versB],
+    ] as const) {
+      apres = editerRoster(apres, {
+        sorte: 'preferer',
+        stratId: strat.id,
+        emplacementId: emplacement.id,
+        personnageId: personnage.id,
+      }).etat;
+    }
+    persistance.appliquer(apres);
+    rafraichirLaStratChoisie();
+  };
+
+  /**
    * A question appeared or was answered. The Overlay de la Demande d'ajout is
    * the same fact seen from the game — it surges while something is unanswered,
-   * and folds when the list empties — and the rail of the Fenêtre principale
+   * and goes away when the list empties — and the rail of the Fenêtre principale
    * carries the count, because nobody visits the Roster "just in case".
+   *
+   * `neuf` is what unfolds a panel put off with « plus tard »: a fighter never
+   * asked about is another question, and putting one off is not putting off the
+   * next.
    */
-  const rafraichirLesDemandes = (): void => {
-    overlayDemande?.poserQuestion(aIdentifier.enAttente);
+  const rafraichirLesDemandes = (neuf = false): void => {
+    overlayDemande?.poserQuestion(aIdentifier.enAttente, neuf);
+    overlayDemande?.envoyerEtat();
+    // The pastille of the fiche appears and disappears with the panel.
+    overlayTour?.envoyerEtat();
     diffuser();
+  };
+
+  /**
+   * What the fight has just found, added to what is still unanswered.
+   *
+   * A Demande survives its fight (#18), so this **adds to** the list and never
+   * replaces it: an ID d'entité already there keeps its place and its first
+   * spelling. Nothing here is written down — the list is worth a session, and an
+   * unknown comes back at the next fight where they play (#22).
+   */
+  const poserLesDemandes = (): void => {
+    if (!aIdentifier.poser(demandesDuCombat(combat, persistance.roster.lire()))) return;
+    rafraichirLesDemandes(true);
   };
 
   const poserStratChoisie = (id: string | null): void => {
@@ -319,6 +468,25 @@ function demarrer(): void {
   const suivreLeFichier = (): void => {
     veilleLogs.suivre(cheminWakfuLog());
     veilleCombat.suivre(veilleLogs.trouve ? veilleLogs.chemin : null);
+  };
+
+  /**
+   * Wakfu rotates its log files, and in multi-account two of them are written at
+   * once: the one to follow is not settled once and for all at launch.
+   *
+   * ⚠️ **Only out of combat**, and that is the whole safety of it. Changing file
+   * replays the new one from its first byte — nothing of the old one survives,
+   * so no turn is ever counted twice — but a file created mid-fight does not
+   * hold that fight's `[_FL_]`, and switching to it would drop the Mise en avant
+   * in the middle of a pull. So we look elsewhere only when there is nothing to
+   * lose, which is also the moment before the next fight is written.
+   *
+   * The pass costs a `stat` per sibling; a read only reaches the ones being
+   * written, the big rotated ones being ruled out on their date.
+   */
+  const surveillerLaRotation = (): void => {
+    if (combat?.ouvert === true) return;
+    suivreLeFichier();
   };
 
   const poserDossierLogs = (dossier: string | null): void => {
@@ -355,6 +523,9 @@ function demarrer(): void {
       tailleTexte: borner(recu?.tailleTexte, BORNES.tailleTexte, courant.tailleTexte),
     });
     overlayTour?.envoyerEtat();
+    // La Demande d'ajout suit la même opacité : elle parle la langue de la fiche
+    // (#16), et deux translucidités se liraient comme deux natures.
+    overlayDemande?.envoyerEtat();
     diffuser();
   };
 
@@ -380,6 +551,7 @@ function demarrer(): void {
     raccourcis?.retirer();
     veilleCombat.arreter();
     veilleLogs.arreter();
+    if (rotation !== null) clearInterval(rotation);
     persistance.vider();
   });
 
@@ -416,10 +588,35 @@ function demarrer(): void {
   ipcMain.on(CANAL.deplacerDemande, (_evenement, dx: number, dy: number) =>
     overlayDemande?.deplacer(dx, dy),
   );
-  ipcMain.on(CANAL.bancDemande, (_evenement, enAttente: boolean) => {
-    if (enAttente) aIdentifier.poser(BANC_A_IDENTIFIER);
-    else aIdentifier.vider();
-    rafraichirLesDemandes();
+  ipcMain.on(CANAL.hauteurDemande, (_evenement, hauteur: number) =>
+    overlayDemande?.poserHauteur(hauteur),
+  );
+  /**
+   * « plus tard » folds, the pastille of the fiche unfolds. Neither is an
+   * answer: only `editerRoster` empties a question (ADR `0010`).
+   */
+  ipcMain.on(CANAL.replierDemande, (_evenement, replie: boolean) => {
+    overlayDemande?.replier(replie === true);
+    overlayTour?.envoyerEtat();
+  });
+  /**
+   * The native answer menu. It is popped here because it must be able to leave
+   * a panel two lines tall, and only the main process can pop a system menu
+   * (#16). What it gives back is a **choice**, not a write: the surface turns it
+   * into a Roster command, or into the warning that a different Classe deserves.
+   */
+  ipcMain.handle(
+    CANAL.menuDeDemande,
+    async (_evenement, idEntite: string, x: number, y: number) => {
+      const demande = aIdentifier.liste.find((candidat) => candidat.idEntite === idEntite);
+      if (demande === undefined || overlayDemande === undefined) return null;
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+      return overlayDemande.menu(demande, contenuDemande(), { x, y });
+    },
+  );
+  ipcMain.on(CANAL.echangerLiaison, (_evenement, rangA: number, rangB: number) => {
+    if (!Number.isInteger(rangA) || !Number.isInteger(rangB)) return;
+    echangerLaLiaison(rangA, rangB);
   });
   /**
    * The width of the fiche, caught at its right edge — a global setting, only
@@ -496,6 +693,10 @@ function demarrer(): void {
     } = editerRoster(persistance.etat(), commande ?? { sorte: 'inconnue' });
     persistance.appliquer(apres);
     aIdentifier.repondre(repondu);
+    // A fighter that has just become a Personnage changes the Liaison: they are
+    // now someone a Préférence can name, so the fiche gains an Échange par clic
+    // it did not offer a moment ago.
+    rafraichirLaStratChoisie();
     rafraichirLesDemandes();
     return { profilId };
   });
@@ -569,6 +770,7 @@ function demarrer(): void {
     const laDemande = new OverlayDemande(surjeu, {
       preload,
       page: page('overlay-demande'),
+      contenu: contenuDemande,
       surAffichage: () => leTour.remonter(),
     });
     overlayDemande = laDemande;
@@ -627,7 +829,10 @@ function demarrer(): void {
     etat.poser('affichageDemande', reglages.affichageDemande);
     const auDemarrage = stratChoisie();
     etat.poser('stratChoisie', auDemarrage !== null);
-    veilleCombat.poserComposition(auDemarrage === null ? [] : compositionDe(auDemarrage));
+    veilleCombat.poserComposition(
+      auDemarrage === null ? [] : compositionDe(auDemarrage),
+      liaisonsForcees(),
+    );
 
     // A migration, a file set aside or refused is announced afterwards, never
     // asked about beforehand (ADR `0004`). The Fenêtre principale carries the
@@ -636,6 +841,9 @@ function demarrer(): void {
       console.warn(`[persistance] ${JSON.stringify(avertissement)}`);
     }
     suivreLeFichier();
+    rotation = setInterval(surveillerLaRotation, PERIODE_ROTATION_MS);
+    // The rotation watch must never be what keeps the app alive.
+    rotation.unref?.();
 
     etat.surChangement(diffuser);
     leTour.appliquer();

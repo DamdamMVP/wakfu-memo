@@ -18,6 +18,8 @@
  */
 
 import type { Classe } from '../domaine/classes.ts';
+import type { Roster } from '../persistance/roster.ts';
+import type { EtatDuSuivi } from '../suivi/suivi-du-tour.ts';
 
 /** A fighter played in a fight that the Roster does not know. */
 export type DemandeDAjout = {
@@ -27,6 +29,50 @@ export type DemandeDAjout = {
   readonly nom: string;
   readonly classe: Classe;
 };
+
+/**
+ * What a fight has to ask: every fighter played that is neither a Personnage nor
+ * a Personnage ignoré.
+ *
+ * Pure, and read from the combat's own roster — the `[_FL_]` burst, which is the
+ * complete list and lands at the placement phase. So the question surges there
+ * without anything having to watch for a « phase de placement » the log never
+ * names.
+ *
+ * Three filters, and each one is a rule:
+ *
+ *  - `isControlledByAI=false`, which isolates what a human plays: the client
+ *    counts its own Invocations as uncontrolled, so nothing else is needed;
+ *  - a Classe, because a `breed` outside the eighteen is a monster;
+ *  - an ID d'entité neither in `personnages` nor in `ignores` — the identity is
+ *    the ID (ADR `0002`), never the name.
+ *
+ * ⚠️ On the anonymised repo samples this returns almost nothing: `duo`, `invoc`
+ * and `pack4` carry `[ENTITE]` for **everyone**, so their six fighters share one
+ * ID and collapse into a single question. It is the samples that are blurred,
+ * not the rule.
+ */
+export function demandesDuCombat(combat: EtatDuSuivi | null, roster: Roster): DemandeDAjout[] {
+  if (combat === null) return [];
+  // Answered already, one way or another — and the same set catches a fighter
+  // the `[_FL_]` burst declares twice, which it does at every reopening.
+  const repondus = new Set<string>(roster.ignores.map((ignore) => ignore.idEntite));
+  for (const personnage of roster.personnages) {
+    if (personnage.idEntite !== null) repondus.add(personnage.idEntite);
+  }
+  const demandes: DemandeDAjout[] = [];
+  for (const combattant of combat.roster) {
+    if (combattant.controleParIA || combattant.classe === null) continue;
+    if (repondus.has(combattant.idEntite)) continue;
+    repondus.add(combattant.idEntite);
+    demandes.push({
+      idEntite: combattant.idEntite,
+      nom: combattant.nom,
+      classe: combattant.classe,
+    });
+  }
+  return demandes;
+}
 
 export class DemandesEnAttente {
   #liste: DemandeDAjout[] = [];

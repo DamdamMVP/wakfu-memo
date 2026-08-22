@@ -2,21 +2,36 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'">
 <title>Demande d’ajout</title>
 <link rel="stylesheet" href="coque.css">
 </head>
 <body>
   <!--
-    LOT 2 SHELL. No title bar, no close button: a close button would mean "no",
-    when not answering is not a refusal (ADR 0010). Lot 8 asks the question
-    itself. The counter below only proves that this surface does catch clicks:
-    the lock never applies to it.
+    L'OVERLAY DE LA DEMANDE D'AJOUT. Il parle la langue de la fiche — même fond
+    translucide, même rayon, même bordure, et il suit le réglage d'opacité — mais
+    il n'est PAS une fenêtre : ni barre de titre, ni ✕.
+
+    ADR 0010 : une fenêtre a un ✕, un ✕ veut dire non, et il est gelé que ne pas
+    répondre ne vaut pas refus. Le seul refus explicite est le Personnage ignoré,
+    et il se choisit DANS la question. Ce qu'il y a à la place, c'est un
+    « plus tard ▾ » qui replie — la pastille de la fiche le ramène.
+
+    Les inconnus sont listés À PLAT, tous ensemble, jamais une question à la
+    fois : répondre pour l'un FABRIQUE un Conflit pour l'autre, donc toute file
+    d'attente se recalculerait après chaque réponse (#16).
+
+    Le menu des profils n'est pas ici : c'est un menu natif du système, posé par
+    le processus principal, parce qu'il doit pouvoir déborder de ce panneau, qui
+    fait deux ou trois lignes de haut.
   -->
-  <div class="panneau">
-    <p class="titre">Overlay de la Demande d’ajout — coque</p>
-    <p class="note">Le Lot 8 pose la question ici. Cette surface attrape toujours les clics.</p>
-    <button id="preuve" type="button">Cliqué 0 fois</button>
+  <div class="panneau" id="panneau">
+    <div class="entete" id="entete">
+      <span id="titre"></span>
+      <button class="plus-tard" id="plus-tard" type="button"
+        title="replier — la question reste, la pastille de la fiche la ramène">plus tard ▾</button>
+    </div>
+    <div class="corps" id="corps"></div>
   </div>
   <script type="module" src="coque.js"></script>
 </body>

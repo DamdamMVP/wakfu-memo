@@ -1,22 +1,32 @@
 /**
- * Finding the `wakfu.log` to read — the derivation `VeilleWakfuLog` waits for.
+ * Finding the log file to read — the derivation `VeilleWakfuLog` waits for.
  *
- * The path is never hard-coded, and there is not one single install: Steam and
- * the Ankama launcher can coexist on the same machine, and they do on the
- * author's. So both must be looked for, and arbitrated — on the most recently
- * modified `wakfu.log`, which is the install actually played (ADR `0008`: that
- * is the file we really open, and the chat log is not purged between sessions,
- * so its modification date is a poorer witness).
+ * Two arbitrations, and they are not the same question:
+ *
+ *  1. **Which folder.** There is not one single install: Steam and the Ankama
+ *     launcher can coexist on the same machine, and they do on the author's. The
+ *     most recently written one is the install actually being played.
+ *  2. **Which file inside it.** ⚠️ This one is new, and it corrects the letter
+ *     of ADR `0008`. Wakfu does not keep one file: it rotates, and in
+ *     multi-account **two of them are written at the same second** — measured on
+ *     2026-08-22, `wakfu.log` and `wakfu.log.1` both last written at 21:48:43,
+ *     each holding a complete and identical copy of the fight. The name
+ *     `wakfu.log` therefore does not mean "the current file", it means "the
+ *     first one taken". Following it blindly loses every fight that started
+ *     before the rotation that created it.
  *
  * What this module returns is exactly the second display condition of ADR
- * `0014`: **a readable `wakfu.log` is found**. The file, not the folder — and
- * nothing about freshness: a `wakfu.log` untouched for six hours is a player who
- * has not played for six hours, not a failure.
+ * `0014`: **a readable log file is found**. The file, not the folder — and
+ * nothing about freshness *of the retained file*: one untouched for six hours is
+ * a player who has not played for six hours, not a failure. Freshness only ever
+ * serves to compare **siblings**, which is another question entirely.
  */
 
 import { readFileSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
+
+import { unCombatEstOuvert } from './session.ts';
 
 /** A platform's path functions: `path.posix` or `path.win32`. */
 type Chemins = typeof path.posix;
@@ -60,6 +70,89 @@ const APP_ID_STEAM = '215080';
 const GAME_UID = 'wakfu';
 
 const NOM_DU_FICHIER = 'wakfu.log';
+
+/**
+ * `wakfu.log`, then the rotated ones beside it. ADR `0008` says two exist; we
+ * probe a couple more, at the cost of two `stat` that fail.
+ *
+ * ⚠️ The suffix orders **nothing**. `.1` is not "older than `wakfu.log`": on the
+ * author's machine it was the one being written while `wakfu.log` had just been
+ * created empty of the fight in progress. Only the modification date and the
+ * content decide.
+ */
+const SUFFIXES = ['', '.1', '.2', '.3', '.4'] as const;
+
+/**
+ * How far behind the freshest sibling a file may be and still count as being
+ * written.
+ *
+ * The one arbitrary number of this module, and it is here to keep a **dead file
+ * from being believed**: a rotated file cut mid-fight declares that fight open
+ * for ever, so "it holds an open fight" is only worth anything on a file
+ * somebody is still writing to. Measured on the author's machine at the moment
+ * the question arose: the two live files were at the **same second**, and the
+ * dead one twelve minutes behind. A running client writes far more often than
+ * this — the fight lines alone, and the chat channels besides.
+ */
+const VIVANT_MS = 120_000;
+
+/** One log file of a folder: what a `stat` says of it. */
+export type FichierDeLogs = {
+  readonly fichier: string;
+  readonly dateDeModification: number;
+};
+
+/**
+ * The readable log files of one folder, freshest first. Empty when the folder
+ * holds none — which is what makes the folder itself not a candidate.
+ */
+export function fichiersDeLogs(
+  fs: SystemeDeFichiers,
+  dossier: string,
+  p: Chemins,
+): FichierDeLogs[] {
+  const trouves: FichierDeLogs[] = [];
+  for (const suffixe of SUFFIXES) {
+    const fichier = p.join(dossier, `${NOM_DU_FICHIER}${suffixe}`);
+    const dateDeModification = fs.dateDeModification(fichier);
+    if (dateDeModification !== null) trouves.push({ fichier, dateDeModification });
+  }
+  return trouves.sort((a, b) => b.dateDeModification - a.dateDeModification);
+}
+
+/**
+ * Which of a folder's log files to follow.
+ *
+ * The rule, in the order it is applied:
+ *
+ *  1. **Only the files being written are considered.** A file nobody writes to
+ *     any more cannot hold the fight being played, whatever it claims.
+ *  2. **Among those, one holding an open combat wins.** That is the whole point:
+ *     at the second a rotation happens, the brand new file is the freshest and
+ *     the most ignorant — the fight started before it existed.
+ *  3. **Otherwise, the freshest.** Out of combat there is nothing to preserve,
+ *     and the freshest is where the next fight will be written.
+ *
+ * Reading is done on the live files only, so the big rotated ones are never
+ * opened — they are ruled out on their date.
+ */
+export function fichierARetenir(
+  fs: SystemeDeFichiers,
+  fichiers: readonly FichierDeLogs[],
+): FichierDeLogs | null {
+  const premier = fichiers[0];
+  if (premier === undefined) return null;
+
+  const vivants = fichiers.filter(
+    (fichier) => premier.dateDeModification - fichier.dateDeModification <= VIVANT_MS,
+  );
+  // Already sorted freshest first, so the first match is also the freshest.
+  const enCombat = vivants.find((fichier) => {
+    const contenu = fs.lire(fichier.fichier);
+    return contenu !== null && unCombatEstOuvert(contenu);
+  });
+  return enCombat ?? premier;
+}
 
 function chemins(env: Environnement): Chemins {
   return env.plateforme === 'win32' ? path.win32 : path.posix;
@@ -171,19 +264,32 @@ function candidatLauncher(fs: SystemeDeFichiers, env: Environnement): Candidat[]
   return candidat === null ? [] : [candidat];
 }
 
+/**
+ * A folder becomes a candidate through its **freshest** log file, `wakfu.log` or
+ * a rotated one. Judging it on `wakfu.log` alone would drop an install whose
+ * current file happens to be `wakfu.log.1`, and would compare a played install
+ * against a stale name.
+ *
+ * Which file is actually followed is settled later, on one folder only: it costs
+ * a read, and there is no reason to pay it for the install nobody is playing.
+ */
 function enCandidat(
   fs: SystemeDeFichiers,
   installation: Installation,
   dossier: string,
   p: Chemins,
 ): Candidat | null {
-  const fichier = p.join(dossier, NOM_DU_FICHIER);
-  const dateDeModification = fs.dateDeModification(fichier);
-  if (dateDeModification === null) return null;
-  return { installation, dossier, fichier, dateDeModification };
+  const plusFrais = fichiersDeLogs(fs, dossier, p)[0];
+  if (plusFrais === undefined) return null;
+  return {
+    installation,
+    dossier,
+    fichier: plusFrais.fichier,
+    dateDeModification: plusFrais.dateDeModification,
+  };
 }
 
-/** The readable `wakfu.log` found on the machine, all installs together. */
+/** The readable log files found on the machine, all installs together. */
 export function candidats(fs: SystemeDeFichiers, env: Environnement): Candidat[] {
   return [...candidatSteam(fs, env), ...candidatLauncher(fs, env)];
 }
@@ -206,15 +312,14 @@ export function dossierDeLogs(
   const p = chemins(env);
 
   if (options.dossierDesigne !== undefined) {
-    const fichier = p.join(options.dossierDesigne, NOM_DU_FICHIER);
-    const dateDeModification = fs.dateDeModification(fichier);
-    if (dateDeModification === null) return null;
+    const retenu = fichierARetenir(fs, fichiersDeLogs(fs, options.dossierDesigne, p));
+    if (retenu === null) return null;
     return {
       dossier: options.dossierDesigne,
-      fichier,
+      fichier: retenu.fichier,
       origine: 'designe',
       installation: null,
-      dateDeModification,
+      dateDeModification: retenu.dateDeModification,
     };
   }
 
@@ -228,7 +333,11 @@ export function dossierDeLogs(
     null,
   );
 
-  return retenu === null ? null : { ...retenu, origine: 'detecte' };
+  if (retenu === null) return null;
+  // The folder is settled; now, and only now, which of its files.
+  const fichier = fichierARetenir(fs, fichiersDeLogs(fs, retenu.dossier, p));
+  if (fichier === null) return null;
+  return { ...retenu, ...fichier, origine: 'detecte' };
 }
 
 /** The real file system. Read-only, like everything the app does. */

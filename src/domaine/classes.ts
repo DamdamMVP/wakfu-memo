@@ -72,3 +72,36 @@ export function classeDuBreed(breed: number): Classe | null {
 export function estClasse(valeur: unknown): valeur is Classe {
   return typeof valeur === 'string' && (CLASSES as readonly string[]).includes(valeur);
 }
+
+/**
+ * How a Classe is spelled to a human. The key is what the model carries and
+ * what names the portrait; this is only ever read aloud.
+ *
+ * The surfaces keep their own hand copy of this table — they compile as their
+ * own project and importing this file would drag the disk readers into the
+ * renderer. Here it serves the one place in the main process that writes a
+ * Classe out: the native menu of the Demande d'ajout, which says which Classe
+ * the log claims against the one that was typed.
+ */
+const NOMS: Record<Classe, string> = {
+  feca: 'Féca',
+  osamodas: 'Osamodas',
+  enutrof: 'Enutrof',
+  sram: 'Sram',
+  xelor: 'Xélor',
+  ecaflip: 'Ecaflip',
+  eniripsa: 'Eniripsa',
+  iop: 'Iop',
+  cra: 'Crâ',
+  sadida: 'Sadida',
+  sacrieur: 'Sacrieur',
+  pandawa: 'Pandawa',
+  roublard: 'Roublard',
+  zobal: 'Zobal',
+  ouginak: 'Ouginak',
+  steamer: 'Steamer',
+  eliotrope: 'Eliotrope',
+  huppermage: 'Huppermage',
+};
+
+export const nomDeClasse = (classe: string): string => (estClasse(classe) ? NOMS[classe] : classe);
