@@ -17,8 +17,12 @@ set -euo pipefail
 die() { printf '\033[31merreur :\033[0m %s\n' "$*" >&2; exit 1; }
 
 # Les deux modes d'installation n'écrivent pas au même endroit, et peuvent
-# coexister sur la même machine : on prend celui dont le chat log a bougé le
+# coexister sur la même machine : on prend celui dont le `wakfu.log` a bougé le
 # plus récemment, c'est l'installation réellement jouée.
+#
+# Sur `wakfu.log` et non sur le chat log, depuis l'ADR 0008 : c'est le fichier
+# qu'on ouvre vraiment, et le chat log n'est pas purgé entre sessions, donc sa
+# date de modification est un moins bon témoin de l'installation active.
 discover_logs() {
   local -a candidates=()
   # mode launcher Ankama : WAKFU_PREF_FILE_DIRECTORY est absolu
@@ -37,8 +41,8 @@ discover_logs() {
 
   local best="" best_mtime=0 c m
   for c in "${candidates[@]}"; do
-    [[ -f "$c/wakfu_chat.log" ]] || continue
-    m=$(stat -c '%Y' "$c/wakfu_chat.log")
+    [[ -f "$c/wakfu.log" ]] || continue
+    m=$(stat -c '%Y' "$c/wakfu.log")
     (( m > best_mtime )) && { best_mtime=$m; best=$c; }
   done
   [[ -n $best ]] && printf '%s' "$best"
@@ -116,8 +120,55 @@ extract_delta() {
 # identifiants de compte Ankama (« pseudo#1234 ») qui apparaissent dans les
 # annonces d'arrivée et de départ.
 scrub_chat() {
-  grep -E '^\S+ - \[(Information \(combat\)|Information \(jeu\)|Fight Log|Game Log|Información \(combate\)|Información \(juego\)|Registro de Lutas|Registro de Jogo)\] ' \
+  # ⚠️ `Information (jeu)` a été RETIRÉ de cette liste le 22 août 2026 : le
+  # masquage du numéro de compte ne masque pas le pseudo qui le précède, et ce
+  # canal porte les arrivées et départs des joueurs tiers
+  # (« <pseudo> (compte#1234) a rejoint notre monde »). Il ne sert à rien au
+  # parseur — seul le canal de combat est lu — donc il sort.
+  # Le `|| true` n'est pas de la complaisance : un delta sans une seule ligne de
+  # combat est un cas normal — capture sans combat, ou chat log déjà tourné — et
+  # `grep` y rend 1. Avec `pipefail`, ça tuait toute la capture.
+  { grep -E '^\S+ - \[(Information \(combat\)|Fight Log|Información \(combate\)|Registro de Lutas)\] ' || true; } \
     | sed -E 's/\([a-zA-Z0-9-]+#[0-9]{4}\)/(COMPTE)/g'
+}
+
+# La même liste blanche, mais sur `wakfu.log` — le seul fichier que l'app lit
+# depuis l'ADR 0008, et donc le seul dont on veuille un échantillon versionnable.
+#
+# Elle est indispensable : `wakfu.log` porte TOUS les canaux, le logger de chat
+# étant additif. Sans filtre, un échantillon emporte le commerce et les arrivées
+# de joueurs — mesuré le 22 août 2026 : 49 lignes `[Commerce]` et 76 lignes
+# `[Information (jeu)]`, dont des pseudos de tiers et leur numéro de compte.
+#
+# Le filtre porte sur le TAG, pas sur le canal, parce qu'un tag de chat peut
+# être un pseudo arbitraire — un message privé s'écrit `[<pseudo>]`. Une liste
+# noire de libellés ne peut donc pas être complète, par construction.
+#
+# Ce qui est gardé : les tags techniques (`[_FL_]`, `[FIGHT]`, `[NATION]`…, qui
+# ne sont pas des canaux de chat), les lignes sans tag du tout, et le SEUL canal
+# de chat que l'app lise — l'information de combat, dans les quatre langues du
+# client. `Information (jeu)` en est exclu : il ne sert à rien au parseur et
+# porte les allées et venues des tiers.
+scrub_main() {
+  awk '
+    BEGIN {
+      split("_FL_ FIGHT FIGHT_REFACTOR Fight NATION CHAT CRAFT LUA Animation LD DEATH WALKON", t, " ")
+      for (i in t) garde[t[i]] = 1
+      garde["Information (combat)"] = 1   # fr
+      garde["Fight Log"] = 1              # en
+      garde["Información (combate)"] = 1  # es
+      garde["Registro de Lutas"] = 1      # pt
+    }
+    {
+      sep = index($0, " - ")
+      if (sep == 0) { print; next }             # trace Java multi-ligne, couture de blocs
+      msg = substr($0, sep + 3)
+      if (substr(msg, 1, 1) != "[") { print; next }   # message technique non tagué
+      fin = index(msg, "]")
+      if (fin == 0) { print; next }
+      if (substr(msg, 2, fin - 2) in garde) print
+    }
+  '
 }
 
 anonymise() {
@@ -133,16 +184,33 @@ anonymise() {
   while IFS=$'\t' read -r real alias; do
     [[ -n "$real" ]] && sed_args+=(-e "s/$(printf '%s' "$real" | sed 's/[][\.*^$/]/\\&/g')/$alias/g")
   done < <(awk -F'\t' '{ print length($1)"\t"$0 }' "$map" | sort -rn | cut -f2-)
-  # les ids d'entité entre crochets sont stables par compte : on les brouille aussi
-  sed_args+=(-e 's/\[-\?[0-9]\{6,\}\]/[ENTITE]/g')
+  # Les ID d'entité sont stables par compte, donc ils s'anonymisent — mais
+  # **un jeton distinct par entité**, jamais un `[ENTITE]` unique pour tout le
+  # monde. Écraser la distinction détruit ce que l'ID est : l'identité d'un
+  # combattant (ADR 0002). Un échantillon où tout le monde porte `[ENTITE]`
+  # réduit le roster à un seul combattant si on déduplique sur l'ID comme la
+  # grammaire le prescrit, et rend deux monstres homonymes indiscernables — ce
+  # qui fait lire `k` de travers. Les échantillons `duel` et `revive` portent
+  # bien `[ENTITE279]`, `[ENTITE827]` : la distinction s'était perdue en route.
+  local n=0 id
+  while read -r id; do
+    n=$((n + 1))
+    sed_args+=(-e "s/\[$id\]/[ENTITE$n]/g")
+  done < <(grep -ohE '\[-?[0-9]{6,}\]' "$raw_main" | tr -d '[]' | awk '!seen[$0]++')
 
-  if ((${#sed_args[@]})); then
-    sed "${sed_args[@]}" "$raw_main" > "$out_main"
-    sed "${sed_args[@]}" "$raw_chat" | scrub_chat > "$out_chat"
-  else
-    cp "$raw_main" "$out_main"
-    scrub_chat < "$raw_chat" > "$out_chat"
-  fi
+  # Le chemin du home et l'IP locale. `wakfu.log` en est plein — 116 chemins et
+  # 7 adresses sur la capture du 22 août 2026 — et ils portent le nom de compte
+  # de la machine. `revive2` les avait masqués À LA MAIN, ce qui est exactement
+  # ce qui rendait une capture non commitable telle quelle.
+  sed_args+=(-e 's|/home/[^/[:space:]]\{1,\}|/home/USER|g')
+  sed_args+=(-e 's|/Users/[^/[:space:]]\{1,\}|/Users/USER|g')
+  sed_args+=(-e 's|\([Cc]:\\\\Users\\\\\)[^\\]\{1,\}|\1USER|g')
+  sed_args+=(-e 's/\b\(10\|192\.168\|172\.\(1[6-9]\|2[0-9]\|3[01]\)\)\.[0-9]\{1,3\}\(\.[0-9]\{1,3\}\)\{1,2\}/IP-LOCALE/g')
+
+  # `sed_args` porte toujours au moins les chemins et l'IP, donc pas de branche
+  # de repli : même une capture sans aucun personnage joué passe par ici.
+  sed "${sed_args[@]}" "$raw_main" | scrub_main > "$out_main"
+  sed "${sed_args[@]}" "$raw_chat" | scrub_chat > "$out_chat"
 }
 
 cmd_cut() {
@@ -167,51 +235,87 @@ cmd_cut() {
   info "Ensuite :  ./tools/capture-multi-account.sh report"
 }
 
+# Le rapport lit `anon-wakfu.log`, plus le chat log : depuis l'ADR 0008 c'est le
+# seul fichier que l'app ouvre, donc le seul dont les compteurs veuillent dire
+# quelque chose.
+#
+# Et il ne cherche plus les doublons par une fenêtre de 500 ms. L'ADR 0009 l'a
+# écartée sur mesures : deux copies d'une frontière peuvent être à 1477 ms, soit
+# plus que le tour réel le plus court mesuré (1169 ms). La proximité temporelle
+# ne distingue donc plus un doublon d'une répétition réelle. On compte.
 cmd_report() {
-  local main="$OUT/anon-wakfu.log" chat="$OUT/anon-wakfu_chat.log"
-  [[ -f "$chat" ]] || die "pas de capture : lance « cut »"
+  local main="$OUT/anon-wakfu.log"
+  [[ -f "$main" ]] || die "pas de capture : lance « cut »"
 
-  echo "================ Q2 — un seul fichier, ou deux ? ================"
-  echo "Combats vus dans le delta (fightId -> nb de lignes [_FL_]) :"
+  echo "================ le roster ================"
+  echo "Combats vus (fightId -> nb de lignes [_FL_]) :"
   grep -o '\[_FL_\] fightId=[0-9]*' "$main" | sort | uniq -c | sed 's/^/  /'
   echo
-  echo "Lignes [_FL_] STRICTEMENT identiques (>1 = les deux clients logguent le même événement) :"
-  grep '\[_FL_\]' "$main" | sed -E 's/^ INFO [0-9:,]+ //' | sort | uniq -c | sort -rn | head -20 | sed 's/^/  /'
-  echo
-  echo "Roster (isControlledByAI) :"
+  echo "Roster — isControlledByAI sépare les Personnages joués des monstres,"
+  echo "et un obstacleId positif signe une Invocation :"
   grep -o '\[_FL_\].*join the fight' "$main" \
-    | sed -E 's/.*fightId=([0-9]+) (.*) breed : ([0-9]+) .*isControlledByAI=(\w+).*/  fight \1 | \2 | breed \3 | IA=\4/' \
+    | sed -E 's/.*fightId=([0-9]+) (.*) breed : ([0-9]+) \[([^]]*)\] isControlledByAI=(\w+) obstacleId : (-?[0-9]+).*/  fight \1 | \2 | breed \3 | \4 | IA=\5 | obstacle=\6/' \
     | sort -u
   echo
-  echo "================ Q1/Q3 — les frontières de tour ================"
-  echo "Total lignes « reportée » : $(grep -c 'pour le tour suivant' "$chat" || true)"
-  echo
-  echo "Chronologie : chaque frontière, l'écart depuis la précédente, et qui a"
-  echo "agi entre les deux. Écart < 500 ms = doublon de client, pas un vrai tour."
-  awk -F' - ' '
-    /pour le tour suivant/ {
-      t = $1
-      split(t, a, /[:,]/)
-      ms = ((a[1]*60 + a[2])*60 + a[3])*1000 + a[4]
-      d = (prev == 0) ? 0 : ms - prev
-      if (d < 0) d += 86400000   # wakfu_chat.log ne porte pas de date : passage de minuit
-      flag = (prev != 0 && d < 500) ? "  <-- DOUBLON ?" : ""
-      printf "  %s  (+%6d ms)  %-45s%s\n", t, d, substr($2, index($2, "]") + 2), flag
-      if (acteurs != "") printf "        acteurs depuis la frontière precedente : %s\n", acteurs
-      acteurs = ""
-      prev = ms
+
+  # `k` et le comptage se font PAR COMBAT — l'ADR 0009 dit « le nombre de clients
+  # engagés dans le combat ». Un `k` global sur une capture à plusieurs combats
+  # n'a pas de sens, et le plus grand contaminerait les autres.
+  #
+  # `k` vaut le MAXIMUM du nombre de copies de la ligne `[_FL_]` d'une même
+  # entité, et surtout pas le nombre d'entités jouées : elles n'arrivent pas
+  # ensemble — 1,7 s d'écart mesuré — et conclure `k=1` sur la première rafale
+  # donne un overlay DEUX FOIS TROP RAPIDE, le pire mode de panne du produit.
+  #
+  # Les frontières ne portent pas de fightId : elles appartiennent au combat
+  # ouvert à cet endroit du flux, exactement comme dans le lecteur.
+  awk '
+    function fid(ligne) { match(ligne, /fightId=[0-9]+/); return substr(ligne, RSTART + 8, RLENGTH - 8) }
+    function idFin(ligne) { match(ligne, /with id [0-9]+/); return substr(ligne, RSTART + 8, RLENGTH - 8) }
+    # la clé de copie : la ligne sans son niveau ni son horodatage
+    function cle(ligne) { return substr(ligne, index(ligne, " [")) }
+
+    NR == FNR {                                    # passe 1 : k par combat
+      if (/\[_FL_\] fightId=/) {
+        f = fid($0)
+        c = ++copies[f "|" cle($0)]
+        if (c > k[f]) k[f] = c
+        if (!(f in vus)) { vus[f] = 1; ordre[++nb] = f }
+      }
       next
     }
-    / lance le sort / {
-      n = $2
-      sub(/^\[[^]]*\] /, "", n)
-      sub(/ lance le sort .*/, "", n)
-      if (index(acteurs, n) == 0) acteurs = acteurs (acteurs == "" ? "" : ", ") n
+    /\[_FL_\] fightId=/ { ouvert = fid($0); next }
+    /\[FIGHT\] End fight with id / { if (ouvert == idFin($0)) ouvert = ""; next }
+    /pour le tour suivant/ {
+      if (ouvert == "") { orphelines++; next }
+      brutes[ouvert]++
+      if (aIgnorer[ouvert] > 0) { aIgnorer[ouvert]--; next }
+      tours[ouvert]++
+      aIgnorer[ouvert] = k[ouvert] - 1
     }
-  ' "$chat"
+    END {
+      print "================ les frontières de tour, par combat ================"
+      for (i = 1; i <= nb; i++) {
+        f = ordre[i]
+        printf "  combat %s : %d lignes brutes, k=%d  ->  %d fins de tour\n",
+               f, brutes[f], k[f], tours[f]
+      }
+      if (orphelines > 0)
+        printf "  %d frontière(s) hors de tout combat ouvert, perdue(s)\n", orphelines
+      print ""
+      print "  La règle est relative à la dernière frontière ACCEPTÉE, jamais un"
+      print "  découpage en paquets absolus de k : une frontière orpheline — une"
+      print "  seule copie, ça existe — décalerait sinon tout le reste du combat."
+      print ""
+      print "  ⚠️ Un k supérieur au nombre de clients réellement lancés signe un"
+      print "  client qui a REJOINT le combat : sa rafale [_FL_] est une copie de"
+      print "  plus. Cas hors périmètre, voir « Points de rupture connus »."
+    }
+  ' "$main" "$main"
   echo
-  echo "Lignes de chat de combat dupliquées à l'identique (indice de dédup nécessaire) :"
-  awk -F' - ' '/\[Information \(combat\)\]/ {print $2}' "$chat" | sort | uniq -c | sort -rn | head -10 | sed 's/^/  /'
+  echo "Transitions (elles posent un état, aucune déduplication) :"
+  grep -oE '(est KO !|est réanimé|est ressuscité !|est hors-combat !)' "$main" \
+    | sort | uniq -c | sed 's/^/  /'
 }
 
 case "${1:-}" in
