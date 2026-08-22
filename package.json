@@ -1,0 +1,33 @@
+{
+  "name": "wakfu-memo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Overlay de farm de donjon Wakfu : ce que chaque personnage doit faire, tour par tour.",
+  "license": "MIT",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "build": "tsc -b && node tools/copie-statique.mjs",
+    "start": "npm run build && electron . --ozone-platform=x11",
+    "lint": "biome check",
+    "format": "biome check --write",
+    "typecheck": "tsc -b && tsc -p tsconfig.test.json",
+    "test": "npm run typecheck && npm run test:unit",
+    "test:unit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"src/**/*.test.ts\"",
+    "verifier": "npm run lint && npm test",
+    "postinstall": "node tools/rustine-surjeu.mjs",
+    "rustine": "node tools/rustine-surjeu.mjs"
+  },
+  "dependencies": {
+    "electron-overlay-window": "^4.1.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.10",
+    "@types/node": "^24.0.0",
+    "electron": "^43.0.0",
+    "node-gyp": "^11.0.0",
+    "typescript": "^5.9.0"
+  },
+  "allowScripts": {
+    "electron-overlay-window": true
+  }
+}

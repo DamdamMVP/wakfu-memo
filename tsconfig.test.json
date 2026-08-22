@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    // Node runs these files as ESM (syntax detection): the typing must say the
+    // same, otherwise `import.meta` is rejected.
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "composite": false,
+    "declaration": false,
+    "noEmit": true
+  },
+  "include": ["src/**/*.test.ts", "src/main/**/*.ts"]
+}

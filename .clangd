@@ -1,0 +1,13 @@
+# `tools/essai-titre.c` is compiled by `src/main/surjeu-titre.test.ts` with two
+# include paths. Without them a language server cannot resolve `overlay_window.h`
+# (it lives in node_modules) nor `uv.h`, and the file opens full of errors.
+#
+# Paths are relative to the file's own directory, which is what clangd uses as
+# the working directory of a fallback compile command.
+If:
+  PathMatch: tools/.*\.c
+CompileFlags:
+  Add:
+    - -std=c99
+    - -Ientetes-bouchons
+    - -I../node_modules/electron-overlay-window/src/lib
