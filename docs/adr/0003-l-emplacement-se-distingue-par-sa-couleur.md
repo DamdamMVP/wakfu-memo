@@ -38,13 +38,35 @@ coup d'œil sur un overlay.
   écarte 5 teintes de **47° au minimum** et confie la sixième au `gris`, qui sort
   de la roue : à six couleurs, la région vert–cyan–bleu ne peut pas en porter
   deux distinctes, et l'achromatique s'en passe.
-- Le liseré garde ses **3 px de couleur** et gagne un **filet sombre d'1 px à sa
-  droite**. Mesure sur les 18 portraits de classe : quatorze ont, sur les deux
-  colonnes de pixels que le liseré touche, des pixels au-delà de **210** de
-  luminance, et le Huppermage y est à **207 de moyenne**. Sans filet, les
-  couleurs claires — le `jaune` est à 216 — n'ont plus de frontière contre un
-  portrait pâle. Le `gris` (168) est le seul des six à contraster dans les deux
-  sens, ce qui est la raison pour laquelle il remplace un blanc.
+- Le liseré garde ses **3 px de couleur**. Mesure sur les 18 portraits de
+  classe : quatorze ont, sur les deux colonnes de pixels que le liseré touche,
+  des pixels au-delà de **210** de luminance, et le Huppermage y est à **207 de
+  moyenne**. Les couleurs claires — le `jaune` est à 216 — ont donc peu de
+  frontière contre un portrait pâle. Le `gris` (168) est le seul des six à
+  contraster dans les deux sens, ce qui est la raison pour laquelle il remplace
+  un blanc.
+- ⚠️ **Le filet sombre d'1 px que cette mesure imposait ne survit pas à
+  l'implémentation** (Lot 5, le 22 août 2026). La mesure reste vraie ; c'est le
+  remède qui ne tient pas, et il a été essayé des deux façons possibles :
+  - en **`box-shadow`** à droite du liseré, il est peint **avant** le portrait —
+    un frère suivant dans le même contexte d'empilement — donc il disparaît sous
+    lui. Le filet était là, invisible, et le liseré se noyait exactement comme si
+    on ne l'avait jamais posé. Il a vécu ainsi tout le Lot 4 ;
+  - en **`border-right`**, il occupe sa place et rien ne le couvre. Mais à
+    l'écran il ne se lit pas comme une frontière : il se lit comme un **espace**
+    entre la Couleur et l'icône, jugé sur l'app réelle et rejeté.
+
+  Les 3 px de Couleur touchent donc le portrait, et la seule frontière restante
+  est l'ombre intérieure claire que l'icône porte déjà. **Ce qui reste vrai de la
+  mesure est le risque, pas la solution** : un liseré clair sur un portrait pâle
+  — le `jaune` sur un Huppermage — est le cas qui rendra un filet dû s'il gêne en
+  jeu. `docs/verification-manuelle.md` en fait un point de contrôle du Lot 5, et
+  le remède devra alors être cherché ailleurs que dans un trait d'1 px : assombrir
+  le bord gauche du portrait lui-même, ou creuser le liseré d'une encoche.
+- Le partage est le même dans les deux surfaces, et ce n'est pas une coquetterie :
+  la fiche du Tour est **le même objet** dans l'Overlay et dans la Fenêtre
+  principale, donc une Couleur qui se dessine différemment d'un côté ferait douter
+  de l'autre.
 - Un **Conflit** d'attribution (deux Personnages d'une classe pour deux
   Emplacements de cette classe) ne peut plus se poser en nommant un rôle. Il se
   pose sur le **Rang** et la **Couleur** : « lequel est le n° 2, le rouge ? ».
