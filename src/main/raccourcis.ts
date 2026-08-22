@@ -17,7 +17,6 @@ import {
 } from './raccourcis-regles.ts';
 
 export {
-  CLE_REGLAGE,
   combinaisonRetenue,
   DEFAUT_VERROU,
   EFFACABLE,

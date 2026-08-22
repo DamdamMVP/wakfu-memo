@@ -10,13 +10,6 @@
 export const RACCOURCIS = ['overlay', 'verrou', 'fenetre'] as const;
 export type NomRaccourci = (typeof RACCOURCIS)[number];
 
-/** The `reglages.json` keys where the combinations live. */
-export const CLE_REGLAGE: Record<NomRaccourci, string> = {
-  overlay: 'raccourciOverlay',
-  verrou: 'raccourciVerrou',
-  fenetre: 'raccourciFenetre',
-};
-
 export const EFFACABLE: Record<NomRaccourci, boolean> = {
   overlay: true,
   verrou: false,
