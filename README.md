@@ -50,6 +50,8 @@ src/surfaces/  la Fenêtre principale et les deux Overlays
 | `copie-statique.mjs` | `npm run build` — copie le HTML et le CSS vers `dist/` |
 | `rustine-surjeu.mjs` | `postinstall` — sans lui, pas de surjeu |
 | `essai-titre.c` | `src/main/surjeu-titre.test.ts`, qui le compile et l'exécute |
+| `entetes-bouchons/uv.h` | le compilateur — un bouchon pour libuv, que l'en-tête rustiné inclut mais que la règle testée ne touche jamais |
+| `commandes-compilation.mjs` | `postinstall` — écrit `compile_commands.json` pour que l'éditeur sache ouvrir `essai-titre.c` |
 | `capture-multi-account.sh` | toi, à la main, pour produire un échantillon de logs |
 | `extract-i18n-patterns.sh` | toi, à la main — les motifs du parser se dérivent de l'i18n du client, ils ne s'écrivent pas à la main |
 
@@ -84,6 +86,12 @@ cherchait la fenêtre du jeu à l'égalité stricte du titre, or le client y éc
 le nom du personnage — « S'Alu-Ca'Va - WAKFU ». Elle accepte désormais le
 suffixe. `tools/rustine-surjeu.mjs` la repose et recompile à chaque
 installation ; l'empaquetage de la V1 devra livrer ce binaire par plateforme.
+
+⚠️ **`tools/essai-titre.c` a besoin de deux `-I` que seul le dépôt connaît** —
+les sources rustinées sous `node_modules`, et le bouchon libuv. Sans eux, un
+serveur de langage C ouvre le fichier sur quinze erreurs. `npm install` engendre
+`compile_commands.json` pour les lui donner ; `npm run commandes` le refait à la
+demande. Le fichier porte des chemins absolus, donc il n'est pas suivi.
 
 Ce qui exige Wakfu lancé se vérifie à la main :
 [`docs/verification-manuelle.md`](docs/verification-manuelle.md).

@@ -14,8 +14,9 @@
     "test": "npm run typecheck && npm run test:unit",
     "test:unit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"src/**/*.test.ts\"",
     "verifier": "npm run lint && npm test",
-    "postinstall": "node tools/rustine-surjeu.mjs",
-    "rustine": "node tools/rustine-surjeu.mjs"
+    "postinstall": "node tools/rustine-surjeu.mjs && node tools/commandes-compilation.mjs",
+    "rustine": "node tools/rustine-surjeu.mjs",
+    "commandes": "node tools/commandes-compilation.mjs"
   },
   "dependencies": {
     "electron-overlay-window": "^4.1.0"
