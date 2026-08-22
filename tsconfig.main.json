@@ -9,6 +9,12 @@
     "outDir": "dist",
     "tsBuildInfoFile": "dist/.tsbuildinfo-main"
   },
-  "include": ["src/main/**/*.ts", "src/pont/**/*.ts"],
+  "include": [
+    "src/main/**/*.ts",
+    "src/pont/**/*.ts",
+    "src/domaine/**/*.ts",
+    "src/logs/**/*.ts",
+    "src/suivi/**/*.ts"
+  ],
   "exclude": ["**/*.test.ts"]
 }

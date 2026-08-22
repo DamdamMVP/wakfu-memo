@@ -130,11 +130,17 @@ function peindre(etat: Etat): void {
     etat.attache ? '' : 'non',
   );
   ligneDefinition(surjeu, 'wakfu.log', etat.wakfuLog ?? 'aucun', etat.wakfuLog ? '' : 'non');
+  // Which of the two produced the retained folder — **détecté** or **désigné**.
+  // The Réglages screen of Lot 7 owes the same answer, plus the way back.
   ligneDefinition(
     surjeu,
-    'dossier désigné',
-    etat.dossierLogsManuel ?? 'aucun — la découverte est le Lot 1',
-    etat.dossierLogsManuel ? '' : 'non',
+    'dossier de logs',
+    etat.dossierLogsManuel !== null
+      ? `désigné — ${etat.dossierLogsManuel}`
+      : etat.wakfuLog !== null
+        ? 'détecté'
+        : 'aucun',
+    etat.wakfuLog !== null ? '' : 'non',
   );
   ligneDefinition(
     surjeu,
