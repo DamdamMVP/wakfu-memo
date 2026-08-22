@@ -1,0 +1,243 @@
+diff --git a/src/lib/overlay_window.h b/src/lib/overlay_window.h
+index 063293d..d30e144 100644
+--- a/src/lib/overlay_window.h
++++ b/src/lib/overlay_window.h
+@@ -6,8 +6,36 @@ extern "C" {
+ #endif
+ 
+ #include <stdint.h>
++#include <stdbool.h>
++#include <string.h>
+ #include <uv.h>
+ 
++/*
++ * wakfu-memo PATCH - title matching accepts a suffix.
++ *
++ * The Wakfu client names its window after the connected character:
++ * "S'Alu-Ca'Va - WAKFU". The original exact comparison therefore only found the
++ * window before login, and never in multi-account, where every client carries a
++ * different name. We accept equality, or the sought title as a suffix preceded
++ * by " - ": strict enough not to be fooled by a browser tab sitting on a page
++ * that talks about the game.
++ */
++#define OW_TITLE_SEPARATOR " - "
++
++static inline bool ow_title_matches(const char* title, const char* target) {
++  if (title == NULL || target == NULL) return false;
++  if (strcmp(title, target) == 0) return true;
++
++  size_t title_len = strlen(title);
++  size_t target_len = strlen(target);
++  size_t separator_len = strlen(OW_TITLE_SEPARATOR);
++  if (target_len == 0 || title_len < target_len + separator_len) return false;
++
++  size_t suffix_at = title_len - target_len;
++  if (strcmp(title + suffix_at, target) != 0) return false;
++  return strncmp(title + suffix_at - separator_len, OW_TITLE_SEPARATOR, separator_len) == 0;
++}
++
+ enum ow_event_type {
+   // target window is found
+   OW_ATTACH = 1,
+@@ -68,6 +96,26 @@ void ow_activate_overlay();
+ 
+ void ow_focus_target();
+ 
++/*
++ * wakfu-memo PATCH - click-through, set on the X server itself.
++ *
++ * `BrowserWindow.setIgnoreMouseEvents` is a no-op under Linux/X11 since
++ * Electron 43 (electron#52456): the transparent window keeps a full input
++ * region and swallows every click meant for the game. Reproduced on 42.9.3 too,
++ * so there is no way out through the version. We therefore set the region
++ * ourselves, here, where the library already knows the Overlay's X id.
++ *
++ * The region is a list of rectangles in window coordinates, so it survives
++ * moves and resizes:
++ *   - `count == 0`   : EMPTY region, every click passes through;
++ *   - `rects == NULL`: no region at all, the window takes its whole surface;
++ *   - otherwise      : only these rectangles catch clicks - that is the fiche,
++ *                      not the window covering the whole game.
++ *
++ * No effect outside X11: on Windows the Electron API works.
++ */
++void ow_set_input_region(const int32_t* rects, uint32_t count);
++
+ void ow_emit_event(struct ow_event* event);
+ 
+ void ow_screenshot(uint8_t* out, uint32_t width, uint32_t height);
+diff --git a/src/lib/x11.c b/src/lib/x11.c
+index 4929ba9..88b1790 100644
+--- a/src/lib/x11.c
++++ b/src/lib/x11.c
+@@ -3,6 +3,7 @@
+ #include <string.h>
+ #include <stdbool.h>
+ #include <xcb/xcb.h>
++#include <xcb/shape.h>
+ #include "overlay_window.h"
+ 
+ static xcb_connection_t* x_conn;
+@@ -169,7 +170,7 @@ static void check_and_handle_window(xcb_window_t wid, struct ow_target_window* t
+   if (!get_title(wid, &title) || title == NULL) {
+     return;
+   }
+-  bool is_equal = (strcmp(title, target_info->title) == 0);
++  bool is_equal = ow_title_matches(title, target_info->title);
+   free(title);
+   if (!is_equal) {
+     return;
+@@ -319,6 +320,38 @@ void ow_activate_overlay() {
+   xcb_flush(x_conn);
+ }
+ 
++void ow_set_input_region(const int32_t* rects, uint32_t count) {
++  /* `x_conn` only exists once the watch thread has started, and we can be
++     called before that, on the Overlay's very first `appliquer()`. */
++  if (x_conn == NULL || overlay_info.window_id == XCB_WINDOW_NONE) {
++    return;
++  }
++  if (rects == NULL) {
++    /* Null mask = no shape: the window takes its whole surface back. */
++    xcb_shape_mask(x_conn, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_INPUT,
++                   overlay_info.window_id, 0, 0, XCB_PIXMAP_NONE);
++    xcb_flush(x_conn);
++    return;
++  }
++
++  xcb_rectangle_t* shape = NULL;
++  if (count > 0) {
++    shape = malloc(sizeof(xcb_rectangle_t) * count);
++    if (shape == NULL) return;
++    for (uint32_t i = 0; i < count; i++) {
++      shape[i].x = (int16_t)rects[i * 4 + 0];
++      shape[i].y = (int16_t)rects[i * 4 + 1];
++      shape[i].width = (uint16_t)rects[i * 4 + 2];
++      shape[i].height = (uint16_t)rects[i * 4 + 3];
++    }
++  }
++  /* count == 0: empty region, everything passes through. */
++  xcb_shape_rectangles(x_conn, XCB_SHAPE_SO_SET, XCB_SHAPE_SK_INPUT,
++                       XCB_CLIP_ORDERING_UNSORTED, overlay_info.window_id, 0, 0, count, shape);
++  free(shape);
++  xcb_flush(x_conn);
++}
++
+ void ow_focus_target() {
+   xcb_set_input_focus(x_conn, XCB_INPUT_FOCUS_PARENT, target_info.window_id, XCB_CURRENT_TIME);
+   xcb_flush(x_conn);
+diff --git a/src/lib/windows.c b/src/lib/windows.c
+index 8544712..564d74d 100644
+--- a/src/lib/windows.c
++++ b/src/lib/windows.c
+@@ -173,7 +173,7 @@ static void check_and_handle_window(HWND hwnd, struct ow_target_window* target_i
+   if (!get_title(hwnd, &title) || title == NULL) {
+     return;
+   }
+-  bool is_equal = (strcmp(title, target_info->title) == 0);
++  bool is_equal = ow_title_matches(title, target_info->title);
+   free(title);
+   if (!is_equal) {
+     return;
+@@ -348,6 +348,11 @@ void ow_activate_overlay() {
+   SetForegroundWindow(overlay_info.hwnd);
+ }
+ 
++void ow_set_input_region(const int32_t* rects, uint32_t count) {
++  /* Sans objet : sous Windows, `setIgnoreMouseEvents` d'Electron fonctionne. */
++  (void)rects; (void)count;
++}
++
+ void ow_focus_target() {
+   SetForegroundWindow(target_info.hwnd);
+ }
+diff --git a/src/lib/mac.mm b/src/lib/mac.mm
+index 9329dfe..47372a9 100644
+--- a/src/lib/mac.mm
++++ b/src/lib/mac.mm
+@@ -651,6 +651,11 @@ void ow_activate_overlay() {
+   [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+ }
+ 
++void ow_set_input_region(const int32_t* rects, uint32_t count) {
++  /* Sans objet : macOS n'est pas une plateforme de ce produit. */
++  (void)rects; (void)count;
++}
++
+ void ow_focus_target() {
+   if (targetInfo.pid < 0 || !targetInfo.element) {
+     return;
+diff --git a/src/lib/addon.c b/src/lib/addon.c
+index ff6bbb0..80d86ac 100644
+--- a/src/lib/addon.c
++++ b/src/lib/addon.c
+@@ -201,6 +201,44 @@ napi_value AddonActivateOverlay(napi_env _env, napi_callback_info _info) {
+   return NULL;
+ }
+ 
++napi_value AddonSetInputRegion(napi_env env, napi_callback_info info) {
++  napi_status status;
++  size_t info_argc = 1;
++  napi_value info_argv[1];
++  status = napi_get_cb_info(env, info, &info_argc, info_argv, NULL, NULL);
++  NAPI_THROW_IF_FAILED(env, status, NULL);
++
++  /* null : pas de region, la fenetre reprend toute sa surface. */
++  bool is_typedarray = false;
++  status = napi_is_typedarray(env, info_argv[0], &is_typedarray);
++  NAPI_THROW_IF_FAILED(env, status, NULL);
++  if (!is_typedarray) {
++    ow_set_input_region(NULL, 0);
++    return NULL;
++  }
++
++  napi_typedarray_type type;
++  size_t length;
++  void* data;
++  status = napi_get_typedarray_info(env, info_argv[0], &type, &length, &data, NULL, NULL);
++  NAPI_THROW_IF_FAILED(env, status, NULL);
++  if (type != napi_int32_array) {
++    napi_throw_type_error(env, NULL, "setInputRegion attend un Int32Array");
++    return NULL;
++  }
++
++  /* ⚠️ Un tableau VIDE n'est pas l'absence de tableau : N-API rend alors un
++     pointeur nul, que `ow_set_input_region` lirait comme « pas de region » —
++     donc comme une fenetre qui attrape tout, l'inverse de ce qu'on demande.
++     On lui donne un pointeur qui ne sert pas, mais qui n'est pas nul. */
++  static const int32_t aucun_rectangle = 0;
++  const int32_t* premier = (data != NULL) ? (const int32_t*)data : &aucun_rectangle;
++
++  /* Quatre entiers par rectangle : x, y, largeur, hauteur. */
++  ow_set_input_region(premier, (uint32_t)(length / 4));
++  return NULL;
++}
++
+ napi_value AddonFocusTarget(napi_env env, napi_callback_info info) {
+   ow_focus_target();
+   return NULL;
+@@ -246,6 +284,11 @@ NAPI_MODULE_INIT() {
+   status = napi_set_named_property(env, exports, "focusTarget", export_fn);
+   NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_set_named_property");
+ 
++  status = napi_create_function(env, NULL, 0, AddonSetInputRegion, NULL, &export_fn);
++  NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_create_function");
++  status = napi_set_named_property(env, exports, "setInputRegion", export_fn);
++  NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_set_named_property");
++
+   status = napi_create_function(env, NULL, 0, AddonScreenshot, NULL, &export_fn);
+   NAPI_FATAL_IF_FAILED(status, "NAPI_MODULE_INIT", "napi_create_function");
+   status = napi_set_named_property(env, exports, "screenshot", export_fn);
+diff --git a/binding.gyp b/binding.gyp
+index a68504f..82b8c16 100644
+--- a/binding.gyp
++++ b/binding.gyp
+@@ -29,7 +29,7 @@
+           ],
+           'link_settings': {
+             'libraries': [
+-              '-lxcb', '-lpthread'
++              '-lxcb', '-lxcb-shape', '-lpthread'
+             ]
+           },
+           'cflags': ['-std=c99', '-pedantic', '-Wall', '-pthread'],
