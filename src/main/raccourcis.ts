@@ -1,10 +1,11 @@
 /**
  * Registering the three global shortcuts with the system.
  *
- * The rules — which one clears, which one falls back to a default — live in
- * `raccourcis-regles.ts`, which does not know Electron. Here we register and
- * report what the system refused; the Réglages screen (Lot 7) offers to change
- * them.
+ * The rules — which one clears, which one falls back to a default, which
+ * combination is even acceptable — live in `raccourcis-regles.ts`, which does
+ * not know Electron. Here we register and report what the system refused; the
+ * Réglages screen captures a new combination and asks for all three to be laid
+ * down again.
  */
 
 import { globalShortcut } from 'electron';
@@ -17,10 +18,15 @@ import {
 } from './raccourcis-regles.ts';
 
 export {
+  CLE_REGLAGE,
+  combinaisonAcceptable,
+  combinaisonDeLaFrappe,
   combinaisonRetenue,
   DEFAUT_VERROU,
   EFFACABLE,
   type EtatRaccourci,
+  estNomDeRaccourci,
+  type Frappe,
   type NomRaccourci,
   type Poses,
   RACCOURCIS,

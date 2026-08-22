@@ -13,6 +13,26 @@ export const CANAL = {
   designerDossierLogs: 'memo:designer-dossier-logs',
   oublierDossierLogs: 'memo:oublier-dossier-logs',
   basculerVerrou: 'memo:basculer-verrou',
+  /**
+   * Réglages screen → main: the porte, and the way back. Not a toggle — the
+   * screen says which side it wants, a toggle sent from a window that is not
+   * the Overlay could always land on the wrong one.
+   */
+  poserVerrou: 'memo:poser-verrou',
+  /**
+   * Barrette → main: the two aspect settings that have no handle on the object
+   * (ADR `0013`). Sent at every notch of the slider, so the judgement is made
+   * against the game's pixels and not against a preview.
+   */
+  aspectOverlay: 'memo:aspect-overlay',
+  /** Réglages screen → main: the OTHER width — the one of the grid of fiches. */
+  ficheMiniFenetre: 'memo:fiche-mini-fenetre',
+  /**
+   * Réglages screen → main: one of the three global shortcuts, captured. All
+   * three are laid down again behind it, the system being the only one that
+   * knows whether a combination is free.
+   */
+  poserRaccourci: 'memo:poser-raccourci',
   ouvrirDossierDonnees: 'memo:ouvrir-dossier-donnees',
   /** Demande d'ajout → main: the player dragged the panel, by this much. */
   deplacerDemande: 'memo:deplacer-demande',

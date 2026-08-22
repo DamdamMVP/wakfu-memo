@@ -6,7 +6,7 @@
  * normal application: closing it closes everything.
  */
 
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { app, dialog, ipcMain, shell } from 'electron';
 import {
   dossierDeLogs,
@@ -39,8 +39,15 @@ import { type Conditions, EtatConditions, type NomCondition } from './conditions
 import { type DemandeDAjout, DemandesEnAttente } from './demandes-en-attente.ts';
 import { FenetrePrincipale } from './fenetre-principale.ts';
 import { OverlayDemande } from './overlay-demande.ts';
-import { type ContenuOverlay, OverlayTour } from './overlay-tour.ts';
-import { type Poses, Raccourcis } from './raccourcis.ts';
+import { type Aspect, type ContenuOverlay, OverlayTour } from './overlay-tour.ts';
+import {
+  CLE_REGLAGE,
+  combinaisonAcceptable,
+  estNomDeRaccourci,
+  type NomRaccourci,
+  type Poses,
+  Raccourcis,
+} from './raccourcis.ts';
 import { type Bornes, Surjeu, TITRE_FENETRE_WAKFU } from './surjeu.ts';
 import { VeilleDuCombat } from './veille-du-combat.ts';
 import { VeilleWakfuLog } from './veille-wakfu-log.ts';
@@ -94,7 +101,14 @@ type Instantane = {
   verrouille: boolean;
   demandeEnAttente: boolean;
   wakfuLog: string | null;
+  /** The folder the retained `wakfu.log` sits in — what the Réglages show. */
+  dossierLogs: string | null;
   dossierLogsManuel: string | null;
+  /**
+   * The four aspect settings, for the décor factice alone: the Fenêtre
+   * principale draws them nowhere else — it has no slider for them (ADR `0013`).
+   */
+  aspect: Aspect;
   /** The name, for the sentence the Socle d'état concludes with (ADR `0012`). */
   stratChoisie: string | null;
   /** The id, because two Strats may bear the same name. */
@@ -218,7 +232,9 @@ function demarrer(): void {
     verrouille: overlayTour?.verrouille ?? true,
     demandeEnAttente: aIdentifier.enAttente,
     wakfuLog: veilleLogs.chemin,
+    dossierLogs: veilleLogs.chemin === null ? null : dirname(veilleLogs.chemin),
     dossierLogsManuel: persistance.reglages.lire().dossierLogsManuel,
+    aspect: contenuOverlay().aspect,
     stratChoisie: stratChoisie()?.nom ?? null,
     stratChoisieId: stratChoisie()?.id ?? null,
     strats: persistance.strats.lire().strats,
@@ -314,6 +330,50 @@ function demarrer(): void {
     diffuser();
   };
 
+  /**
+   * The porte of the Réglages, and the « Terminé » of the barrette. Unlocking
+   * only takes on a drawn Overlay — `deverrouiller()` refuses otherwise, and
+   * that refusal is why the screen offers the décor factice instead.
+   */
+  const poserVerrou = (verrouille: boolean): void => {
+    if (verrouille) overlayTour?.verrouiller();
+    else overlayTour?.deverrouiller();
+  };
+
+  /**
+   * The two settings of the barrette. Clamped here and nowhere else: a surface
+   * sends what a slider gave it, and `reglages.json` holds the bounds.
+   */
+  const poserAspect = (recu: { opacite?: unknown; tailleTexte?: unknown }): void => {
+    const courant = persistance.reglages.lire();
+    const borner = (valeur: unknown, bornes: { min: number; max: number }, defaut: number) =>
+      typeof valeur === 'number' && Number.isFinite(valeur)
+        ? Math.min(Math.max(Math.round(valeur), bornes.min), bornes.max)
+        : defaut;
+    persistance.modifierReglages({
+      opacite: borner(recu?.opacite, BORNES.opacite, courant.opacite),
+      tailleTexte: borner(recu?.tailleTexte, BORNES.tailleTexte, courant.tailleTexte),
+    });
+    overlayTour?.envoyerEtat();
+    diffuser();
+  };
+
+  /**
+   * A captured combination. All three are laid down again behind it: the system
+   * is the only one that knows whether a combination is free, and re-registering
+   * is how a refusal turns up in the snapshot.
+   */
+  const poserRaccourci = (nom: NomRaccourci, combinaison: string | null): void => {
+    persistance.modifierReglages({ [CLE_REGLAGE[nom]]: combinaison });
+    const apres = persistance.reglages.lire();
+    raccourcis?.poser({
+      overlay: apres.raccourciOverlay,
+      verrou: apres.raccourciVerrou,
+      fenetre: apres.raccourciFenetre,
+    });
+    diffuser();
+  };
+
   app.on('second-instance', () => fenetre?.rappeler());
   app.on('window-all-closed', () => app.quit());
   app.on('before-quit', () => {
@@ -327,6 +387,29 @@ function demarrer(): void {
   ipcMain.on(CANAL.basculerAffichage, () => poserAffichageDemande(!etat.valeurs.affichageDemande));
   ipcMain.on(CANAL.choisirStrat, (_evenement, id: string | null) => poserStratChoisie(id));
   ipcMain.on(CANAL.basculerVerrou, () => overlayTour?.basculerVerrou());
+  ipcMain.on(CANAL.poserVerrou, (_evenement, verrouille: boolean) => poserVerrou(verrouille));
+  ipcMain.on(
+    CANAL.aspectOverlay,
+    (_evenement, aspect: { opacite?: number; tailleTexte?: number }) => poserAspect(aspect ?? {}),
+  );
+  ipcMain.on(CANAL.ficheMiniFenetre, (_evenement, largeur: number) => {
+    if (!Number.isFinite(largeur)) return;
+    persistance.modifierReglages({
+      ficheMiniFenetre: Math.min(
+        Math.max(Math.round(largeur), BORNES.ficheMiniFenetre.min),
+        BORNES.ficheMiniFenetre.max,
+      ),
+    });
+    diffuser();
+  });
+  ipcMain.on(CANAL.poserRaccourci, (_evenement, nom: string, combinaison: string | null) => {
+    // A surface is never the last word: an unknown name, or a bare
+    // combination, is dropped here rather than registered globally.
+    if (!estNomDeRaccourci(nom)) return;
+    const propre = typeof combinaison === 'string' ? combinaison.trim() : null;
+    if (propre !== null && !combinaisonAcceptable(propre)) return;
+    poserRaccourci(nom, propre === '' ? null : propre);
+  });
   ipcMain.on(CANAL.zonesCliquables, (_evenement, zones: Bornes[]) =>
     overlayTour?.declarerZones(zones),
   );
@@ -360,6 +443,9 @@ function demarrer(): void {
       ficheY: Math.max(0, Math.round(y)),
     });
     overlayTour?.envoyerEtat();
+    // The décor factice drags the same fiche, and it lives in the Fenêtre
+    // principale: without this, its own copy of the position would go stale.
+    diffuser();
   });
   /**
    * Every write of the Strats screen comes through here. The surface sends an
